@@ -1,0 +1,6 @@
+{
+  "component": true,
+  "usingComponents": {
+    "oa-calendar-item": "/components/oa-calendar/oa-calendar-item"
+  }
+}

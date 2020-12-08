@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "",
+  "usingComponents": {
+    "oa-image": "/components/oa-image/oa-image",
+    "rf-qrcode": "/components/oa-qrcode/index"
+  }
+}

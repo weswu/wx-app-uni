@@ -1,0 +1,7 @@
+{
+  "enablePullDownRefresh": true,
+  "navigationBarTitleText": "签到打卡",
+  "usingComponents": {
+    "oa-image": "/components/oa-image/oa-image"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "enablePullDownRefresh": true,
+  "navigationBarTitleText": "巡更记录",
+  "usingComponents": {
+    "oa-image": "/components/oa-image/oa-image"
+  }
+}

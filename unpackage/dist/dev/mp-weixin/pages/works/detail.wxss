@@ -1,0 +1,208 @@
+@charset "UTF-8";
+/* 页面左右间距 */
+/* 文字尺寸 */
+/*文字颜色*/
+/* 边框颜色 */
+/* 图片加载中颜色 */
+/* 行为相关颜色 */
+.oa-notice-detail .uni-timeline {
+  padding: 30rpx;
+  background-color: #fff;
+}
+.oa-notice-detail .feedback-title {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-box-orient: horizontal;
+  -webkit-box-direction: normal;
+  -webkit-flex-direction: row;
+          flex-direction: row;
+  -webkit-box-pack: justify;
+  -webkit-justify-content: space-between;
+          justify-content: space-between;
+  -webkit-box-align: center;
+  -webkit-align-items: center;
+          align-items: center;
+  padding: 20rpx;
+  margin-top: 20rpx;
+  font-size: 28rpx;
+}
+.oa-notice-detail .feedback-star-view.feedback-title {
+  -webkit-box-pack: start;
+  -webkit-justify-content: flex-start;
+          justify-content: flex-start;
+  margin: 0;
+}
+.oa-notice-detail .feedback-quick {
+  position: relative;
+  padding-right: 40rpx;
+}
+.oa-notice-detail .feedback-quick .iconfont {
+  font-size: 24rpx;
+}
+.oa-notice-detail .feedback-body {
+  background: #fff;
+  padding: 10rpx 20rpx;
+}
+.oa-notice-detail .feedback-body .gender-item {
+  margin-right: 20rpx;
+}
+.oa-notice-detail .feedback-body .gender-item .gender-item-text {
+  padding-left: 10rpx;
+}
+.oa-notice-detail .feedback-body .gender-item radio .wx-radio-input.wx-radio-input-checked {
+  background: #fa436a;
+  border-color: #fa436a;
+}
+.oa-notice-detail .feedback-textare {
+  height: 200rpx;
+  font-size: 34rpx;
+  line-height: 50rpx;
+  width: 100%;
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box;
+  padding: 20rpx 30rpx 0;
+}
+.oa-notice-detail .footer {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  z-index: 98;
+  width: 100%;
+  background-color: #fff;
+  color: #606266;
+  -webkit-box-shadow: 0 -1px 5px rgba(0, 0, 0, 0.1);
+          box-shadow: 0 -1px 5px rgba(0, 0, 0, 0.1);
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-box-pack: end;
+  -webkit-justify-content: flex-end;
+          justify-content: flex-end;
+  -webkit-box-align: center;
+  -webkit-align-items: center;
+          align-items: center;
+  padding: 15rpx 20rpx;
+}
+.oa-notice-detail .footer .action-btn {
+  font-size: 24rpx;
+  margin: 0 0 0 15rpx;
+  padding: 0 30rpx;
+  text-align: center;
+  height: 60rpx;
+  line-height: 60rpx;
+}
+.oa-notice-detail .banner {
+  overflow: hidden;
+  position: relative;
+  background-color: #ccc;
+}
+.oa-notice-detail .banner .banner-img {
+  height: 300rpx;
+  width: 100%;
+}
+.oa-notice-detail .banner .banner-title {
+  max-height: 84rpx;
+  overflow: hidden;
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  font-size: 32rpx;
+  font-weight: 400;
+  line-height: 42rpx;
+  color: white;
+  z-index: 11;
+  background-color: rgba(0, 0, 0, 0.25);
+  padding: 4rpx 20rpx;
+}
+.oa-notice-detail .banner-title {
+  padding: 30rpx 30rpx 0;
+  font-size: 32rpx;
+}
+.oa-notice-detail .article-meta {
+  padding: 20rpx 40rpx;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-box-orient: horizontal;
+  -webkit-box-direction: normal;
+  -webkit-flex-direction: row;
+          flex-direction: row;
+  -webkit-box-pack: start;
+  -webkit-justify-content: flex-start;
+          justify-content: flex-start;
+  color: gray;
+}
+.oa-notice-detail .article-meta .article-text {
+  font-size: 26rpx;
+  line-height: 50rpx;
+  margin: 0 20rpx;
+}
+.oa-notice-detail .article-meta .article-author,
+.oa-notice-detail .article-meta .article-time {
+  font-size: 30rpx;
+}
+.oa-notice-detail .article-content {
+  padding: 0 30rpx;
+  overflow: hidden;
+  font-size: 30rpx;
+  margin-bottom: 30rpx;
+}
+.oa-notice-detail .input-title {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-box-orient: horizontal;
+  -webkit-box-direction: normal;
+  -webkit-flex-direction: row;
+          flex-direction: row;
+  -webkit-box-pack: justify;
+  -webkit-justify-content: space-between;
+          justify-content: space-between;
+  -webkit-box-align: center;
+  -webkit-align-items: center;
+          align-items: center;
+  padding: 20rpx;
+  margin-top: 20rpx;
+  font-size: 28rpx;
+}
+.oa-notice-detail .input-body {
+  background: #fff;
+  padding: 10rpx 20rpx;
+}
+.oa-notice-detail .covers-title {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-box-orient: horizontal;
+  -webkit-box-direction: normal;
+  -webkit-flex-direction: row;
+          flex-direction: row;
+  -webkit-box-pack: justify;
+  -webkit-justify-content: space-between;
+          justify-content: space-between;
+  -webkit-box-align: center;
+  -webkit-align-items: center;
+          align-items: center;
+  padding: 20rpx;
+  margin-top: 20rpx;
+  font-size: 28rpx;
+}
+.oa-notice-detail .covers-body {
+  background: #fff;
+  padding: 10rpx 20rpx;
+}
+.oa-notice-detail .covers-body .gender-item {
+  margin-right: 20rpx;
+}
+.oa-notice-detail .covers-body .gender-item .gender-item-text {
+  padding-left: 10rpx;
+}
+.oa-notice-detail .covers-body .gender-item radio .wx-radio-input.wx-radio-input-checked {
+  background: #fa436a;
+  border-color: #fa436a;
+}
+.oa-notice-detail .covers-uploader {
+  padding: 22rpx 20rpx;
+}
+

@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "设置",
+  "usingComponents": {
+    "rf-version-upgrade": "/components/oa-version-upgrade/index"
+  }
+}

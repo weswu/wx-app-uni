@@ -1,0 +1,7 @@
+{
+  "enablePullDownRefresh": true,
+  "navigationBarTitleText": "机构中心",
+  "usingComponents": {
+    "list-cell": "/components/oa-list-cell/index"
+  }
+}

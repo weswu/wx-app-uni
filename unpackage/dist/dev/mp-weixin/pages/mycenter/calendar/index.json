@@ -1,0 +1,11 @@
+{
+  "enablePullDownRefresh": true,
+  "navigationBarTitleText": "我的日程",
+  "usingComponents": {
+    "uni-swipe-action": "/components/uni-swipe-action/uni-swipe-action",
+    "uni-swipe-action-item": "/components/uni-swipe-action-item/uni-swipe-action-item",
+    "oa-load-more": "/components/oa-load-more/oa-load-more",
+    "rf-load-more": "/components/oa-load-more/oa-load-more",
+    "oa-empty": "/components/oa-empty/index"
+  }
+}

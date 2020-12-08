@@ -1,0 +1,43 @@
+@charset "UTF-8";
+/* 页面左右间距 */
+/* 文字尺寸 */
+/*文字颜色*/
+/* 边框颜色 */
+/* 图片加载中颜色 */
+/* 行为相关颜色 */
+page.data-v-7881794f {
+  background-color: #fff;
+}
+.service-index.data-v-7881794f {
+  background-color: #fff;
+  height: 100vh;
+}
+.service-index .header.data-v-7881794f {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-box-pack: justify;
+  -webkit-justify-content: space-between;
+          justify-content: space-between;
+  text-align: center;
+  padding: 60rpx 120rpx;
+}
+.service-index .header .service-item.data-v-7881794f {
+  line-height: 1.5;
+}
+.service-index .header .service-item .iconfont.data-v-7881794f {
+  display: block;
+  font-size: 72rpx;
+}
+.service-index .header .service-item .time.data-v-7881794f {
+  display: block;
+  font-size: 24rpx;
+  color: #909399;
+}
+.service-index .title.data-v-7881794f {
+  height: 80rpx;
+  background-color: #f8f8f8;
+  line-height: 80rpx;
+  padding-left: 20rpx;
+}
+

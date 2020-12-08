@@ -1,0 +1,13 @@
+{
+  "enablePullDownRefresh": true,
+  "navigationBarTitleText": "通用办公",
+  "usingComponents": {
+    "uni-tag": "/components/uni-tag/uni-tag",
+    "oa-load-more": "/components/oa-load-more/oa-load-more",
+    "rf-load-more": "/components/oa-load-more/oa-load-more",
+    "list-cell": "/components/oa-list-cell/index",
+    "oa-swipe-dot": "/components/oa-swipe-dot/index",
+    "rf-swiper-slide": "/components/oa-swiper-slide/index",
+    "rf-version-upgrade": "/components/oa-version-upgrade/index"
+  }
+}

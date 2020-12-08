@@ -1,0 +1,9 @@
+{
+  "enablePullDownRefresh": true,
+  "navigationBarTitleText": "待办事项",
+  "usingComponents": {
+    "oa-load-more": "/components/oa-load-more/oa-load-more",
+    "rf-load-more": "/components/oa-load-more/oa-load-more",
+    "oa-empty": "/components/oa-empty/index"
+  }
+}

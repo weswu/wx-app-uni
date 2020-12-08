@@ -1,0 +1,8 @@
+{
+  "enablePullDownRefresh": true,
+  "navigationBarTitleText": "通知公告",
+  "usingComponents": {
+    "oa-load-more": "/components/oa-load-more/oa-load-more",
+    "rf-load-more": "/components/oa-load-more/oa-load-more"
+  }
+}

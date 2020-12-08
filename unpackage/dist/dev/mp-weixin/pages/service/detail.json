@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "问题详情",
+  "usingComponents": {
+    "rf-recommend": "/components/oa-recommend/oa-recommend",
+    "oa-parser": "/components/oa-parser/index"
+  }
+}

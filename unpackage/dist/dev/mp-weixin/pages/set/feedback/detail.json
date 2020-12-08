@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "意见反馈详情",
+  "usingComponents": {
+    "oa-image": "/components/oa-image/oa-image"
+  }
+}

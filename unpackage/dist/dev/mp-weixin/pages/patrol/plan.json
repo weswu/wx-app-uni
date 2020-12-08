@@ -1,0 +1,10 @@
+{
+  "enablePullDownRefresh": true,
+  "navigationBarTitleText": "巡更计划",
+  "usingComponents": {
+    "oa-load-more": "/components/oa-load-more/oa-load-more",
+    "rf-load-more": "/components/oa-load-more/oa-load-more",
+    "uni-calendar": "/components/oa-calendar/oa-calendar",
+    "oa-empty": "/components/oa-empty/index"
+  }
+}

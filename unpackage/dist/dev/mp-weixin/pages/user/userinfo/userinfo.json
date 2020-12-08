@@ -1,0 +1,8 @@
+{
+  "navigationBarTitleText": "个人资料",
+  "usingComponents": {
+    "oa-load-progress": "/components/oa-load-progress/oa-load-progress",
+    "avatar": "/components/oa-avatar/oa-avatar",
+    "rf-pick-regions": "/components/oa-pick-regions/index"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "enablePullDownRefresh": false,
+  "navigationBarTitleText": "待办详情",
+  "usingComponents": {
+    "oa-image": "/components/oa-image/oa-image"
+  }
+}
