@@ -31,7 +31,7 @@ const worksList = '/we-office/v1/member/works/index';
 const worksDetail = '/we-office/v1/member/works';
 
 // 消息列表
-const notifyIndex = '/we-office/v1/notify/announce/index';
+const notifyIndex = '/nfnet/dzznews/page';
 // 消息详情
 const notifyView = '/we-office/v1/member/notify/view';
 // 单个消息阅读

@@ -1,6 +1,6 @@
 {
   "enablePullDownRefresh": true,
-  "navigationBarTitleText": "新闻动态",
+  "navigationBarTitleText": "组织生活",
   "usingComponents": {
     "oa-load-more": "/components/oa-load-more/oa-load-more",
     "rf-load-more": "/components/oa-load-more/oa-load-more"

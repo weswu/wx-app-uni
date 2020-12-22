@@ -301,7 +301,7 @@
 
 			.article-author,
 			.article-time {
-				font-size: 30upx;
+				font-size: 32upx;
 			}
 		}
 

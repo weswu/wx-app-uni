@@ -311,9 +311,9 @@ export default {
 		};
 	},
 	onShow() {
-		if (this.$mStore.getters.hasLogin) {
-			this.$mRouter.reLaunch({ route: '/pages/index/index' });
-		}
+		// if (this.$mStore.getters.hasLogin) {
+		// 	this.$mRouter.reLaunch({ route: '/pages/index/index' });
+		// }
 	},
 	onLoad(options) {
 		this.tabCurrentIndex = parseInt(options.type || 0, 10);
@@ -356,7 +356,12 @@ export default {
 				return;
 			}
 			await this.$http
-				.get(smsCode + this.reqBody['mobile'])
+				.get(smsCode + this.reqBody['mobile'], {},
+				{
+					header: {
+						'Authorization': 'Basic cGlnOnBpZw=='
+					}
+				})
 				.then(r => {
 					if (r.data) {
 						this.$mHelper.toast(`验证码发送成功, 验证码是${r.msg}`);
@@ -364,9 +369,9 @@ export default {
 						uni.setStorageSync('loginSmsCodeTime', moment().valueOf() / 1000);
 						this.handleSmsCodeTime(59);
 					} else {
-						this.$mHelper.toast(r.msg);
+						this.$mHelper.toast(r.msg === '手机号未注册' ? '手机号未绑定账号' : r.msg);
 					}
-				});
+				})
 		},
 		handleSmsCodeTime(time) {
 			let timer = setInterval(() => {
@@ -438,13 +443,14 @@ export default {
 		},
 		// 绑定用户
 		async setUserBind() {
+			var ctx = this
 			//1.获取code，判断是否绑定
 			uni.login({
 				provider: 'weixin',
 			  success(res){
-					this.$http.post(accountBind + '?state=MINI&code='+res.code).
+					ctx.$http.post(accountBind + '?state=MINI&code='+res.code).
 					then(r => {
-						console.log('user bind success!')
+						console.log('用户绑定 success!')
 					})
 			  }
 			})	
@@ -453,10 +459,15 @@ export default {
 		async handleLogin(params, loginApi) {
 			this.btnLoading = true;
 			await this.$http
-				.post(loginApi + '?mobile=SMS@'+params.mobile+'&code='+params.code+'&grant_type=mobile')
+				.post(loginApi + '?mobile=SMS@'+params.mobile+'&code='+params.code+'&grant_type=mobile', {},
+				{
+					header: {
+						'Authorization': 'Basic cGlnOnBpZw=='
+					}
+				})
 				.then(r => {
 					this.$mHelper.toast('恭喜您，登录成功！');
-					this.$mStore.commit('login', r.data);
+					this.$mStore.commit('login', r);
 					this.setUserBind()
 					if (this.userInfo) {
 						this.btnLoading = false;
@@ -487,7 +498,7 @@ export default {
 					}
 					uni.removeStorageSync('oauthClient');
 					uni.removeStorageSync('wechatUserInfo');
-					this.$mWebsocket.initWebsocket();
+					//this.$mWebsocket.initWebsocket();
 					const backToPage = uni.getStorageSync('backToPage');
 					uni.removeStorageSync('backToPage');
 					if (backToPage) {

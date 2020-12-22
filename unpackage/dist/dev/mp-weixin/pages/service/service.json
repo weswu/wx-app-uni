@@ -1,7 +1,0 @@
-{
-  "navigationBarTitleText": "客服",
-  "usingComponents": {
-    "oa-emoji": "/components/oa-emoji/oa-emoji",
-    "rf-emoji": "/components/oa-emoji/oa-emoji"
-  }
-}

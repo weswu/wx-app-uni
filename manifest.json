@@ -1,8 +1,8 @@
 {
-    "name" : "通用办公系统",
+    "name" : "智慧党建",
     "appid" : "__UNI__B83CEC7",
     // 自行更换uniapp appid 可登录查看uniapp提供的用户统计 https://tongji.dcloud.net.cn/
-    "description" : "通用办公自动化解决方案",
+    "description" : "智慧党建信息系统",
     "versionName" : "1.2.1",
     "versionCode" : 121,
     "transformPx" : false,

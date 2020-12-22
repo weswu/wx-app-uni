@@ -1,11 +1,12 @@
 <template>
 	<view class="oa-notice-detail">
 		
-		<view class="article-meta" v-if="studyDetail.created_at">
-			<text class="article-author">{{ studyDetail.author|| appName }}</text>
+		<view class="article-meta">
+			<view class="article-text">活动名称：{{ studyDetail.ngroupType | ngroupType }}</view>
 			<text class="article-text">发布于</text>
-			<text class="article-time">{{ studyDetail.created_at | time }}</text>
-			<text class="article-text">浏览 {{ studyDetail.view }}</text>
+			<text class="article-time">{{ studyDetail.newsTime }}</text>
+			<view class="article-text" v-if="studyDetail.meetStartTime">开始时间：{{ studyDetail.meetStartTime }}</view>
+			<view class="article-text" v-if="studyDetail.meetStartTime">结束时间：{{ studyDetail.meetEndTime }}</view>
 		</view>
 		<view class="article-content">
 			<oa-parser lazy-load :html="studyDetail.content"></oa-parser>
@@ -20,7 +21,7 @@
 </template>
 
 <script>
-import { studyDetail } from '@/api/basic';
+import { getObj } from '@/api/newsbase';
 import moment from '@/common/moment';
 import oaParser from '@/components/oa-parser';
 export default {
@@ -39,6 +40,24 @@ export default {
 		// 时间格式化
 		time(val) {
 			return moment(val * 1000).format('YYYY-MM-DD HH:mm');
+		},
+		ngroupType(val) {
+			let text = '';
+			let ngroupType = [
+        {value: '1', label: '支部委员会'},
+        {value: '2', label: '支部党员大会'},
+        {value: '3', label: '党小组会'},
+        {value: '4', label: '党课'},
+        {value: '5', label: '支部主题党日'},
+        {value: '6', label: '组织生活会'},
+        {value: '7', label: '志愿服务'}
+      ]
+			ngroupType.forEach(item => {
+				if(item.value === val) {
+					text = item.label
+				}
+			})
+			return text;
 		}
 	},
 	onShow() {
@@ -59,7 +78,7 @@ export default {
 		// 获取详情
 		async getStudyDetail(id) {
 			await this.$http
-				.get(`${studyDetail}`+'/view?id='+`${id}`)
+				.get(`${getObj}${id}`)
 				.then(r => {
 					this.loading = false;
 					this.studyDetail = r.data;
@@ -109,6 +128,7 @@ export default {
 		display: flex;
 		flex-direction: row;
 		justify-content: flex-start;
+		flex-flow: wrap;
 		color: gray;
 
 		.article-text {
@@ -118,7 +138,7 @@ export default {
 
 		.article-author,
 		.article-time {
-			font-size: 30upx;
+			font-size: 32upx;
 		}
 	}
 

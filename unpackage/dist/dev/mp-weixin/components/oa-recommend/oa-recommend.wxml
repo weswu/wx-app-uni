@@ -1,1 +1,0 @@
-<view class="oa-floor-index data-v-8c0551b8"><view class="f-header data-v-8c0551b8"><view class="line data-v-8c0551b8"></view><text class="name data-v-8c0551b8">为您推荐</text><view class="line data-v-8c0551b8"></view></view><oa-product-list vue-id="f4a3e33c-1" bottom="{{bottom}}" list="{{guessYouLikeList}}" class="data-v-8c0551b8" bind:__l="__l"></oa-product-list></view>

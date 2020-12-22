@@ -904,7 +904,7 @@ function initData(vueOptions, context) {
     try {
       data = data.call(context); // 支持 Vue.prototype 上挂的数据
     } catch (e) {
-      if (Object({"NODE_ENV":"development","VUE_APP_NAME":"通用办公系统","VUE_APP_PLATFORM":"mp-weixin","BASE_URL":"/"}).VUE_APP_DEBUG) {
+      if (Object({"NODE_ENV":"development","VUE_APP_NAME":"智慧党建","VUE_APP_PLATFORM":"mp-weixin","BASE_URL":"/"}).VUE_APP_DEBUG) {
         console.warn('根据 Vue 的 data 函数初始化小程序 data 失败，请尽量确保 data 函数中不访问 vm 对象，否则可能影响首次数据渲染速度。', data);
       }
     }
@@ -2538,6 +2538,156 @@ uni$1;exports.default = _default;
 
 /***/ }),
 
+/***/ 107:
+/*!******************************************************************!*\
+  !*** D:/code/HBuilderProjects/通用办公系统示例/utils/native-nfc-util.js ***!
+  \******************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });exports.default = void 0;
+
+//nfc读取
+var NfcAdapter;
+var NdefRecord;
+var NdefMessage;
+
+//标识是否开始读取
+var readyRead = true;
+//回调函数
+var readback;
+
+function listenNFCStatus(readCallback) {
+  readback = readCallback;
+  try {
+    var main = plus.android.runtimeMainActivity();
+    var Intent = plus.android.importClass('android.content.Intent');
+    var Activity = plus.android.importClass('android.app.Activity');
+    var PendingIntent = plus.android.importClass('android.app.PendingIntent');
+    var IntentFilter = plus.android.importClass('android.content.IntentFilter');
+    NfcAdapter = plus.android.importClass('android.nfc.NfcAdapter');
+    var nfcAdapter = NfcAdapter.getDefaultAdapter(main);
+    var intent = new Intent(main, main.getClass());
+    intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+    var pendingIntent = PendingIntent.getActivity(main, 0, intent, 0);
+    var ndef = new IntentFilter("android.nfc.action.TECH_DISCOVERED");
+    ndef.addDataType("*/*");
+    var intentFiltersArray = [ndef];
+    var techListsArray = [
+    ["android.nfc.tech.IsoDep"],
+    ["android.nfc.tech.NfcA"],
+    ["android.nfc.tech.NfcB"],
+    ["android.nfc.tech.NfcF"],
+    ["android.nfc.tech.Nfcf"],
+    ["android.nfc.tech.NfcV"],
+    ["android.nfc.tech.NdefFormatable"],
+    ["android.nfc.tech.MifareClassi"],
+    ["android.nfc.tech.MifareUltralight"]];
+
+    plus.globalEvent.addEventListener("newintent",
+    function () {
+      console.error('newintent');
+      setTimeout(handle_nfc_data1, 1000);
+    }, false);
+    plus.globalEvent.addEventListener("pause", function (e) {
+      if (nfcAdapter) {
+        nfcAdapter.disableForegroundDispatch(main);
+        console.log('pause');
+      }
+    }, false);
+    plus.globalEvent.addEventListener("resume", function (e) {
+      if (nfcAdapter) {
+        console.log('resume');
+        nfcAdapter.enableForegroundDispatch(main, pendingIntent, intentFiltersArray, techListsArray);
+      }
+    }, false);
+    nfcAdapter.enableForegroundDispatch(main, pendingIntent, intentFiltersArray, techListsArray);
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+function handle_nfc_data1()
+{
+  NdefRecord = plus.android.importClass("android.nfc.NdefRecord");
+  NdefMessage = plus.android.importClass("android.nfc.NdefMessage");
+  var main = plus.android.runtimeMainActivity();
+  var intent = main.getIntent();
+  console.log("action type:" + intent.getAction());
+  if ("android.nfc.action.TECH_DISCOVERED" == intent.getAction()) {
+    if (readyRead) {
+      __read(intent);
+      // readyRead = false;  
+    }
+  }
+}
+function showToast(msg) {
+  plus.nativeUI.toast(msg);
+}
+
+
+function __read(intent) {
+  try {
+    var content = "";
+    var tag = plus.android.importClass("android.nfc.Tag");
+    tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
+    var bytesId = intent.getByteArrayExtra(NfcAdapter.EXTRA_ID);
+    console.log("bytesId:" + bytesId);
+    content += "卡片字节数组ID：" + tag.getId() + "<br/>";
+    content += "卡片16进制ID：" + bytesToHexString(tag.getId()) + "<br/>";
+    var tagid = reverseTwo(bytesToHexString(tag.getId()));
+    content += "卡片16进制翻转ID：" + tagid + "<br/>";
+    content += "卡片10进制卡号：" + parseInt(tagid, 16) + "<br/>";
+    console.log("content:" + content);
+    readback(bytesToHexString(tag.getId()));
+  } catch (e) {
+    //TODO handle the exception
+  }
+
+}
+
+function bytesToHexString(inarray) {
+  var i, j, x;
+  var hex = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A",
+  "B", "C", "D", "E", "F"];
+  var out = "";
+  for (j = 0; j < inarray.length; ++j) {
+    x = parseInt(inarray[j]) & 0xff;
+    i = x >> 4 & 0x0f;
+    out += hex[i];
+    i = x & 0x0f;
+    out += hex[i];
+  }
+  return out;
+}
+
+function reverseTwo(str)
+{
+
+  var str1 = "";
+  for (var i = 1; i <= str.length; i++) {
+    str1 += str[i - 1];
+    if (i % 2 == 0) {
+      if (i == str.length) {
+        break;
+      }
+      str1 += ":";
+    }
+  }
+  var str2 = "";
+  for (var i = str1.split(":").length - 1; i >= 0; i--) {
+    str2 += str1.split(":")[i];
+  }
+  return str2;
+}var _default =
+
+
+
+{ listenNFCStatus: listenNFCStatus };exports.default = _default;
+
+/***/ }),
+
 /***/ 11:
 /*!******************************************************!*\
   !*** D:/code/HBuilderProjects/通用办公系统示例/api/basic.js ***!
@@ -2546,13 +2696,13 @@ uni$1;exports.default = _default;
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });exports.getPurchaseType = exports.purchaseType = exports.purchase = exports.diningType = exports.dining = exports.contact = exports.getAttendClasses = exports.attendCheckType = exports.attendPlanState = exports.attendCheckState = exports.check = exports.attendPlan = exports.getClasses = exports.placeState = exports.planState = exports.place = exports.record = exports.patrolPlan = exports.getExpenseType = exports.expenseType = exports.expense = exports.getHolidayType = exports.holidayType = exports.holiday = exports.trip = exports.getOvertimeType = exports.overtimeType = exports.overtime = exports.getCarType = exports.carType = exports.carApply = exports.carState = exports.car = exports.getAssetType = exports.assetType = exports.asset = exports.shopMsg = exports.shop = exports.getMsg = exports.get = exports.getRepairType = exports.repairType = exports.repairMsg = exports.repair = exports.workState = exports.articleCate = exports.studyDetail = exports.studyList = exports.authCreate = exports.authIsBinding = exports.bindingEquipment = exports.helperView = exports.helperIndex = exports.pickupPointIndex = exports.versionsIndex = exports.notifyAnnounceIndex = exports.notifyAnnounce = exports.wechatConfig = exports.configList = exports.payCreate = exports.advView = exports.advList = exports.transmitCreate = exports.collectDel = exports.collectCreate = exports.provinceList = exports.getContractType = exports.contractType = exports.politicalType = exports.getCalendarType = exports.calendarType = exports.calendar = exports.getSummaryType = exports.summaryType = exports.summary = exports.getLogType = exports.logType = exports.log = exports.insurance = exports.getRewardsType = exports.rewardsType = exports.rewards = exports.contract = exports.getEmployees = exports.employees = exports.getArchivesType = exports.archivesType = exports.archives = void 0; /**
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            *@des 公用基础
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            *@author hjp1011 21931118@qq.com
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            *@blog http://www.wephp.com
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            *@date 2019/11/19 14:56:57
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            *@param registerByPass
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            */
+Object.defineProperty(exports, "__esModule", { value: true });exports.getPurchaseType = exports.purchaseType = exports.purchase = exports.diningType = exports.dining = exports.contact = exports.getAttendClasses = exports.attendCheckType = exports.attendPlanState = exports.attendCheckState = exports.check = exports.attendPlan = exports.getClasses = exports.placeState = exports.planState = exports.place = exports.record = exports.patrolPlan = exports.getExpenseType = exports.expenseType = exports.expense = exports.getHolidayType = exports.holidayType = exports.holiday = exports.trip = exports.getOvertimeType = exports.overtimeType = exports.overtime = exports.getCarType = exports.carType = exports.carApply = exports.carState = exports.car = exports.getAssetType = exports.assetType = exports.asset = exports.shopMsg = exports.shop = exports.getMsg = exports.get = exports.getRepairType = exports.repairType = exports.repairMsg = exports.repair = exports.workState = exports.articleCate = exports.authCreate = exports.authIsBinding = exports.bindingEquipment = exports.helperView = exports.helperIndex = exports.pickupPointIndex = exports.versionsIndex = exports.notifyAnnounceIndex = exports.wechatConfig = exports.configList = exports.payCreate = exports.advView = exports.advList = exports.transmitCreate = exports.collectDel = exports.collectCreate = exports.provinceList = exports.getContractType = exports.contractType = exports.politicalType = exports.getCalendarType = exports.calendarType = exports.calendar = exports.getSummaryType = exports.summaryType = exports.summary = exports.getLogType = exports.logType = exports.log = exports.insurance = exports.getRewardsType = exports.rewardsType = exports.rewards = exports.contract = exports.getEmployees = exports.employees = exports.getArchivesType = exports.archivesType = exports.archives = void 0; /**
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         *@des 公用基础
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         *@author hjp1011 21931118@qq.com
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         *@blog http://www.wephp.com
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         *@date 2019/11/19 14:56:57
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         *@param registerByPass
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         */
 
 // 获取省市区列表
 var provinceList = '/we-office/v1/common/provinces/index';
@@ -2564,7 +2714,7 @@ exports.collectCreate = collectCreate;var collectDel = '/we-office/v1/common/col
 exports.collectDel = collectDel;var transmitCreate = '/we-office/v1/common/transmit/create';
 
 // 广告
-exports.transmitCreate = transmitCreate;var advList = '/we-office/v1/article/adv/index';exports.advList = advList;
+exports.transmitCreate = transmitCreate;var advList = '/nfnet/newsbase/page';exports.advList = advList;
 var advView = '/we-office/v1/common/adv/view';
 
 // 配置
@@ -2578,13 +2728,10 @@ exports.payCreate = payCreate;var wechatConfig = '/we-office/v1/third-party/wech
 
 // 公告
 // 公告列表
-exports.wechatConfig = wechatConfig;var notifyAnnounceIndex = '/we-office/v1/common/notify-announce/index';
-// 公告详情
-// const notifyAnnounceView = '/we-office/v1/notify/announce/view';
-exports.notifyAnnounceIndex = notifyAnnounceIndex;var notifyAnnounce = '/we-office/v1/notify/announce';
+exports.wechatConfig = wechatConfig;var notifyAnnounceIndex = '/nfnet/dzznews/page';
 
 // 版本检测
-exports.notifyAnnounce = notifyAnnounce;var versionsIndex = '/app-versions/versions/index';
+exports.notifyAnnounceIndex = notifyAnnounceIndex;var versionsIndex = '/app-versions/versions/index';
 
 // 版本检测
 exports.versionsIndex = versionsIndex;var pickupPointIndex = '/we-office/v1/common/pickup-point/index';
@@ -2602,9 +2749,7 @@ exports.bindingEquipment = bindingEquipment;var authIsBinding = '/auth/mobile/to
 exports.authIsBinding = authIsBinding;var authCreate = '/we-office/v1/member/auth/create';
 
 //学习中心
-exports.authCreate = authCreate;var studyList = '/we-office/v1/article/article/index';exports.studyList = studyList;
-var studyDetail = '/we-office/v1/article/article';exports.studyDetail = studyDetail;
-var articleCate = '/we-office/v1/article/article/cate';
+exports.authCreate = authCreate;var articleCate = '/we-office/v1/article/article/cate';
 //工作流状态
 exports.articleCate = articleCate;var workState = '/we-office/v1/cate/work-state';
 //报修
@@ -2697,6 +2842,34 @@ exports.getCalendarType = getCalendarType;var politicalType = '/we-office/v1/cat
 //合同类型
 exports.politicalType = politicalType;var contractType = '/we-office/v1/cate/contract-type';exports.contractType = contractType;
 var getContractType = '/we-office/v1/cate/get-contract-type';exports.getContractType = getContractType;
+
+/***/ }),
+
+/***/ 1163:
+/*!*********************************************************!*\
+  !*** D:/code/HBuilderProjects/通用办公系统示例/api/newsbase.js ***!
+  \*********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });exports.getObj = exports.fetchList = void 0;
+var fetchList = '/nfnet/newsbase/page';exports.fetchList = fetchList;
+var getObj = '/nfnet/newsbase/';exports.getObj = getObj;
+
+/***/ }),
+
+/***/ 1164:
+/*!*******************************************************!*\
+  !*** D:/code/HBuilderProjects/通用办公系统示例/api/member.js ***!
+  \*******************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });exports.getObj = exports.fetchList = void 0;
+var fetchList = '/nfnet/memeber/page';exports.fetchList = fetchList;
+var getObj = '/nfnet/memeber/';exports.getObj = getObj;
 
 /***/ }),
 
@@ -4156,7 +4329,7 @@ store;exports.default = _default;
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });exports.default = void 0;var _default = {
   // app应用名称
-  appName: '通用办公',
+  appName: '智慧党建',
 
   // 购物车在tab的位置
   // cartIndex: 3,
@@ -4212,11 +4385,11 @@ Object.defineProperty(exports, "__esModule", { value: true });exports.default = 
     url: '/pages/user/userinfo/userinfo',
     content: '' },
 
-  {
-    title: '修改密码',
-    url: '/pages/public/password?type=1',
-    content: '' },
-
+  // {
+  // 	title: '修改密码',
+  // 	url: '/pages/public/password?type=1',
+  // 	content: ''
+  // },
   {
     title: '清除缓存',
     url: 'clearCache',
@@ -4243,11 +4416,6 @@ Object.defineProperty(exports, "__esModule", { value: true });exports.default = 
   {
     title: '意见反馈',
     url: '/pages/set/feedback/list',
-    content: '' },
-
-  {
-    title: '客服咨询',
-    url: '/pages/service/index',
     content: '' }],
 
 
@@ -4613,430 +4781,18 @@ Object.defineProperty(exports, "__esModule", { value: true });exports.default = 
     '/static/tab-home-black.png',
     '/static/tab-notify-black.png',
     '/static/tab-cate-black.png',
-    '/static/tab-my-black.png'] }],
+    '/static/tab-my-black.png'] }] };exports.default = _default;
 
+/***/ }),
 
+/***/ 172:
+/*!*********************************************************!*\
+  !*** D:/code/HBuilderProjects/通用办公系统示例/api/merchant.js ***!
+  \*********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
 
-  // 表情列表
-  emojiList: [{
-    url: '0',
-    alt: '[微笑]' },
 
-  {
-    url: '1',
-    alt: '[撇嘴]' },
-
-  {
-    url: '2',
-    alt: '[色]' },
-
-  {
-    url: '3',
-    alt: '[发呆]' },
-
-  {
-    url: '4',
-    alt: '[得意]' },
-
-  {
-    url: '5',
-    alt: '[流泪]' },
-
-  {
-    url: '6',
-    alt: '[害羞]' },
-
-  {
-    url: '7',
-    alt: '[闭嘴]' },
-
-  {
-    url: '8',
-    alt: '[睡]' },
-
-  {
-    url: '9',
-    alt: '[大哭]' },
-
-  {
-    url: '10',
-    alt: '[尴尬]' },
-
-  {
-    url: '11',
-    alt: '[发怒]' },
-
-  {
-    url: '12',
-    alt: '[调皮]' },
-
-  {
-    url: '13',
-    alt: '[呲牙]' },
-
-  {
-    url: '14',
-    alt: '[惊讶]' },
-
-  {
-    url: '15',
-    alt: '[难过]' },
-
-  {
-    url: '16',
-    alt: '[酷]' },
-
-  {
-    url: '17',
-    alt: '[冷汗]' },
-
-  {
-    url: '18',
-    alt: '[抓狂]' },
-
-  {
-    url: '19',
-    alt: '[吐]' },
-
-  {
-    url: '20',
-    alt: '[偷笑]' },
-
-  {
-    url: '21',
-    alt: '[愉快]' },
-
-  {
-    url: '22',
-    alt: '[白眼]' },
-
-  {
-    url: '23',
-    alt: '[傲慢]' },
-
-  {
-    url: '24',
-    alt: '[饥饿]' },
-
-  {
-    url: '25',
-    alt: '[困]' },
-
-  {
-    url: '26',
-    alt: '[惊恐]' },
-
-  {
-    url: '27',
-    alt: '[流汗]' },
-
-  {
-    url: '28',
-    alt: '[憨笑]' },
-
-  {
-    url: '29',
-    alt: '[悠闲]' },
-
-  {
-    url: '30',
-    alt: '[奋斗]' },
-
-  {
-    url: '31',
-    alt: '[咒骂]' },
-
-  {
-    url: '32',
-    alt: '[疑问]' },
-
-  {
-    url: '33',
-    alt: '[嘘]' },
-
-  {
-    url: '34',
-    alt: '[晕]' },
-
-  {
-    url: '35',
-    alt: '[疯了]' },
-
-  {
-    url: '36',
-    alt: '[衰]' },
-
-  {
-    url: '37',
-    alt: '[骷髅]' },
-
-  {
-    url: '38',
-    alt: '[敲打]' },
-
-  {
-    url: '39',
-    alt: '[再见]' },
-
-  {
-    url: '40',
-    alt: '[擦汗]' },
-
-  {
-    url: '41',
-    alt: '[抠鼻]' },
-
-  {
-    url: '42',
-    alt: '[鼓掌]' },
-
-  {
-    url: '43',
-    alt: '[糗大了]' },
-
-  {
-    url: '44',
-    alt: '[坏笔]' },
-
-  {
-    url: '45',
-    alt: '[左哼哼]' },
-
-  {
-    url: '46',
-    alt: '[右哼哼]' },
-
-  {
-    url: '47',
-    alt: '[哈欠]' },
-
-  {
-    url: '48',
-    alt: '[鄙视]' },
-
-  {
-    url: '49',
-    alt: '[委屈]' },
-
-  {
-    url: '50',
-    alt: '[快哭了]' },
-
-  {
-    url: '51',
-    alt: '[阴险]' },
-
-  {
-    url: '52',
-    alt: '[亲亲]' },
-
-  {
-    url: '53',
-    alt: '[吓]' },
-
-  {
-    url: '54',
-    alt: '[可怜]' },
-
-  {
-    url: '55',
-    alt: '[菜刀]' },
-
-  {
-    url: '56',
-    alt: '[西瓜]' },
-
-  {
-    url: '57',
-    alt: '[啤酒]' },
-
-  {
-    url: '58',
-    alt: '[篮球]' },
-
-  {
-    url: '59',
-    alt: '[乒乓]' },
-
-  {
-    url: '60',
-    alt: '[咖啡]' },
-
-  {
-    url: '61',
-    alt: '[饭]' },
-
-  {
-    url: '62',
-    alt: '[猪头]' },
-
-  {
-    url: '63',
-    alt: '[玫瑰]' },
-
-  {
-    url: '64',
-    alt: '[凋谢]' },
-
-  {
-    url: '65',
-    alt: '[嘴唇]' },
-
-  {
-    url: '66',
-    alt: '[爱心]' },
-
-  {
-    url: '67',
-    alt: '[心碎]' },
-
-  {
-    url: '68',
-    alt: '[蛋糕]' },
-
-  {
-    url: '69',
-    alt: '[闪电]' },
-
-  {
-    url: '70',
-    alt: '[炸弹]' },
-
-  {
-    url: '71',
-    alt: '[刀]' },
-
-  {
-    url: '72',
-    alt: '[足球]' },
-
-  {
-    url: '73',
-    alt: '[瓢虫]' },
-
-  {
-    url: '74',
-    alt: '[便便]' },
-
-  {
-    url: '75',
-    alt: '[月亮]' },
-
-  {
-    url: '76',
-    alt: '[太阳]' },
-
-  {
-    url: '77',
-    alt: '[礼物]' },
-
-  {
-    url: '78',
-    alt: '[拥抱]' },
-
-  {
-    url: '79',
-    alt: '[强]' },
-
-  {
-    url: '80',
-    alt: '[弱]' },
-
-  {
-    url: '81',
-    alt: '[握手]' },
-
-  {
-    url: '82',
-    alt: '[胜利]' },
-
-  {
-    url: '83',
-    alt: '[抱拳]' },
-
-  {
-    url: '84',
-    alt: '[勾引]' },
-
-  {
-    url: '85',
-    alt: '[拳头]' },
-
-  {
-    url: '86',
-    alt: '[差劲]' },
-
-  {
-    url: '87',
-    alt: '[爱您]' },
-
-  {
-    url: '88',
-    alt: '[NO]' },
-
-  {
-    url: '89',
-    alt: '[OK]' },
-
-  {
-    url: '90',
-    alt: '[爱情]' },
-
-  {
-    url: '91',
-    alt: '[飞吻]' },
-
-  {
-    url: '92',
-    alt: '[跳跳]' },
-
-  {
-    url: '93',
-    alt: '[发抖]' },
-
-  {
-    url: '94',
-    alt: '[怄火]' },
-
-  {
-    url: '95',
-    alt: '[转圈]' },
-
-  {
-    url: '96',
-    alt: '[磕头]' },
-
-  {
-    url: '97',
-    alt: '[回头]' },
-
-  {
-    url: '98',
-    alt: '[跳绳]' },
-
-  {
-    url: '99',
-    alt: '[投降]' },
-
-  {
-    url: '100',
-    alt: '[激动]' },
-
-  {
-    url: '101',
-    alt: '[乱舞]' },
-
-  {
-    url: '102',
-    alt: '[献吻]' },
-
-  {
-    url: '103',
-    alt: '[左太极]' },
-
-  {
-    url: '104',
-    alt: '[右太极]' }] };exports.default = _default;
 
 /***/ }),
 
@@ -5170,7 +4926,7 @@ Object.defineProperty(exports, "__esModule", { value: true });exports.default = 
   production: {
     assetsPath: '/static', // 静态资源路径
     baseUrl: 'https://192.168.1.234', // 后台接口请求地址
-    hostUrl: 'http://yyy.net', // H5地址(前端运行地址)
+    hostUrl: 'http://192.168.1.234', // H5地址(前端运行地址)
     websocketUrl: 'wss://localhost:9504', // websocket服务端地址
     weixinAppId: 'wx54722a5e85ac26a5' // 微信公众号appid
   } };var _default =
@@ -10707,7 +10463,7 @@ function type(obj) {
 
 function flushCallbacks$1(vm) {
     if (vm.__next_tick_callbacks && vm.__next_tick_callbacks.length) {
-        if (Object({"NODE_ENV":"development","VUE_APP_NAME":"通用办公系统","VUE_APP_PLATFORM":"mp-weixin","BASE_URL":"/"}).VUE_APP_DEBUG) {
+        if (Object({"NODE_ENV":"development","VUE_APP_NAME":"智慧党建","VUE_APP_PLATFORM":"mp-weixin","BASE_URL":"/"}).VUE_APP_DEBUG) {
             var mpInstance = vm.$scope;
             console.log('[' + (+new Date) + '][' + (mpInstance.is || mpInstance.route) + '][' + vm._uid +
                 ']:flushCallbacks[' + vm.__next_tick_callbacks.length + ']');
@@ -10728,14 +10484,14 @@ function nextTick$1(vm, cb) {
     //1.nextTick 之前 已 setData 且 setData 还未回调完成
     //2.nextTick 之前存在 render watcher
     if (!vm.__next_tick_pending && !hasRenderWatcher(vm)) {
-        if(Object({"NODE_ENV":"development","VUE_APP_NAME":"通用办公系统","VUE_APP_PLATFORM":"mp-weixin","BASE_URL":"/"}).VUE_APP_DEBUG){
+        if(Object({"NODE_ENV":"development","VUE_APP_NAME":"智慧党建","VUE_APP_PLATFORM":"mp-weixin","BASE_URL":"/"}).VUE_APP_DEBUG){
             var mpInstance = vm.$scope;
             console.log('[' + (+new Date) + '][' + (mpInstance.is || mpInstance.route) + '][' + vm._uid +
                 ']:nextVueTick');
         }
         return nextTick(cb, vm)
     }else{
-        if(Object({"NODE_ENV":"development","VUE_APP_NAME":"通用办公系统","VUE_APP_PLATFORM":"mp-weixin","BASE_URL":"/"}).VUE_APP_DEBUG){
+        if(Object({"NODE_ENV":"development","VUE_APP_NAME":"智慧党建","VUE_APP_PLATFORM":"mp-weixin","BASE_URL":"/"}).VUE_APP_DEBUG){
             var mpInstance$1 = vm.$scope;
             console.log('[' + (+new Date) + '][' + (mpInstance$1.is || mpInstance$1.route) + '][' + vm._uid +
                 ']:nextMPTick');
@@ -10821,7 +10577,7 @@ var patch = function(oldVnode, vnode) {
     });
     var diffData = this.$shouldDiffData === false ? data : diff(data, mpData);
     if (Object.keys(diffData).length) {
-      if (Object({"NODE_ENV":"development","VUE_APP_NAME":"通用办公系统","VUE_APP_PLATFORM":"mp-weixin","BASE_URL":"/"}).VUE_APP_DEBUG) {
+      if (Object({"NODE_ENV":"development","VUE_APP_NAME":"智慧党建","VUE_APP_PLATFORM":"mp-weixin","BASE_URL":"/"}).VUE_APP_DEBUG) {
         console.log('[' + (+new Date) + '][' + (mpInstance.is || mpInstance.route) + '][' + this._uid +
           ']差量更新',
           JSON.stringify(diffData));
@@ -11281,2851 +11037,7 @@ Object.defineProperty(exports, "__esModule", { value: true });exports.default = 
 
 /***/ }),
 
-/***/ 21:
-/*!*******************************************************************!*\
-  !*** D:/code/HBuilderProjects/通用办公系统示例/config/formRule.config.js ***!
-  \*******************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });exports.default = void 0; /*
-                                                                                                      * 应用表单校验相关配置
-                                                                                                      * 依赖：graceChecker.js 进行校验
-                                                                                                      *
-                                                                                                      * 使用：引入该js到页面，let res = graceChecker.check({phoneNo:"",code:""},formRule.loginRule)
-                                                                                                      */var _default =
-
-{
-  /* 用户密码登录 */
-  loginByPassRule: [{
-    name: 'mobile',
-    checkType: 'notnull',
-    checkRule: '',
-    errorMsg: '手机号不能为空' },
-  {
-    name: 'mobile',
-    checkType: 'phoneno',
-    checkRule: '',
-    errorMsg: '手机号格式不正确' },
-  {
-    name: 'password',
-    checkType: 'string',
-    checkRule: '6,18',
-    errorMsg: '请输入6-18位密码' }],
-
-
-  /* 用户验证码登录 */
-  loginByCodeRule: [{
-    name: 'mobile',
-    checkType: 'notnull',
-    checkRule: '',
-    errorMsg: '手机号不能为空' },
-  {
-    name: 'mobile',
-    checkType: 'phoneno',
-    checkRule: '',
-    errorMsg: '手机号格式不正确' },
-  {
-    name: 'code',
-    checkType: 'string',
-    checkRule: '4',
-    errorMsg: '请输入4位验证码' }],
-
-
-  /* 发送验证码验证手机号 */
-  sendCodeRule: [{
-    name: 'mobile',
-    checkType: 'notnull',
-    checkRule: '',
-    errorMsg: '手机号不能为空' },
-  {
-    name: 'mobile',
-    checkType: 'phoneno',
-    checkRule: '',
-    errorMsg: '手机号格式不正确' }],
-
-
-  /* 编辑新增个人发票 */
-  pInvoiceRule: [{
-    name: 'title',
-    checkType: 'notnull',
-    checkRule: '',
-    errorMsg: '发票抬头不能为空' }],
-
-
-  /* 编辑新增公司发票 */
-  cInvoiceRule: [{
-    name: 'title',
-    checkType: 'notnull',
-    checkRule: '',
-    errorMsg: '发票抬头不能为空' },
-  {
-    name: 'duty_paragraph',
-    checkType: 'notnull',
-    checkRule: '',
-    errorMsg: '发票税号不能为空' }],
-
-
-  /* 用户注册 */
-  registerRule: [{
-    name: 'mobile',
-    checkType: 'notnull',
-    checkRule: '',
-    errorMsg: '手机号不能为空' },
-  {
-    name: 'mobile',
-    checkType: 'phoneno',
-    checkRule: '',
-    errorMsg: '手机号格式不正确' },
-  {
-    name: 'code',
-    checkType: 'string',
-    checkRule: '4',
-    errorMsg: '请输入4位验证码' },
-  {
-    name: 'password',
-    checkType: 'string',
-    checkRule: '6,18',
-    errorMsg: '请输入6-18位密码' }],
-
-
-
-  /* 密码重置 */
-  resetPasswordRule: [{
-    name: 'mobile',
-    checkType: 'notnull',
-    checkRule: '',
-    errorMsg: '手机号不能为空' },
-  {
-    name: 'mobile',
-    checkType: 'phoneno',
-    checkRule: '',
-    errorMsg: '手机号格式不正确' },
-  {
-    name: 'code',
-    checkType: 'string',
-    checkRule: '4',
-    errorMsg: '请输入4位验证码' },
-  {
-    name: 'password',
-    checkType: 'string',
-    checkRule: '6,18',
-    errorMsg: '请输入6-18位密码' }] };exports.default = _default;
-
-/***/ }),
-
-/***/ 22:
-/*!********************************************************************!*\
-  !*** D:/code/HBuilderProjects/通用办公系统示例/config/websocket.config.js ***!
-  \********************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });exports.default = void 0; /*
-                                                                                                      * websocket 请求路由说明
-                                                                                                      * 连接成功后会发送一个 fd 回来，为自己的客户端id，注意保存，后续以这个判断消息是自己发的还是别人发的
-                                                                                                      *
-                                                                                                      * 公共状态码说明
-                                                                                                      * 1006: 意外断开
-                                                                                                      * 2000: OK。一切正常
-                                                                                                      * 2001: 连接成功
-                                                                                                      * 2002: 心跳成功
-                                                                                                      * 2003: 排队中
-                                                                                                      * 2004: 排队成功
-                                                                                                      * 2005: xxx客服为您服务
-                                                                                                      * 2006: xxx用户来了
-                                                                                                      * 4000: 客户端未响应连接关闭数据，无效的操作参数，等等
-                                                                                                      * 4001: 用户验证失败
-                                                                                                      * 4002: 正常报错提示
-                                                                                                      * 4004: 所请求的资源不存在
-                                                                                                      * 4101: 已在别处登录
-                                                                                                      * 4102: 用户已离线
-                                                                                                      * 4103: 当前接待人数过多
-                                                                                                      * 4104: 客服不在线
-                                                                                                      * 5000: 内部服务器错误。 这可能是由于内部程序错误引起的。
-                                                                                                      *
-                                                                                                      */var _default =
-
-{
-  // 登录
-  login: 'site.login',
-
-  // 客服列表
-  serviceIndex: 'service.index',
-
-  // 连接客服
-  queueUpMatching: 'queueUp.matching',
-
-  // 排队查询
-  queueUpIndex: 'queueUp.index',
-
-  // 发送消息
-  serviceMessage: 'service.message',
-
-  // 主动结束会话
-  memberClose: 'member.close',
-
-  // 客服转接[只接收]
-  bubbleTransferring: 'bubble.transferring',
-
-  // 被客服结束会话[只接收]
-  bubbleClose: 'bubble.close',
-
-  // 当前会话历史消息
-  memberConversation: 'member.conversation',
-
-  // 自动回复 发送消息
-  ruleMessage: 'rule.message',
-
-  // 心跳
-  ping: 'site.ping' };exports.default = _default;
-
-/***/ }),
-
-/***/ 23:
-/*!******************************************************************!*\
-  !*** D:/code/HBuilderProjects/通用办公系统示例/config/setting.config.js ***!
-  \******************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });exports.default = void 0;var _assets = _interopRequireDefault(__webpack_require__(/*! ./assets.config */ 18));
-var _constData = _interopRequireDefault(__webpack_require__(/*! ./constData.config */ 17));function _interopRequireDefault(obj) {return obj && obj.__esModule ? obj : { default: obj };}function _classCallCheck(instance, Constructor) {if (!(instance instanceof Constructor)) {throw new TypeError("Cannot call a class as a function");}}function _defineProperties(target, props) {for (var i = 0; i < props.length; i++) {var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);}}function _createClass(Constructor, protoProps, staticProps) {if (protoProps) _defineProperties(Constructor.prototype, protoProps);if (staticProps) _defineProperties(Constructor, staticProps);return Constructor;}var
-Setting = /*#__PURE__*/function () {
-  function Setting(
-  appName,
-  appLogo,
-  appServiceType,
-  appServiceQr,
-  appAgreementDefaultSelect,
-  isOpenCommission,
-  isOpenScan,
-  isOpenLiveStreaming,
-  styleLoadingIsOpen,
-  styleLoadingType,
-  styleUserIsOpen,
-  styleType,
-  isOpenRecharge,
-  isOpenIndexCate,
-  isOpenSite,
-  productPosterTitle,
-  productPosterCoverType,
-  closeLogin,
-  closeRegister,
-  closeThirdPartyLogin,
-  closeSiteDate,
-  closeSiteExplain,
-  styleCateType,
-  styleLoginType,
-  productPosterQrType,
-  closeRegisterPromoCode)
-  {_classCallCheck(this, Setting);
-    this._appName = appName; // 应用名称
-    this._appLogo = appLogo; // 应用Logo
-    this._appServiceType = appServiceType; // 客服显示类型
-    this._appServiceQr = appServiceQr; // 客服二维码
-    this._appAgreementDefaultSelect = appAgreementDefaultSelect; // 协议默认选中
-    // this._isOpenCommission = isOpenCommission; // 开启分销
-    this._isOpenScan = isOpenScan; // 开启扫一扫入口
-    this._isOpenLiveStreaming = isOpenLiveStreaming; // 开启直播入口
-    this._styleLoadingIsOpen = styleLoadingIsOpen; // 开启加载
-    this._styleLoadingType = styleLoadingType; // 用户可否自定义风格
-    this._styleUserIsOpen = styleUserIsOpen; // 加载类型
-    this._styleType = styleType; // 加载类型
-    this._isOpenRecharge = isOpenRecharge; // 充值入口开启
-    this._isOpenIndexCate = isOpenIndexCate; // 首页分类开启
-    this._isOpenSite = isOpenSite; // 开放站点
-    this._productPosterTitle = productPosterTitle; // 商品海报推广语
-    this._productPosterCoverType = productPosterCoverType; // 左上角头像显示类型
-    this._closeLogin = closeLogin; // 关闭登录
-    this._closeRegister = closeRegister; // 关闭注册
-    this._closeThirdPartyLogin = closeThirdPartyLogin; // 关闭第三方授权登录
-    this._closeSiteExplain = closeSiteExplain; // 关闭站点说明
-    this._closeSiteDate = closeSiteDate; // 关闭站点时间
-    this._styleCateType = styleCateType; // 分类风格
-    this._styleLoginType = styleLoginType; // 登录注册页面风格
-    this._productPosterQrType = productPosterQrType; // 海报二维码显示类型
-    this._closeRegisterPromoCode = closeRegisterPromoCode; // 关闭注册激活码输入框
-  }_createClass(Setting, [{ key: "productPosterQrType", get: function get()
-
-    {
-      return this._productPosterQrType;
-    }, set: function set(
-
-    value) {
-      this._productPosterQrType = value;
-    } }, { key: "closeRegisterPromoCode", get: function get()
-
-    {
-      return this._closeRegisterPromoCode;
-    }, set: function set(
-
-    value) {
-      this._closeRegisterPromoCode = value;
-    } }, { key: "closeSiteDate", get: function get()
-
-    {
-      return this._closeSiteDate;
-    }, set: function set(
-
-    value) {
-      this._closeSiteDate = value;
-    } }, { key: "closeSiteExplain", get: function get()
-
-    {
-      return this._closeSiteExplain;
-    }, set: function set(
-
-    value) {
-      this._closeSiteExplain = value;
-    } }, { key: "styleCateType", get: function get()
-
-    {
-      return this._styleCateType;
-    }, set: function set(
-
-    value) {
-      this._styleCateType = value;
-    } }, { key: "styleLoginType", get: function get()
-
-    {
-      return this._styleLoginType;
-    }, set: function set(
-
-    value) {
-      this._styleLoginType = value;
-    } }, { key: "closeLogin", get: function get()
-
-    {
-      return this._closeLogin;
-    }, set: function set(
-
-    value) {
-      this._closeLogin = value;
-    } }, { key: "closeRegister", get: function get()
-
-    {
-      return this._closeRegister;
-    }, set: function set(
-
-    value) {
-      this._closeRegister = value;
-    } }, { key: "productPosterTitle", get: function get()
-
-    {
-      return this._productPosterTitle;
-    }, set: function set(
-
-    value) {
-      this._productPosterTitle = value;
-    } }, { key: "productPosterCoverType", get: function get()
-
-    {
-      return this._productPosterCoverType;
-    }, set: function set(
-
-    value) {
-      this._productPosterCoverType = value;
-    } }, { key: "closeThirdPartyLogin", get: function get()
-
-    {
-      return this._closeThirdPartyLogin;
-    }, set: function set(
-
-    value) {
-      this._closeThirdPartyLogin = value;
-    } }, { key: "isOpenSite", get: function get()
-
-    {
-      return this._isOpenSite;
-    }, set: function set(
-
-    value) {
-      this._isOpenSite = value;
-    } }, { key: "styleUserIsOpen", get: function get()
-
-    {
-      return this._styleUserIsOpen;
-    }, set: function set(
-
-    value) {
-      this._styleUserIsOpen = value;
-    } }, { key: "styleType", get: function get()
-
-    {
-      return this._styleType;
-    }, set: function set(
-
-    value) {
-      this._styleType = value;
-    } }, { key: "appName", get: function get()
-
-    {
-      return this._appName;
-    }, set: function set(
-
-    value) {
-      this._appName = value;
-    } }, { key: "appLogo", get: function get()
-
-    {
-      return this._appLogo;
-    }, set: function set(
-
-    value) {
-      this._appLogo = value;
-    } }, { key: "appServiceType", get: function get()
-
-    {
-      return this._appServiceType;
-    }, set: function set(
-
-    value) {
-      this._appServiceType = value;
-    } }, { key: "appServiceQr", get: function get()
-
-    {
-      return this._appServiceQr;
-    }, set: function set(
-
-    value) {
-      this._appServiceQr = value;
-    } }, { key: "appAgreementDefaultSelect", get: function get()
-
-    {
-      return this._appAgreementDefaultSelect;
-    }, set: function set(
-
-    value) {
-      this._appAgreementDefaultSelect = value;
-    } }, { key: "isOpenCommission", get: function get()
-
-    {
-      return this._isOpenCommission;
-    }, set: function set(
-
-    value) {
-      this._isOpenCommission = value;
-    } }, { key: "isOpenScan", get: function get()
-
-    {
-      return this._isOpenScan;
-    }, set: function set(
-
-    value) {
-      this._isOpenScan = value;
-    } }, { key: "isOpenLiveStreaming", get: function get()
-
-    {
-      return this._isOpenLiveStreaming;
-    }, set: function set(
-
-    value) {
-      this._isOpenLiveStreaming = value;
-    } }, { key: "styleLoadingIsOpen", get: function get()
-
-    {
-      return this._styleLoadingIsOpen;
-    }, set: function set(
-
-    value) {
-      this._styleLoadingIsOpen = value;
-    } }, { key: "styleLoadingType", get: function get()
-
-    {
-      return this._styleLoadingType;
-    }, set: function set(
-
-    value) {
-      this._styleLoadingType = value;
-    } }, { key: "isOpenRecharge", get: function get()
-
-    {
-      return this._isOpenRecharge;
-    }, set: function set(
-
-    value) {
-      this._isOpenRecharge = value;
-    } }, { key: "isOpenIndexCate", get: function get()
-
-    {
-      return this._isOpenIndexCate;
-    }, set: function set(
-
-    value) {
-      this._isOpenIndexCate = value;
-    } }]);return Setting;}();var _default =
-
-new Setting(
-_constData.default.appName,
-_assets.default.logo,
-'0',
-_assets.default.logo,
-true,
-true,
-true,
-true,
-true,
-'loop',
-true,
-'rf',
-false,
-true,
-true,
-'为您挑选了一个好物',
-'roundness',
-false,
-false,
-false,
-'',
-'系统正在维护中...',
-'one_two_three_cover',
-'one',
-'common_qr',
-true);exports.default = _default;
-
-/***/ }),
-
-/***/ 24:
-/*!****************************************************************!*\
-  !*** D:/code/HBuilderProjects/通用办公系统示例/utils/request/index.js ***!
-  \****************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-/* WEBPACK VAR INJECTION */(function(uni) {Object.defineProperty(exports, "__esModule", { value: true });exports.http = void 0;var _regenerator = _interopRequireDefault(__webpack_require__(/*! ./node_modules/@babel/runtime/regenerator */ 8));
-var _request = _interopRequireDefault(__webpack_require__(/*! ./request */ 25));
-var _login = __webpack_require__(/*! @/api/login */ 26);
-var _index = _interopRequireDefault(__webpack_require__(/*! @/config/index.config */ 19));
-var _helper = _interopRequireDefault(__webpack_require__(/*! @/utils/helper */ 27));
-var _store = _interopRequireDefault(__webpack_require__(/*! @/store */ 16));function _interopRequireDefault(obj) {return obj && obj.__esModule ? obj : { default: obj };}function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {try {var info = gen[key](arg);var value = info.value;} catch (error) {reject(error);return;}if (info.done) {resolve(value);} else {Promise.resolve(value).then(_next, _throw);}}function _asyncToGenerator(fn) {return function () {var self = this,args = arguments;return new Promise(function (resolve, reject) {var gen = fn.apply(self, args);function _next(value) {asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value);}function _throw(err) {asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err);}_next(undefined);});};}function ownKeys(object, enumerableOnly) {var keys = Object.keys(object);if (Object.getOwnPropertySymbols) {var symbols = Object.getOwnPropertySymbols(object);if (enumerableOnly) symbols = symbols.filter(function (sym) {return Object.getOwnPropertyDescriptor(object, sym).enumerable;});keys.push.apply(keys, symbols);}return keys;}function _objectSpread(target) {for (var i = 1; i < arguments.length; i++) {var source = arguments[i] != null ? arguments[i] : {};if (i % 2) {ownKeys(Object(source), true).forEach(function (key) {_defineProperty(target, key, source[key]);});} else if (Object.getOwnPropertyDescriptors) {Object.defineProperties(target, Object.getOwnPropertyDescriptors(source));} else {ownKeys(Object(source)).forEach(function (key) {Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key));});}}return target;}function _defineProperty(obj, key, value) {if (key in obj) {Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true });} else {obj[key] = value;}return obj;}
-
-var http = new _request.default();
-
-// request全局参数设置
-exports.http = http;http.setConfig(function (config) {
-  /* 设置全局配置 */
-  config.baseUrl = _index.default.baseUrl; /* 根域名不同 */
-  var systemInfo = uni.getSystemInfoSync();
-  var systemInfoHeaders = {
-    'device-name': systemInfo.brand, // 设备名称
-    width: systemInfo.screenWidth, // 屏幕宽度
-    height: systemInfo.screenHeight, // 屏幕高度
-    os: systemInfo.platform, // 客户端平台
-    'os-version': systemInfo.system // 操作系统版本
-  };
-  config.header = _objectSpread(_objectSpread({},
-  config.header),
-  systemInfoHeaders);
-
-  return config;
-});
-
-var isRefreshing = false;
-var requests = [];
-http.interceptor.request(
-function (config) {
-  /* 请求之前拦截器 */
-  config.header['Authorization'] = 'Bearer ' + uni.getStorageSync('accessToken') || false;
-  // 单商户
-  // config.header['merchant-id'] = uni.getStorageSync('merchantId') || 1;
-  return config;
-},
-function (error) {
-  return Promise.reject(error);
-});
-
-
-// 刷新refreshToken
-function handleRefreshToken(_x) {return _handleRefreshToken.apply(this, arguments);}function _handleRefreshToken() {_handleRefreshToken = _asyncToGenerator( /*#__PURE__*/_regenerator.default.mark(function _callee3(refresh_token) {var params;return _regenerator.default.wrap(function _callee3$(_context3) {while (1) {switch (_context3.prev = _context3.next) {case 0:
-            params = {};
-            params.group = _helper.default.platformGroupFilter();
-            params.refresh_token = refresh_token;_context3.next = 5;return (
-              http.post(_login.refreshToken, params).then( /*#__PURE__*/function () {var _ref2 = _asyncToGenerator( /*#__PURE__*/_regenerator.default.mark(function _callee2(r) {return _regenerator.default.wrap(function _callee2$(_context2) {while (1) {switch (_context2.prev = _context2.next) {case 0:
-                          _store.default.commit('login', r.data);
-                          isRefreshing = false;case 2:case "end":return _context2.stop();}}}, _callee2);}));return function (_x3) {return _ref2.apply(this, arguments);};}()));case 5:case "end":return _context3.stop();}}}, _callee3);}));return _handleRefreshToken.apply(this, arguments);}
-
-
-http.interceptor.response( /*#__PURE__*/function () {var _ref = _asyncToGenerator( /*#__PURE__*/_regenerator.default.mark(
-  function _callee(response) {return _regenerator.default.wrap(function _callee$(_context) {while (1) {switch (_context.prev = _context.next) {case 0:_context.t0 =
-
-            response.data.code;_context.next = _context.t0 ===
-            0 ? 3 : _context.t0 ===
-
-            200 ? 4 : _context.t0 ===
-
-            400 ? 5 : _context.t0 ===
-
-
-
-            401 ? 8 : _context.t0 ===
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-            405 ? 37 : _context.t0 ===
-
-
-            404 ? 39 : _context.t0 ===
-
-
-            429 ? 41 : _context.t0 ===
-
-
-            500 ? 43 : 45;break;case 3:return _context.abrupt("return", response.data);case 4:return _context.abrupt("return", response.data);case 5:_helper.default.toast('错误的请求');return _context.abrupt("return", Promise.reject(response.data.msg));case 8:isRefreshing = false; // refreshToken 的返回状态为401
-            if (!(response.config.url === _login.refreshToken)) {_context.next = 17;break;}uni.removeStorageSync('accessToken');_context.next = 13;return _store.default.commit('logout');case 13:uni.showModal({ content: '会话已过期，是否跳转登录页面？', success: function success(confirmRes) {if (confirmRes.confirm) {_helper.default.backToLogin();throw response.data.message;}} });return _context.abrupt("break", 47);case 17:if (_store.default.state.refreshToken) {_context.next = 25;break;}uni.removeStorageSync('accessToken');_context.next = 21;return _store.default.commit('logout');case 21:_helper.default.backToLogin(); // uni.showModal({
-            // 	content: '会话已过期，是否跳转登录页面？',
-            // 	success: confirmRes => {
-            // 		if (confirmRes.confirm) {
-            // 			mHelper.backToLogin();
-            // 			throw response.data.message;
-            // 		}
-            // 	}
-            // });
-            throw response.data.message;case 25:if (isRefreshing) {_context.next = 35;break;}isRefreshing = true; // 刷新token
-            _context.next = 29;return handleRefreshToken(_store.default.state.refreshToken, response);case 29:requests.forEach(function (cb) {return cb();});requests = [];isRefreshing = false;return _context.abrupt("return", http.request(response.config));case 35:return _context.abrupt("return", new Promise(function (resolve) {// 将resolve放进队列，用一个函数形式来保存，等token刷新后直接执行
-              requests.push(function () {resolve(http.request(response.config));});}));case 36:return _context.abrupt("break", 47);case 37:_helper.default.toast('当前操作不被允许');return _context.abrupt("return", Promise.reject(response.data.message));case 39:_helper.default.toast(response.data.message);return _context.abrupt("return", Promise.reject(response.data.message));case 41:_helper.default.toast('请求过多，先休息一下吧');return _context.abrupt("return", Promise.reject(response.data.message));case 43:_helper.default.toast('服务器打瞌睡了');return _context.abrupt("return", Promise.reject(response.data.message));case 45:_helper.default.toast(response.data.message);return _context.abrupt("return", Promise.reject(response.data.message));case 47:case "end":return _context.stop();}}}, _callee);}));return function (_x2) {return _ref.apply(this, arguments);};}(), function (error) {return error;});
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./node_modules/@dcloudio/uni-mp-weixin/dist/index.js */ 1)["default"]))
-
-/***/ }),
-
-/***/ 25:
-/*!******************************************************************!*\
-  !*** D:/code/HBuilderProjects/通用办公系统示例/utils/request/request.js ***!
-  \******************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-/* WEBPACK VAR INJECTION */(function(uni) {Object.defineProperty(exports, "__esModule", { value: true });exports.default = void 0;var _regenerator = _interopRequireDefault(__webpack_require__(/*! ./node_modules/@babel/runtime/regenerator */ 8));function _interopRequireDefault(obj) {return obj && obj.__esModule ? obj : { default: obj };}function ownKeys(object, enumerableOnly) {var keys = Object.keys(object);if (Object.getOwnPropertySymbols) {var symbols = Object.getOwnPropertySymbols(object);if (enumerableOnly) symbols = symbols.filter(function (sym) {return Object.getOwnPropertyDescriptor(object, sym).enumerable;});keys.push.apply(keys, symbols);}return keys;}function _objectSpread(target) {for (var i = 1; i < arguments.length; i++) {var source = arguments[i] != null ? arguments[i] : {};if (i % 2) {ownKeys(Object(source), true).forEach(function (key) {_defineProperty(target, key, source[key]);});} else if (Object.getOwnPropertyDescriptors) {Object.defineProperties(target, Object.getOwnPropertyDescriptors(source));} else {ownKeys(Object(source)).forEach(function (key) {Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key));});}}return target;}function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {try {var info = gen[key](arg);var value = info.value;} catch (error) {reject(error);return;}if (info.done) {resolve(value);} else {Promise.resolve(value).then(_next, _throw);}}function _asyncToGenerator(fn) {return function () {var self = this,args = arguments;return new Promise(function (resolve, reject) {var gen = fn.apply(self, args);function _next(value) {asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value);}function _throw(err) {asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err);}_next(undefined);});};}function _classCallCheck(instance, Constructor) {if (!(instance instanceof Constructor)) {throw new TypeError("Cannot call a class as a function");}}function _defineProperties(target, props) {for (var i = 0; i < props.length; i++) {var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);}}function _createClass(Constructor, protoProps, staticProps) {if (protoProps) _defineProperties(Constructor.prototype, protoProps);if (staticProps) _defineProperties(Constructor, staticProps);return Constructor;}function _defineProperty(obj, key, value) {if (key in obj) {Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true });} else {obj[key] = value;}return obj;} /**
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * Request 1.0.6
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * @Class Request
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * @description luch-request 1.0.6 http请求插件
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * @Author lu-ch
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * @Date 2020-03-17
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * @Email webwork.s@qq.com
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * http://ext.dcloud.net.cn/plugin?id=392
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      */var
-Request = /*#__PURE__*/function () {function Request() {var _this = this;_classCallCheck(this, Request);_defineProperty(this, "config",
-    {
-      baseUrl: '',
-      header: {
-        'content-type': 'application/json' },
-
-      method: 'GET',
-      dataType: 'json',
-
-      responseType: 'text',
-
-      custom: {} });_defineProperty(this, "interceptor",
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    {
-      /**
-       * @param {Request~requestCallback} cb - 请求之前拦截,接收一个函数（config, cancel）=> {return config}。第一个参数为全局config,第二个参数为函数，调用则取消本次请求。
-       */
-      request: function request(cb) {
-        if (cb) {
-          _this.requestBeforeFun = cb;
-        }
-      },
-      /**
-          * @param {Request~responseCallback} cb 响应拦截器，对响应数据做点什么
-          * @param {Request~responseErrCallback} ecb 响应拦截器，对响应错误做点什么
-          */
-      response: function response(cb, ecb) {
-        if (cb) {
-          _this.requestComFun = cb;
-        }
-        if (ecb) {
-          _this.requestComFail = ecb;
-        }
-      } });}_createClass(Request, [{ key: "requestBeforeFun", value: function requestBeforeFun(
-
-
-    config) {
-      return config;
-    } }, { key: "requestComFun", value: function requestComFun(
-
-    response) {
-      return response;
-    } }, { key: "requestComFail", value: function requestComFail(
-
-    response) {
-      return response;
-    }
-
-    /**
-       * 自定义验证器，如果返回true 则进入响应拦截器的响应成功函数(resolve)，否则进入响应拦截器的响应错误函数(reject)
-       * @param { Number } statusCode - 请求响应体statusCode（只读）
-       * @return { Boolean } 如果为true,则 resolve, 否则 reject
-       */ }, { key: "validateStatus", value: function validateStatus(
-    statusCode) {
-      return statusCode === 200;
-    }
-
-    /**
-       * @Function
-       * @param {Request~setConfigCallback} f - 设置全局默认配置
-       */ }, { key: "setConfig", value: function setConfig(
-    f) {
-      this.config = f(this.config);
-    }
-
-    /**
-       * @Function
-       * @param {Object} options - 请求配置项
-       * @prop {String} options.url - 请求路径
-       * @prop {Object} options.data - 请求参数
-       * @prop {Object} [options.responseType = config.responseType] [text|arraybuffer] - 响应的数据类型
-       * @prop {Object} [options.dataType = config.dataType] - 如果设为 json，会尝试对返回的数据做一次 JSON.parse
-       * @prop {Object} [options.header = config.header] - 请求header
-       * @prop {Object} [options.method = config.method] - 请求方法
-       * @returns {Promise<unknown>}
-       */ }, { key: "request", value: function () {var _request = _asyncToGenerator( /*#__PURE__*/_regenerator.default.mark(function _callee() {var _this2 = this;var options,_args = arguments;return _regenerator.default.wrap(function _callee$(_context) {while (1) {switch (_context.prev = _context.next) {case 0:
-                options = _args.length > 0 && _args[0] !== undefined ? _args[0] : {};
-                options.baseUrl = this.config.baseUrl;
-                options.dataType = options.dataType || this.config.dataType;
-
-                options.responseType = options.responseType || this.config.responseType;
-
-
-
-
-                options.url = options.url || '';
-                options.data = options.data || {};
-                options.params = options.params || {};
-                options.header = options.header || this.config.header;
-                options.method = options.method || this.config.method;
-                options.custom = _objectSpread(_objectSpread({}, this.config.custom), options.custom || {});
-
-
-
-
-
-
-                options.getTask = options.getTask || this.config.getTask;return _context.abrupt("return",
-                new Promise(function (resolve, reject) {
-                  var next = true;
-                  var cancel = function cancel() {var t = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'handle cancel';var config = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : options;
-                    var err = {
-                      errMsg: t,
-                      config: config };
-
-                    reject(err);
-                    next = false;
-                  };
-
-                  var handleRe = _objectSpread({}, _this2.requestBeforeFun(options, cancel));
-                  var _config = _objectSpread({}, handleRe);
-                  if (!next) return;
-                  var requestTask = uni.request({
-                    url: Request.mergeUrl(_config.url, _config.baseUrl, _config.params),
-                    data: _config.data,
-                    header: _config.header,
-                    method: _config.method,
-
-
-
-                    dataType: _config.dataType,
-
-                    responseType: _config.responseType,
-
-
-
-
-                    complete: function complete(response) {
-                      response.config = handleRe;
-                      if (_this2.validateStatus(response.statusCode)) {
-                        // 成功
-                        response = _this2.requestComFun(response);
-                        resolve(response);
-                      } else {
-                        response = _this2.requestComFail(response);
-                        reject(response);
-                      }
-                    } });
-
-                  if (handleRe.getTask) {
-                    handleRe.getTask(requestTask, handleRe);
-                  }
-                }));case 12:case "end":return _context.stop();}}}, _callee, this);}));function request() {return _request.apply(this, arguments);}return request;}() }, { key: "get", value: function get(
-
-
-    url) {var params = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-      var options = {};
-      options.params = params;
-      return this.request(_objectSpread({
-        url: url,
-        method: 'GET' },
-      options));
-
-    } }, { key: "post", value: function post(
-
-    url, data) {var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
-      return this.request(_objectSpread({
-        url: url,
-        data: data,
-        method: 'POST' },
-      options));
-
-    } }, { key: "put", value: function put(
-
-
-    url, data) {var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
-      return this.request(_objectSpread({
-        url: url,
-        data: data,
-        method: 'PUT' },
-      options));
-
-    } }, { key: "delete", value: function _delete(
-
-
-
-
-    url, data) {var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
-      return this.request(_objectSpread({
-        url: url,
-        data: data,
-        method: 'DELETE' },
-      options));
-
-    } }, { key: "connect", value: function connect(
-
-
-
-
-    url, data) {var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
-      return this.request(_objectSpread({
-        url: url,
-        data: data,
-        method: 'CONNECT' },
-      options));
-
-    } }, { key: "head", value: function head(
-
-
-
-
-    url, data) {var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
-      return this.request(_objectSpread({
-        url: url,
-        data: data,
-        method: 'HEAD' },
-      options));
-
-    } }, { key: "options", value: function options(
-
-
-
-
-    url, data) {var _options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
-      return this.request(_objectSpread({
-        url: url,
-        data: data,
-        method: 'OPTIONS' },
-      _options));
-
-    } }, { key: "trace", value: function trace(
-
-
-
-
-    url, data) {var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
-      return this.request(_objectSpread({
-        url: url,
-        data: data,
-        method: 'TRACE' },
-      options));
-
-    } }, { key: "upload", value: function upload(
-
-
-
-
-    url, _ref)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    {var _this3 = this;var filePath = _ref.filePath,name = _ref.name,header = _ref.header,_ref$formData = _ref.formData,formData = _ref$formData === void 0 ? {} : _ref$formData,_ref$custom = _ref.custom,custom = _ref$custom === void 0 ? {} : _ref$custom,_ref$params = _ref.params,params = _ref$params === void 0 ? {} : _ref$params,getTask = _ref.getTask;
-      return new Promise(function (resolve, reject) {
-        var next = true;
-        var globalHeader = _objectSpread({}, _this3.config.header);
-        delete globalHeader['content-type'];
-        delete globalHeader['Content-Type'];
-        var pubConfig = {
-          baseUrl: _this3.config.baseUrl,
-          url: url,
-
-
-
-          filePath: filePath,
-          method: 'UPLOAD',
-          name: name,
-          header: header || globalHeader,
-          formData: formData,
-          params: params,
-          custom: _objectSpread(_objectSpread({}, _this3.config.custom), custom),
-          getTask: getTask || _this3.config.getTask };
-
-
-
-
-
-
-        var cancel = function cancel() {var t = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'handle cancel';var config = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : pubConfig;
-          var err = {
-            errMsg: t,
-            config: config };
-
-          reject(err);
-          next = false;
-        };
-
-        var handleRe = _objectSpread({}, _this3.requestBeforeFun(pubConfig, cancel));
-        var _config = {
-          url: Request.mergeUrl(handleRe.url, handleRe.baseUrl, handleRe.params),
-
-
-
-          filePath: handleRe.filePath,
-          name: handleRe.name,
-          header: handleRe.header,
-          formData: handleRe.formData,
-          complete: function complete(response) {
-            response.config = handleRe;
-            if (typeof response.data === 'string') {
-              response.data = JSON.parse(response.data);
-            }
-            if (_this3.validateStatus(response.statusCode)) {
-              // 成功
-              response = _this3.requestComFun(response);
-              resolve(response);
-            } else {
-              response = _this3.requestComFail(response);
-              reject(response);
-            }
-          } };
-
-
-
-
-
-
-        if (!next) return;
-        var requestTask = uni.uploadFile(_config);
-        if (handleRe.getTask) {
-          handleRe.getTask(requestTask, handleRe);
-        }
-      });
-    } }, { key: "download", value: function download(
-
-    url) {var _this4 = this;var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-      return new Promise(function (resolve, reject) {
-        var next = true;
-        var pubConfig = {
-          baseUrl: _this4.config.baseUrl,
-          url: url,
-          method: 'DOWNLOAD',
-          header: options.header || _this4.config.header,
-          params: options.params || {},
-          custom: _objectSpread(_objectSpread({}, _this4.config.custom), options.custom || {}),
-          getTask: options.getTask || _this4.config.getTask };
-
-        var cancel = function cancel() {var t = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'handle cancel';var config = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : pubConfig;
-          var err = {
-            errMsg: t,
-            config: config };
-
-          reject(err);
-          next = false;
-        };
-
-        var handleRe = _objectSpread({}, _this4.requestBeforeFun(pubConfig, cancel));
-        if (!next) return;
-        var requestTask = uni.downloadFile({
-          url: Request.mergeUrl(handleRe.url, handleRe.baseUrl, handleRe.params),
-          header: handleRe.header,
-          complete: function complete(response) {
-            response.config = handleRe;
-            if (_this4.validateStatus(response.statusCode)) {
-              // 成功
-              response = _this4.requestComFun(response);
-              resolve(response);
-            } else {
-              response = _this4.requestComFail(response);
-              reject(response);
-            }
-          } });
-
-        if (handleRe.getTask) {
-          handleRe.getTask(requestTask, handleRe);
-        }
-      });
-    } }], [{ key: "posUrl", value: function posUrl(url) {/* 判断url是否为绝对路径 */return /(http|https):\/\/([\w.]+\/?)\S*/.test(url);} }, { key: "mergeUrl", value: function mergeUrl(url, baseUrl, params) {var mergeUrl = Request.posUrl(url) ? url : "".concat(baseUrl).concat(url);if (Object.keys(params).length !== 0) {var paramsH = Request.addQueryString(params);mergeUrl += mergeUrl.includes('?') ? "&".concat(paramsH) : "?".concat(paramsH);}return mergeUrl;} }, { key: "addQueryString", value: function addQueryString(params) {var paramsData = '';Object.keys(params).forEach(function (key) {paramsData += key + '=' + encodeURIComponent(params[key]) + '&';});return paramsData.substring(0, paramsData.length - 1);} /**
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * @property {Function} request 请求拦截器
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * @property {Function} response 响应拦截器
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * @type {{request: Request.interceptor.request, response: Request.interceptor.response}}
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      */ }]);return Request;}(); /**
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  * setConfig回调
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  * @return {Object} - 返回操作后的config
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  * @callback Request~setConfigCallback
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  * @param {Object} config - 全局默认config
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  */ /**
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * 请求拦截器回调
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * @return {Object} - 返回操作后的config
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * @callback Request~requestCallback
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * @param {Object} config - 全局config
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * @param {Function} [cancel] - 取消请求钩子，调用会取消本次请求
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      */ /**
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          * 响应拦截器回调
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          * @return {Object} - 返回操作后的response
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          * @callback Request~responseCallback
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          * @param {Object} response - 请求结果 response
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          */
-/**
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              * 响应错误拦截器回调
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              * @return {Object} - 返回操作后的response
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              * @callback Request~responseErrCallback
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              * @param {Object} response - 请求结果 response
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              */exports.default = Request;
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./node_modules/@dcloudio/uni-mp-weixin/dist/index.js */ 1)["default"]))
-
-/***/ }),
-
-/***/ 26:
-/*!******************************************************!*\
-  !*** D:/code/HBuilderProjects/通用办公系统示例/api/login.js ***!
-  \******************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });exports.refreshToken = exports.logout = exports.accountBind = exports.loginBySmsCode = exports.smsCode = exports.updatePassword = exports.authLogin = exports.thirdPartyApple = exports.thirdPartyWechatOpenPlatform = exports.mpWechatLogin = exports.wechatH5Login = exports.isBindingCheck = exports.loginByPass = exports.registerByPass = void 0; /**
-                                                                                                                                                                                                                                                                                                                                                                                                                                   *@des 登录注册相关接口
-                                                                                                                                                                                                                                                                                                                                                                                                                                   *@author hjp1011 21931118@qq.com
-                                                                                                                                                                                                                                                                                                                                                                                                                                   *@blog http://www.wephp.com
-                                                                                                                                                                                                                                                                                                                                                                                                                                   *@date 2019/11/15 15:14:47
-                                                                                                                                                                                                                                                                                                                                                                                                                                   *@param login.js
-                                                                                                                                                                                                                                                                                                                                                                                                                                   */
-
-// 密码注册
-var registerByPass = '/we-office/v1/site/register';
-
-// 密码登录
-exports.registerByPass = registerByPass;var loginByPass = '/we-office/v1/site/login';
-
-// 微信授权登录
-exports.loginByPass = loginByPass;var wechatH5Login = '/we-office/v1/third-party/wechat';
-
-// 微信小程序授权登录
-exports.wechatH5Login = wechatH5Login;var mpWechatLogin = '/we-office/v1/third-party/wechat-mp';
-
-// App微信授权登录
-exports.mpWechatLogin = mpWechatLogin;var thirdPartyWechatOpenPlatform = '/we-office/v1/third-party/wechat-open-platform';
-
-// Ios苹果扥估
-exports.thirdPartyWechatOpenPlatform = thirdPartyWechatOpenPlatform;var thirdPartyApple = '/we-office/v1/third-party/apple';
-
-// 密码重置
-exports.thirdPartyApple = thirdPartyApple;var updatePassword = '/we-office/v1/site/up-pwd';
-
-// 第三方绑定
-exports.updatePassword = updatePassword;var authLogin = '/we-office/v1/member/auth/create';
-
-// 查询绑定状态
-exports.authLogin = authLogin;var isBindingCheck = '/we-office/v1/member/auth/is-binding';
-
-// 手机号登录,获取token
-exports.isBindingCheck = isBindingCheck;var loginBySmsCode = '/auth/mobile/token/sms';
-
-// 获取手机验证码
-exports.loginBySmsCode = loginBySmsCode;var smsCode = '/admin/mobile/';
-
-// code 调用pigx 后台接口绑定
-exports.smsCode = smsCode;var accountBind = 'admin/social/bind';
-
-// 退出登录
-exports.accountBind = accountBind;var logout = '/we-office/v1/site/logout';
-
-// 刷新token
-exports.logout = logout;var refreshToken = '/we-office/v1/site/refresh';exports.refreshToken = refreshToken;
-
-/***/ }),
-
-/***/ 27:
-/*!*********************************************************!*\
-  !*** D:/code/HBuilderProjects/通用办公系统示例/utils/helper.js ***!
-  \*********************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-/* WEBPACK VAR INJECTION */(function(uni) {Object.defineProperty(exports, "__esModule", { value: true });exports.default = void 0;var _regenerator = _interopRequireDefault(__webpack_require__(/*! ./node_modules/@babel/runtime/regenerator */ 8));
-var _router = _interopRequireDefault(__webpack_require__(/*! @/utils/router */ 28));
-var _constData = _interopRequireDefault(__webpack_require__(/*! @/config/constData.config */ 17));
-var _store = _interopRequireDefault(__webpack_require__(/*! @/store */ 16));
-var _share = _interopRequireDefault(__webpack_require__(/*! @/utils/share */ 29));
-
-
-
-
-var _request = __webpack_require__(/*! @/utils/request */ 24);
-var _basic = __webpack_require__(/*! @/api/basic */ 11);function _interopRequireDefault(obj) {return obj && obj.__esModule ? obj : { default: obj };}function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {try {var info = gen[key](arg);var value = info.value;} catch (error) {reject(error);return;}if (info.done) {resolve(value);} else {Promise.resolve(value).then(_next, _throw);}}function _asyncToGenerator(fn) {return function () {var self = this,args = arguments;return new Promise(function (resolve, reject) {var gen = fn.apply(self, args);function _next(value) {asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value);}function _throw(err) {asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err);}_next(undefined);});};}
-//常用方法集合
-var _default = {
-  /**
-                  * toast提示
-                  */
-  toast: function toast(title) {var duration = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 3000;var mask = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;var icon = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 'none';
-    if (Boolean(title) === false) {
-      return;
-    }
-    uni.showToast({
-      title: title,
-      duration: duration,
-      mask: mask,
-      icon: icon });
-
-  },
-  /**
-      * 返回登录页面
-      */
-  backToLogin: function backToLogin() {return _asyncToGenerator( /*#__PURE__*/_regenerator.default.mark(function _callee() {var currentPage, params;return _regenerator.default.wrap(function _callee$(_context) {while (1) {switch (_context.prev = _context.next) {case 0:
-              // 存当前页面的地址
-              currentPage = getCurrentPages()[getCurrentPages().length - 1];
-              params = {};
-
-
-
-
-
-              params.route = "/".concat(currentPage.$vm.__route__);
-              params.query = currentPage.$vm.$mp && currentPage.$vm.$mp.query;
-
-
-
-
-
-              uni.setStorageSync('backToPage', JSON.stringify(params));
-              uni.removeTabBarBadge({ index: _constData.default.worksIndex });
-              uni.removeTabBarBadge({ index: _constData.default.notifyIndex });_context.next = 9;return (
-                _store.default.commit('logout'));case 9:
-              _router.default.push({ route: '/pages/public/login' });case 10:case "end":return _context.stop();}}}, _callee);}))();
-  },
-  /**
-      * 返回上一页携带参数
-      */
-  prePage: function prePage(index) {
-    var pages = getCurrentPages();
-    var prePage = pages[pages.length - (index || 2)];
-
-
-
-    return prePage.$vm;
-  },
-  /**
-      * 开发环境全局打印日志
-      * @param {Object} title
-      */
-  log: function log(title) {
-    if ( true && Boolean(title) === true) {
-      console.log(JSON.stringify(title));
-    }
-  },
-  /**
-      * 异步获取设备信息
-      */
-  getInfoAsync: function getInfoAsync() {
-    return new Promise(function (resolve, reject) {
-      plus.device.getInfo({
-        success: function success(e) {
-          resolve(e);
-        },
-        fail: function fail(e) {
-          reject(e.message);
-        } });
-
-    });
-  },
-  /**
-      * 安卓10不支持IMEI,则获取OAID
-      */
-  getOaidAsync: function getOaidAsync() {
-    return new Promise(function (resolve, reject) {
-      plus.device.getOAID({
-        success: function success(e) {
-          resolve(e);
-        },
-        fail: function fail(e) {
-          reject(e.message);
-        } });
-
-    });
-  },
-  /**
-      * 获取一个随机数
-      * @param {Object} min
-      * @param {Object} max
-      */
-  random: function random(min, max) {
-    switch (arguments.length) {
-      case 1:
-        return parseInt(Math.random() * min + 1, 10);
-        break;
-      case 2:
-        return parseInt(Math.random() * (max - min + 1) + min, 10);
-        break;
-      default:
-        return 0;
-        break;}
-
-  },
-  /**
-      * 获取ios的IDFA
-      */
-  getIdfa: function getIdfa() {
-    var idfa = '';
-    try {
-      if ('iOS' == plus.os.name) {
-        var manager = plus.ios.invoke('ASIdentifierManager', 'sharedManager');
-        if (plus.ios.invoke(manager, 'isAdvertisingTrackingEnabled')) {
-          var identifier = plus.ios.invoke(manager, 'advertisingIdentifier');
-          idfa = plus.ios.invoke(identifier, 'UUIDString');
-          plus.ios.deleteObject(identifier);
-        }
-        plus.ios.deleteObject(manager);
-      }
-    } catch (e) {
-      console.error('获取idfa失败');
-    }
-    return idfa;
-  },
-  /*
-      * obj 转 params字符串参数
-      * 例子：{a:1,b:2} => a=1&b=2
-      */
-  objParseParam: function objParseParam(obj) {
-    var paramsStr = '';
-    if (obj instanceof Array) return paramsStr;
-    if (!(obj instanceof Object)) return paramsStr;
-    for (var key in obj) {
-      paramsStr += "".concat(key, "=").concat(obj[key], "&");
-    }
-    return paramsStr.substring(0, paramsStr.length - 1);
-  },
-  /*
-      * obj 转 路由地址带参数
-      * 例子：{a:1,b:2} => /pages/index/index?a=1&b=2
-      */
-  objParseUrlAndParam: function objParseUrlAndParam(path, obj) {
-    var url = path || '/';
-    var paramsStr = '';
-    if (obj instanceof Array) return url;
-    if (!(obj instanceof Object)) return url;
-    paramsStr = this.objParseParam(obj);
-    paramsStr && (url += '?');
-    url += paramsStr;
-    return url;
-  },
-  /*
-      * 获取url字符串参数
-      */
-  getRequestParameters: function getRequestParameters(locationhref) {
-    var href = locationhref || '';
-    var theRequest = new Object();
-    var str = href.split('?')[1];
-    if (str != undefined) {
-      var strs = str.split('&');
-      for (var i = 0; i < strs.length; i++) {
-        theRequest[strs[i].split('=')[0]] = strs[i].split('=')[1];
-      }
-    }
-    return theRequest;
-  },
-  /**
-      * 加密字符串
-      */
-  strEncode: function strEncode(str) {
-    var key = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    var l = key.length;
-    var a = key.split('');
-    var s = '',
-    b,
-    b1,
-    b2,
-    b3;
-    for (var i = 0; i < str.length; i++) {
-      b = str.charCodeAt(i);
-      b1 = b % l;
-      b = (b - b1) / l;
-      b2 = b % l;
-      b = (b - b2) / l;
-      b3 = b % l;
-      s += a[b3] + a[b2] + a[b1];
-    }
-    return s;
-  },
-  /**
-      * 解密字符串
-      */
-  strDecode: function strDecode(str) {
-    var key = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    var l = key.length;
-    var b,
-    b1,
-    b2,
-    b3,
-    d = 0,
-    s;
-    s = new Array(Math.floor(str.length / 3));
-    b = s.length;
-    for (var i = 0; i < b; i++) {
-      b1 = key.indexOf(str.charAt(d));
-      d++;
-      b2 = key.indexOf(str.charAt(d));
-      d++;
-      b3 = key.indexOf(str.charAt(d));
-      d++;
-      s[i] = b1 * l * l + b2 * l + b3;
-    }
-    b = eval('String.fromCharCode(' + s.join(',') + ')');
-    return b;
-  },
-  /**
-      * 比较版本号
-      */
-  compareVersion: function compareVersion(reqV, curV) {
-    if (curV && reqV) {
-      var arr1 = curV.split('.'),
-      arr2 = reqV.split('.');
-      var minLength = Math.min(arr1.length, arr2.length),
-      position = 0,
-      diff = 0;
-      while (
-      position < minLength &&
-      (diff = parseInt(arr1[position]) - parseInt(arr2[position])) == 0)
-      {
-        position++;
-      }
-      diff = diff != 0 ? diff : arr1.length - arr2.length;
-      if (diff > 0) {
-        if (position == minLength - 1) {
-          return 1;
-        } else {
-          return 2;
-        }
-      } else {
-        return 0;
-      }
-    } else {
-      return 0;
-    }
-  },
-  /**
-      * H5复制
-      */
-  h5Copy: function h5Copy(content) {
-    var textarea = document.createElement('textarea');
-    textarea.value = content;
-    textarea.readOnly = 'readOnly';
-    document.body.appendChild(textarea);
-    textarea.select(); // 选择对象
-    textarea.setSelectionRange(0, content.length); //核心
-    var result = document.execCommand('Copy'); // 执行浏览器复制命令
-    textarea.remove();
-    var msg = result ? '复制成功' : '复制失败';
-    this.toast(msg);
-  },
-  /**
-      * app分享
-      */
-  handleAppShare: function handleAppShare(shareUrl, shareTitle, shareContent, shareImg) {
-    var shareData = {
-      shareUrl: shareUrl,
-      shareTitle: shareTitle,
-      shareContent: shareContent,
-      shareImg: shareImg };
-
-    (0, _share.default)(shareData, function (res) {});
-  },
-
-  handleWxH5Share: function handleWxH5Share(title, desc, link, imgUrl) {return _asyncToGenerator( /*#__PURE__*/_regenerator.default.mark(function _callee2() {return _regenerator.default.wrap(function _callee2$(_context2) {while (1) {switch (_context2.prev = _context2.next) {case 0:case "end":return _context2.stop();}}}, _callee2);}))();
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  },
-
-  // 去掉字符串中的空格
-  trim: function trim(str) {
-    if (!str) {
-      return '';
-    }
-    return str.replace(/\s*/g, '');
-  },
-
-  // 判断两个对象是否相同
-  isObjectValueEqual: function isObjectValueEqual(x, y) {
-    // 指向同一内存时
-    if (x === y) {
-      return true;
-    } else if (
-    typeof x == 'object' &&
-    x != null &&
-    typeof y == 'object' && y != null)
-    {
-      if (Object.keys(x).length != Object.keys(y).length) return false;
-
-      for (var prop in x) {
-        if (y.hasOwnProperty(prop)) {
-          if (!this.isObjectValueEqual(x[prop], y[prop])) return false;
-        } else return false;
-      }
-
-      return true;
-    } else return false;
-  },
-
-  platformGroupFilter: function platformGroupFilter() {
-    var platformGroup = 'tinyShop';
-
-
-
-
-
-
-
-
-
-
-
-    platformGroup = 'wechatMp';
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    return platformGroup;
-  },
-
-  // 广告图跳转封装
-  handleBannerNavTo: function handleBannerNavTo(data, id, advId) {
-    var url;
-    _request.http.get(_basic.advView, { id: advId });
-    switch (data) {
-      case 'notify_announce_view': // 公告详情
-        url = "/pages/index/notice/detail?id=".concat(id);
-        break;
-      case 'product_view': // 产品详情
-        url = "/pages/product/product?id=".concat(id);
-        break;
-      case 'combination_view': // 某分类下产品列表
-        url = "/pages/marketing/combination/list?id=".concat(id);
-        break;
-      case 'coupon_view': // 优惠券详情
-        url = "/pages/user/coupon/detail?id=".concat(id);
-        break;
-      case 'helper_view': // 站点帮助详情
-        url = '/pages/set/helper/index';
-        break;
-      case 'bargain_list': // 砍价列表
-        url = '/pages/marketing/bargain/list';
-        break;
-      case 'discount_list': // 限时折扣
-        url = '/pages/marketing/discount/list';
-        break;
-      case 'group_buy_list': // 团购列表
-        url = '/pages/marketing/group/list';
-        break;
-      case 'wholesale_list': // 拼团列表
-        url = '/pages/marketing/wholesale/list';
-        break;
-      case 'product_list_for_cate': // 某分类下产品列表
-        url = "/pages/product/list?cate_id=".concat(id);
-        break;
-      case 'mini_program_live_view': // 跳转至带货直播间
-
-        url = "plugin-private://wx2b03c6e691cd7370/pages/live-player-plugin?room_id=".concat([id]);
-
-
-
-
-        break;
-      default:
-        break;}
-
-    if (url) {
-      _router.default.push({ route: url });
-    }
-  } };exports.default = _default;
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./node_modules/@dcloudio/uni-mp-weixin/dist/index.js */ 1)["default"]))
-
-/***/ }),
-
-/***/ 28:
-/*!*********************************************************!*\
-  !*** D:/code/HBuilderProjects/通用办公系统示例/utils/router.js ***!
-  \*********************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-/* WEBPACK VAR INJECTION */(function(uni) {Object.defineProperty(exports, "__esModule", { value: true });exports.default = void 0;function _classCallCheck(instance, Constructor) {if (!(instance instanceof Constructor)) {throw new TypeError("Cannot call a class as a function");}}function _defineProperties(target, props) {for (var i = 0; i < props.length; i++) {var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);}}function _createClass(Constructor, protoProps, staticProps) {if (protoProps) _defineProperties(Constructor.prototype, protoProps);if (staticProps) _defineProperties(Constructor, staticProps);return Constructor;} /*
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   * 路由对象
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   * 中心思想：需要路由鉴权,由于uni-app没有vue中的全局钩子函数，所以封装了Router对象。
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   * 说明：应用中的路由跳转尽量使用该Router的方法，并配合config中的路由表对象进行跳转。
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   *
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   * 示例：this.$mRouter.push({route:this.$mRoutesConfig.main,query:{a:1}})
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   *
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   */var
-Router = /*#__PURE__*/function () {
-  function Router() {_classCallCheck(this, Router);
-    this.callBack = function () {};
-  }_createClass(Router, [{ key: "beforeEach", value: function beforeEach(
-
-    callBack) {
-      if (callBack instanceof Function) this.callBack = callBack;
-    } }, { key: "push", value: function push(
-
-    to) {
-      this.callBack('navigateTo', to);
-    } }, { key: "redirectTo", value: function redirectTo(
-
-    to) {
-      this.callBack('redirectTo', to);
-    } }, { key: "reLaunch", value: function reLaunch(
-
-    to) {
-      this.callBack('reLaunch', to);
-    } }, { key: "switchTab", value: function switchTab(
-
-    to) {
-      this.callBack('switchTab', to);
-    } }, { key: "back", value: function back(
-
-    delta) {
-
-
-
-
-      uni.navigateBack({
-        delta: delta });
-
-
-    } }]);return Router;}();var _default =
-
-
-new Router();exports.default = _default;
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./node_modules/@dcloudio/uni-mp-weixin/dist/index.js */ 1)["default"]))
-
-/***/ }),
-
-/***/ 29:
-/*!********************************************************!*\
-  !*** D:/code/HBuilderProjects/通用办公系统示例/utils/share.js ***!
-  \********************************************************/
-/*! no static exports found */
-/***/ (function(module, exports) {
-
-/* eslint-disable */
-
-/***/ }),
-
-/***/ 291:
-/*!******************************************************************!*\
-  !*** D:/code/HBuilderProjects/通用办公系统示例/utils/native-nfc-util.js ***!
-  \******************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });exports.default = void 0;
-
-//nfc读取
-var NfcAdapter;
-var NdefRecord;
-var NdefMessage;
-
-//标识是否开始读取
-var readyRead = true;
-//回调函数
-var readback;
-
-function listenNFCStatus(readCallback) {
-  readback = readCallback;
-  try {
-    var main = plus.android.runtimeMainActivity();
-    var Intent = plus.android.importClass('android.content.Intent');
-    var Activity = plus.android.importClass('android.app.Activity');
-    var PendingIntent = plus.android.importClass('android.app.PendingIntent');
-    var IntentFilter = plus.android.importClass('android.content.IntentFilter');
-    NfcAdapter = plus.android.importClass('android.nfc.NfcAdapter');
-    var nfcAdapter = NfcAdapter.getDefaultAdapter(main);
-    var intent = new Intent(main, main.getClass());
-    intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-    var pendingIntent = PendingIntent.getActivity(main, 0, intent, 0);
-    var ndef = new IntentFilter("android.nfc.action.TECH_DISCOVERED");
-    ndef.addDataType("*/*");
-    var intentFiltersArray = [ndef];
-    var techListsArray = [
-    ["android.nfc.tech.IsoDep"],
-    ["android.nfc.tech.NfcA"],
-    ["android.nfc.tech.NfcB"],
-    ["android.nfc.tech.NfcF"],
-    ["android.nfc.tech.Nfcf"],
-    ["android.nfc.tech.NfcV"],
-    ["android.nfc.tech.NdefFormatable"],
-    ["android.nfc.tech.MifareClassi"],
-    ["android.nfc.tech.MifareUltralight"]];
-
-    plus.globalEvent.addEventListener("newintent",
-    function () {
-      console.error('newintent');
-      setTimeout(handle_nfc_data1, 1000);
-    }, false);
-    plus.globalEvent.addEventListener("pause", function (e) {
-      if (nfcAdapter) {
-        nfcAdapter.disableForegroundDispatch(main);
-        console.log('pause');
-      }
-    }, false);
-    plus.globalEvent.addEventListener("resume", function (e) {
-      if (nfcAdapter) {
-        console.log('resume');
-        nfcAdapter.enableForegroundDispatch(main, pendingIntent, intentFiltersArray, techListsArray);
-      }
-    }, false);
-    nfcAdapter.enableForegroundDispatch(main, pendingIntent, intentFiltersArray, techListsArray);
-  } catch (e) {
-    console.error(e);
-  }
-}
-
-function handle_nfc_data1()
-{
-  NdefRecord = plus.android.importClass("android.nfc.NdefRecord");
-  NdefMessage = plus.android.importClass("android.nfc.NdefMessage");
-  var main = plus.android.runtimeMainActivity();
-  var intent = main.getIntent();
-  console.log("action type:" + intent.getAction());
-  if ("android.nfc.action.TECH_DISCOVERED" == intent.getAction()) {
-    if (readyRead) {
-      __read(intent);
-      // readyRead = false;  
-    }
-  }
-}
-function showToast(msg) {
-  plus.nativeUI.toast(msg);
-}
-
-
-function __read(intent) {
-  try {
-    var content = "";
-    var tag = plus.android.importClass("android.nfc.Tag");
-    tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
-    var bytesId = intent.getByteArrayExtra(NfcAdapter.EXTRA_ID);
-    console.log("bytesId:" + bytesId);
-    content += "卡片字节数组ID：" + tag.getId() + "<br/>";
-    content += "卡片16进制ID：" + bytesToHexString(tag.getId()) + "<br/>";
-    var tagid = reverseTwo(bytesToHexString(tag.getId()));
-    content += "卡片16进制翻转ID：" + tagid + "<br/>";
-    content += "卡片10进制卡号：" + parseInt(tagid, 16) + "<br/>";
-    console.log("content:" + content);
-    readback(bytesToHexString(tag.getId()));
-  } catch (e) {
-    //TODO handle the exception
-  }
-
-}
-
-function bytesToHexString(inarray) {
-  var i, j, x;
-  var hex = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A",
-  "B", "C", "D", "E", "F"];
-  var out = "";
-  for (j = 0; j < inarray.length; ++j) {
-    x = parseInt(inarray[j]) & 0xff;
-    i = x >> 4 & 0x0f;
-    out += hex[i];
-    i = x & 0x0f;
-    out += hex[i];
-  }
-  return out;
-}
-
-function reverseTwo(str)
-{
-
-  var str1 = "";
-  for (var i = 1; i <= str.length; i++) {
-    str1 += str[i - 1];
-    if (i % 2 == 0) {
-      if (i == str.length) {
-        break;
-      }
-      str1 += ":";
-    }
-  }
-  var str2 = "";
-  for (var i = str1.split(":").length - 1; i >= 0; i--) {
-    str2 += str1.split(":")[i];
-  }
-  return str2;
-}var _default =
-
-
-
-{ listenNFCStatus: listenNFCStatus };exports.default = _default;
-
-/***/ }),
-
-/***/ 3:
-/*!***********************************!*\
-  !*** (webpack)/buildin/global.js ***!
-  \***********************************/
-/*! no static exports found */
-/***/ (function(module, exports) {
-
-var g;
-
-// This works in non-strict mode
-g = (function() {
-	return this;
-})();
-
-try {
-	// This works if eval is allowed (see CSP)
-	g = g || new Function("return this")();
-} catch (e) {
-	// This works if the window reference is available
-	if (typeof window === "object") g = window;
-}
-
-// g can still be undefined, but nothing to do about it...
-// We return undefined, instead of nothing here, so it's
-// easier to handle this case. if(!global) { ...}
-
-module.exports = g;
-
-
-/***/ }),
-
-/***/ 30:
-/*!***************************************************************!*\
-  !*** D:/code/HBuilderProjects/通用办公系统示例/utils/graceChecker.js ***!
-  \***************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports) {
-
-/* eslint-disable */
-/**
-                      *@des 表单验证
-                      *@author hjp1011 21931118@qq.com
-                      *@blog http://www.wephp.com
-                      *@date 2019/11/15 10:55:56
-                      */
-module.exports = {
-  error: '',
-  check: function check(data, rule) {
-    for (var i = 0; i < rule.length; i++) {
-      if (!rule[i].checkType) {
-        return true;
-      }
-      if (!rule[i].name) {
-        return true;
-      }
-      if (!rule[i].errorMsg) {
-        return true;
-      }
-      if (!data[rule[i].name]) {
-        this.error = rule[i].errorMsg;
-        return false;
-      }
-      switch (rule[i].checkType) {
-        case 'string':
-          var reg = new RegExp('^.{' + rule[i].checkRule + '}$');
-          if (!reg.test(data[rule[i].name])) {
-            this.error = rule[i].errorMsg;
-            return false;
-          }
-          break;
-        case 'int':
-          var reg = new RegExp(
-          '^(-[1-9]|[1-9])[0-9]{' + rule[i].checkRule + '}$');
-
-          if (!reg.test(data[rule[i].name])) {
-            this.error = rule[i].errorMsg;
-            return false;
-          }
-          break;
-          break;
-        case 'between':
-          if (!this.isNumber(data[rule[i].name])) {
-            this.error = rule[i].errorMsg;
-            return false;
-          }
-          var minMax = rule[i].checkRule.split(',');
-          minMax[0] = Number(minMax[0]);
-          minMax[1] = Number(minMax[1]);
-          if (
-          data[rule[i].name] > minMax[1] ||
-          data[rule[i].name] < minMax[0])
-          {
-            this.error = rule[i].errorMsg;
-            return false;
-          }
-          break;
-        case 'betweenD':
-          var reg = /^-?[1-9][0-9]?$/;
-          if (!reg.test(data[rule[i].name])) {
-            this.error = rule[i].errorMsg;
-            return false;
-          }
-          var minMax = rule[i].checkRule.split(',');
-          minMax[0] = Number(minMax[0]);
-          minMax[1] = Number(minMax[1]);
-          if (
-          data[rule[i].name] > minMax[1] ||
-          data[rule[i].name] < minMax[0])
-          {
-            this.error = rule[i].errorMsg;
-            return false;
-          }
-          break;
-        case 'betweenF':
-          var reg = /^-?[0-9][0-9]?.+[0-9]+$/;
-          if (!reg.test(data[rule[i].name])) {
-            this.error = rule[i].errorMsg;
-            return false;
-          }
-          var minMax = rule[i].checkRule.split(',');
-          minMax[0] = Number(minMax[0]);
-          minMax[1] = Number(minMax[1]);
-          if (
-          data[rule[i].name] > minMax[1] ||
-          data[rule[i].name] < minMax[0])
-          {
-            this.error = rule[i].errorMsg;
-            return false;
-          }
-          break;
-        case 'same':
-          if (data[rule[i].name] != rule[i].checkRule) {
-            this.error = rule[i].errorMsg;
-            return false;
-          }
-          break;
-        case 'notsame':
-          if (data[rule[i].name] == rule[i].checkRule) {
-            this.error = rule[i].errorMsg;
-            return false;
-          }
-          break;
-        case 'email':
-          var reg = /^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/;
-          if (!reg.test(data[rule[i].name])) {
-            this.error = rule[i].errorMsg;
-            return false;
-          }
-          break;
-        case 'phoneno':
-          var reg = /^(?:(?:\+|00)86)?1[3-9]\d{9}$/;
-          if (!reg.test(data[rule[i].name])) {
-            this.error = rule[i].errorMsg;
-            return false;
-          }
-          break;
-        case 'zipcode':
-          var reg = /^[0-9]{6}$/;
-          if (!reg.test(data[rule[i].name])) {
-            this.error = rule[i].errorMsg;
-            return false;
-          }
-          break;
-        case 'reg':
-          var reg = new RegExp(rule[i].checkRule);
-          if (!reg.test(data[rule[i].name])) {
-            this.error = rule[i].errorMsg;
-            return false;
-          }
-          break;
-        case 'in':
-          if (rule[i].checkRule.indexOf(data[rule[i].name]) == -1) {
-            this.error = rule[i].errorMsg;
-            return false;
-          }
-          break;
-        case 'notnull':
-          if (data[rule[i].name] == null || data[rule[i].name].length < 1) {
-            this.error = rule[i].errorMsg;
-            return false;
-          }
-          break;}
-
-    }
-    return true;
-  },
-  isNumber: function isNumber(checkVal) {
-    var reg = /^-?[1-9][0-9]?.?[0-9]*$/;
-    return reg.test(checkVal);
-  } };
-
-/***/ }),
-
-/***/ 31:
-/*!**********************************************************!*\
-  !*** D:/code/HBuilderProjects/通用办公系统示例/utils/payment.js ***!
-  \**********************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-/* WEBPACK VAR INJECTION */(function(uni) {Object.defineProperty(exports, "__esModule", { value: true });exports.default = void 0;var _regenerator = _interopRequireDefault(__webpack_require__(/*! ./node_modules/@babel/runtime/regenerator */ 8));
-
-
-
-
-
-var _login = __webpack_require__(/*! @/api/login */ 26);
-var _basic = __webpack_require__(/*! @/api/basic */ 11);
-var _request = __webpack_require__(/*! @/utils/request */ 24);
-var _helper = _interopRequireDefault(__webpack_require__(/*! @/utils/helper */ 27));
-var _router = _interopRequireDefault(__webpack_require__(/*! @/utils/router */ 28));
-var _product = __webpack_require__(/*! @/api/product */ 32);function _interopRequireDefault(obj) {return obj && obj.__esModule ? obj : { default: obj };}function ownKeys(object, enumerableOnly) {var keys = Object.keys(object);if (Object.getOwnPropertySymbols) {var symbols = Object.getOwnPropertySymbols(object);if (enumerableOnly) symbols = symbols.filter(function (sym) {return Object.getOwnPropertyDescriptor(object, sym).enumerable;});keys.push.apply(keys, symbols);}return keys;}function _objectSpread(target) {for (var i = 1; i < arguments.length; i++) {var source = arguments[i] != null ? arguments[i] : {};if (i % 2) {ownKeys(Object(source), true).forEach(function (key) {_defineProperty(target, key, source[key]);});} else if (Object.getOwnPropertyDescriptors) {Object.defineProperties(target, Object.getOwnPropertyDescriptors(source));} else {ownKeys(Object(source)).forEach(function (key) {Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key));});}}return target;}function _defineProperty(obj, key, value) {if (key in obj) {Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true });} else {obj[key] = value;}return obj;}function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {try {var info = gen[key](arg);var value = info.value;} catch (error) {reject(error);return;}if (info.done) {resolve(value);} else {Promise.resolve(value).then(_next, _throw);}}function _asyncToGenerator(fn) {return function () {var self = this,args = arguments;return new Promise(function (resolve, reject) {var gen = fn.apply(self, args);function _next(value) {asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value);}function _throw(err) {asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err);}_next(undefined);});};}var _default =
-{
-  // 判断是否公众号（微信H5）
-  isWechat: function isWechat() {
-
-
-
-
-
-
-
-
-  },
-
-  // wxjssdk
-  wxConfigH5: function wxConfigH5(url) {var _this = this;return _asyncToGenerator( /*#__PURE__*/_regenerator.default.mark(function _callee() {var jsApiList;return _regenerator.default.wrap(function _callee$(_context) {while (1) {switch (_context.prev = _context.next) {case 0:if (!
-              _this.isWechat()) {_context.next = 4;break;}
-              jsApiList = JSON.stringify([
-              'chooseWXPay',
-              'scanQRCode',
-              'updateAppMessageShareData',
-              'updateTimelineShareData']);_context.next = 4;return (
-
-                _request.http.
-                post("".concat(wechatConfig), {
-                  url: url,
-                  jsApiList: jsApiList, // 需要调用微信的原生方法
-                  debug: false // 是否打开调试
-                }).
-                then(function (r) {
-                  jweixin.config(_objectSpread({},
-                  r.data));
-
-                }));case 4:case "end":return _context.stop();}}}, _callee);}))();
-
-  },
-
-  /*
-      *@des 微信支付
-      *
-      *@param order_group 订单:order;充值:recharge;
-      *@param data 订单 {“order_id”:199} 充值 {“money”:100};
-      */
-  weixinPay: function weixinPay(order_group, data) {var _arguments = arguments;return _asyncToGenerator( /*#__PURE__*/_regenerator.default.mark(function _callee3() {var route, code;return _regenerator.default.wrap(function _callee3$(_context3) {while (1) {switch (_context3.prev = _context3.next) {case 0:route = _arguments.length > 2 && _arguments[2] !== undefined ? _arguments[2] : '/pages/user/money/success';code = _arguments.length > 3 ? _arguments[3] : undefined;_context3.next = 4;return (
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                _request.http.
-                post("".concat(_login.isBindingCheck), {
-
-
-
-
-                  oauth_client: 'wechatMp' }).
-
-
-                then( /*#__PURE__*/function () {var _ref = _asyncToGenerator( /*#__PURE__*/_regenerator.default.mark(function _callee2(res) {return _regenerator.default.wrap(function _callee2$(_context2) {while (1) {switch (_context2.prev = _context2.next) {case 0:if (!
-                            res.data.openid) {_context2.next = 5;break;}_context2.next = 3;return (
-                              _request.http.
-                              post("".concat(_basic.payCreate), {
-                                order_group: order_group,
-                                pay_type: 1,
-
-
-
-
-                                trade_type: 'mini_program',
-
-                                data: data,
-                                openid: res.data.openid }).
-
-                              then(function (r) {
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                                uni.requestPayment(_objectSpread(_objectSpread({},
-                                r.data.config), {}, {
-                                  timeStamp: r.data.config.timestamp,
-                                  success: function success() {
-                                    _helper.default.toast('支付成功');
-                                    _router.default.redirectTo({ route: route });
-                                  },
-                                  fail: function fail(res) {
-                                    _helper.default.toast('支付已取消');
-                                  },
-                                  complete: function complete() {} }));
-
-
-                              }));case 3:_context2.next = 6;break;case 5:
-
-
-                            uni.login({
-                              provider: 'weixin',
-                              success: function success(loginRes) {
-                                _request.http.
-                                post("".concat(_basic.payCreate, "?code=").concat(loginRes.code), {
-                                  order_group: order_group,
-                                  pay_type: 1,
-                                  trade_type: 'mini_program',
-                                  data: data }).
-
-                                then(function (r) {
-                                  uni.requestPayment(_objectSpread(_objectSpread({},
-                                  r.data.config), {}, {
-                                    timeStamp: r.data.config.timestamp,
-                                    success: function success() {
-                                      _helper.default.toast('支付成功');
-                                      _router.default.redirectTo({ route: route });
-                                    },
-                                    fail: function fail(res) {
-                                      _helper.default.toast('支付已取消');
-                                    },
-                                    complete: function complete() {} }));
-
-                                });
-                              },
-                              fail: function fail(err) {
-                                _helper.default.log(err);
-                              } });case 6:case "end":return _context2.stop();}}}, _callee2);}));return function (_x) {return _ref.apply(this, arguments);};}()));case 4:case "end":return _context3.stop();}}}, _callee3);}))();
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  },
-
-  /*
-      *@des 支付宝支付
-      *
-      *@param order_group 订单:order;充值:recharge;
-      *@param data 订单 {“order_id”:199} 充值 {“money”:100};
-      */
-  aliPay: function aliPay(order_group, data) {var _arguments2 = arguments;return _asyncToGenerator( /*#__PURE__*/_regenerator.default.mark(function _callee4() {var route;return _regenerator.default.wrap(function _callee4$(_context4) {while (1) {switch (_context4.prev = _context4.next) {case 0:route = _arguments2.length > 2 && _arguments2[2] !== undefined ? _arguments2[2] : '/pages/user/money/success';
-
-
-
-
-
-              _helper.default.toast('微信小程序不支持支付宝充值');return _context4.abrupt("return");case 5:case "end":return _context4.stop();}}}, _callee4);}))();
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  },
-
-  /*
-      *@des 余额支付
-      *
-      *@param data 支付参数
-      */
-  balancePay: function balancePay(data) {var _arguments3 = arguments;return _asyncToGenerator( /*#__PURE__*/_regenerator.default.mark(function _callee5() {var route;return _regenerator.default.wrap(function _callee5$(_context5) {while (1) {switch (_context5.prev = _context5.next) {case 0:route = _arguments3.length > 1 && _arguments3[1] !== undefined ? _arguments3[1] : '/pages/user/money/success';_context5.next = 3;return (
-                _request.http.
-                post("".concat(_product.orderPay), {
-                  order_group: 'order',
-                  trade_type: 'js',
-                  pay_type: 5,
-                  data: data }).
-
-                then(function () {
-                  _router.default.redirectTo({ route: route });
-                }));case 3:case "end":return _context5.stop();}}}, _callee5);}))();
-  } };exports.default = _default;
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./node_modules/@dcloudio/uni-mp-weixin/dist/index.js */ 1)["default"]))
-
-/***/ }),
-
-/***/ 32:
-/*!********************************************************!*\
-  !*** D:/code/HBuilderProjects/通用办公系统示例/api/product.js ***!
-  \********************************************************/
-/*! no static exports found */
-/***/ (function(module, exports) {
-
-
-
-/***/ }),
-
-/***/ 33:
-/*!************************************************************!*\
-  !*** D:/code/HBuilderProjects/通用办公系统示例/utils/websocket.js ***!
-  \************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-/* WEBPACK VAR INJECTION */(function(uni) {Object.defineProperty(exports, "__esModule", { value: true });exports.default = void 0;
-var _index = _interopRequireDefault(__webpack_require__(/*! @/config/index.config */ 19));
-var _websocket = _interopRequireDefault(__webpack_require__(/*! @/config/websocket.config */ 22));
-var _helper = _interopRequireDefault(__webpack_require__(/*! @/utils/helper */ 27));
-var _store = _interopRequireDefault(__webpack_require__(/*! @/store */ 16));function _interopRequireDefault(obj) {return obj && obj.__esModule ? obj : { default: obj };}function _classCallCheck(instance, Constructor) {if (!(instance instanceof Constructor)) {throw new TypeError("Cannot call a class as a function");}}function _defineProperties(target, props) {for (var i = 0; i < props.length; i++) {var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);}}function _createClass(Constructor, protoProps, staticProps) {if (protoProps) _defineProperties(Constructor.prototype, protoProps);if (staticProps) _defineProperties(Constructor, staticProps);return Constructor;}function _defineProperty(obj, key, value) {if (key in obj) {Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true });} else {obj[key] = value;}return obj;}var
-websocket = /*#__PURE__*/function () {
-  function websocket() {var _this2 = this;_classCallCheck(this, websocket);_defineProperty(this, "websocketOnMessage",
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    function (e) {
-      var data = JSON.parse(e.data);
-      var _this = _this2;
-      var params = {};
-      if (data.route === _websocket.default.login) {
-        _this2.login = true;
-        if (_store.default.state.isImPanel) {
-          var _params = {
-            tip: true,
-            content: '客服连线成功' };
-
-          _store.default.commit('addImHistory', _params);
-        }
-        return;
-      }
-      if (data.route === _websocket.default.memberClose) {
-        _store.default.commit('setIsStuffService', false);
-      }
-      if (data.route === _websocket.default.bubbleClose) {
-        _store.default.commit('setIsStuffService', false);
-        var _params2 = {
-          tip: true,
-          content: '会话已结束，现在由机器人精灵为您服务' };
-
-        _store.default.commit('addImHistory', _params2);
-        return;
-      }
-      if (data.route === _websocket.default.serviceIndex) {
-        _this2.serviceList = data.data;
-        _this2.fd = data.member.fd;
-        return;
-      }
-      switch (parseInt(data.code)) {
-        case 1006:
-          break;
-        case 2000:
-          // eslint-disable-next-line
-          var content;
-          switch (data.data.type) {
-            case 'text':
-              content = data.data.content.replace(
-              new RegExp('\\[(.+?)\\]', 'g'),
-              function (r) {
-                if (!_this.emojiToText(r)) {
-                  return r;
-                } else {
-                  return "<img src=\"".concat(
-                  _index.default.hostUrl, "/static/emoji/").concat(_this.emojiToText(r), ".png\" />");
-
-                }
-              });
-
-              break;
-            case 'voice':
-              break;
-            case 'video':
-              break;
-            case 'image':
-              content =
-              '<img style="max-width:200px" src="' +
-              data.data.content +
-              '"></img>';
-              break;
-            case 'longitudeAndLatitude':
-              break;
-            default:
-              content = data.data.content;
-              break;}
-
-          params = {
-            user_type: data.data.user_type,
-            content: content,
-            serviceNickname:
-            data.data.user_type === 'member' ? '' : data.member.realname,
-            avatar:
-            data.data.user_type === 'member' ?
-            'background-image:url(' + _store.default.state.userInfo.head_portrait + ')' :
-            'background-image:url(' + data.member.head_portrait + ')',
-            created_at: data.timestamp };
-
-          _store.default.commit('addImHistory', params);
-          break;
-        case 2001:
-          _this2.fd = data.data.fd;
-          if (_store.default.state.isImPanel) {
-            var _params3 = {
-              tip: true,
-              content: '会话连线成功，正在进行客服连线...' };
-
-            _store.default.commit('addImHistory', _params3);
-          }
-          break;
-        case 2002:
-          break;
-        case 2003:
-          _store.default.commit('setIsStuffService', false);
-          params = {
-            tip: true,
-            content: data.data };
-
-          _store.default.commit('addImHistory', params);
-          break;
-        case 2005:
-          _store.default.commit('setIsStuffService', true);
-          params = {
-            tip: true,
-            content: data.message };
-
-          _store.default.commit('addImHistory', params);
-          break;
-        case 4000:
-          _store.default.commit('setIsStuffService', false);
-          params = {
-            tip: true,
-            content: data.message };
-
-          _store.default.commit('addImHistory', params);
-          break;
-        case 4104:
-          _store.default.commit('setIsStuffService', false);
-          params = {
-            tip: true,
-            content: data.message };
-
-          _store.default.commit('addImHistory', params);
-          break;
-        case 4001:
-          // 用户验证失败
-          _helper.default.toast('您的登录令牌已过期,请重新登录~');
-          _store.default.commit('logout', '');
-          break;
-        case 4002:
-          break;
-        case 4004:
-          break;
-        case 4101:
-          // 用户在其它地方登录
-          _helper.default.toast('您的账户已在其它地方登录');
-          _store.default.commit('logout', '');
-          break;
-        case 4102:
-          params = {
-            tip: true,
-            content: data.message };
-
-          _store.default.commit('addImHistory', params);
-          break;
-        case 5000:
-          break;
-        default:
-          break;}
-
-    });this.conncted = false;this.login = false;this.serviceList = [];this.fd = null;this.emojiList = [{ url: '0', alt: '[微笑]' }, { url: '1', alt: '[撇嘴]' }, { url: '2', alt: '[色]' }, { url: '3', alt: '[发呆]' }, { url: '4', alt: '[得意]' }, { url: '5', alt: '[流泪]' }, { url: '6', alt: '[害羞]' }, { url: '7', alt: '[闭嘴]' }, { url: '8', alt: '[睡]' }, { url: '9', alt: '[大哭]' }, { url: '10', alt: '[尴尬]' }, { url: '11', alt: '[发怒]' }, { url: '12', alt: '[调皮]' }, { url: '13', alt: '[呲牙]' }, { url: '14', alt: '[惊讶]' }, { url: '15', alt: '[难过]' }, { url: '16', alt: '[酷]' }, { url: '17', alt: '[冷汗]' }, { url: '18', alt: '[抓狂]' }, { url: '19', alt: '[吐]' }, { url: '20', alt: '[偷笑]' }, { url: '21', alt: '[愉快]' }, { url: '22', alt: '[白眼]' }, { url: '23', alt: '[傲慢]' }, { url: '24', alt: '[饥饿]' }, { url: '25', alt: '[困]' }, { url: '26', alt: '[惊恐]' }, { url: '27', alt: '[流汗]' }, { url: '28', alt: '[憨笑]' }, { url: '29', alt: '[悠闲]' }, { url: '30', alt: '[奋斗]' }, { url: '31', alt: '[咒骂]' }, { url: '32', alt: '[疑问]' }, { url: '33', alt: '[嘘]' }, { url: '34', alt: '[晕]' }, { url: '35', alt: '[疯了]' }, { url: '36', alt: '[衰]' }, { url: '37', alt: '[骷髅]' }, { url: '38', alt: '[敲打]' }, { url: '39', alt: '[再见]' }, { url: '40', alt: '[擦汗]' }, { url: '41', alt: '[抠鼻]' }, { url: '42', alt: '[鼓掌]' }, { url: '43', alt: '[糗大了]' }, { url: '44', alt: '[坏笔]' }, { url: '45', alt: '[左哼哼]' }, { url: '46', alt: '[右哼哼]' }, { url: '47', alt: '[哈欠]' }, { url: '48', alt: '[鄙视]' }, { url: '49', alt: '[委屈]' }, { url: '50', alt: '[快哭了]' }, { url: '51', alt: '[阴险]' }, { url: '52', alt: '[亲亲]' }, { url: '53', alt: '[吓]' }, { url: '54', alt: '[可怜]' }, { url: '55', alt: '[菜刀]' }, { url: '56', alt: '[西瓜]' }, { url: '57', alt: '[啤酒]' }, { url: '58', alt: '[篮球]' }, { url: '59', alt: '[乒乓]' }, { url: '60', alt: '[咖啡]' }, { url: '61', alt: '[饭]' }, { url: '62', alt: '[猪头]' }, { url: '63', alt: '[玫瑰]' }, { url: '64', alt: '[凋谢]' }, { url: '65', alt: '[嘴唇]' }, { url: '66', alt: '[爱心]' }, { url: '67', alt: '[心碎]' }, { url: '68', alt: '[蛋糕]' }, { url: '69', alt: '[闪电]' }, { url: '70', alt: '[炸弹]' }, { url: '71', alt: '[刀]' }, { url: '72', alt: '[足球]' }, { url: '73', alt: '[瓢虫]' }, { url: '74', alt: '[便便]' }, { url: '75', alt: '[月亮]' }, { url: '76', alt: '[太阳]' }, { url: '77', alt: '[礼物]' }, { url: '78', alt: '[拥抱]' }, { url: '79', alt: '[强]' }, { url: '80', alt: '[弱]' }, { url: '81', alt: '[握手]' }, { url: '82', alt: '[胜利]' }, { url: '83', alt: '[抱拳]' }, { url: '84', alt: '[勾引]' }, { url: '85', alt: '[拳头]' }, { url: '86', alt: '[差劲]' }, { url: '87', alt: '[爱您]' }, { url: '88', alt: '[NO]' }, { url: '89', alt: '[OK]' }, { url: '90', alt: '[爱情]' }, { url: '91', alt: '[飞吻]' }, { url: '92', alt: '[跳跳]' }, { url: '93', alt: '[发抖]' }, { url: '94', alt: '[怄火]' }, { url: '95', alt: '[转圈]' }, { url: '96', alt: '[磕头]' }, { url: '97', alt: '[回头]' }, { url: '98', alt: '[跳绳]' }, { url: '99', alt: '[投降]' }, { url: '100', alt: '[激动]' }, { url: '101', alt: '[乱舞]' }, { url: '102', alt: '[献吻]' }, { url: '103', alt: '[左太极]' }, { url: '104', alt: '[右太极]' }];} // 初始化websocketet
-  _createClass(websocket, [{ key: "initWebsocket", value: function initWebsocket() {var _this3 = this;if (!_store.default.state.accessToken) {_helper.default.log('未登录');return;} // 连接webSocket
-      uni.connectSocket({ url: _index.default.websocketUrl }); // 监听webSocket连接成功
-      uni.onSocketOpen(function (res) {_this3.conncted = true;if (_store.default.state.isImPanel) {var params = { tip: true, content: '连接成功，正在准备会话连线...' };_store.default.commit('addImHistory', params);}_this3.send(JSON.stringify({ route: _websocket.default.login, token: _store.default.state.accessToken }));setInterval(function () {_this3.send(JSON.stringify({ route: _websocket.default.ping }));}, 60 * 1000);}); // 监听webSocket出错
-      uni.onSocketError(function (res) {_this3.conncted = false;_this3.login = false;setTimeout(function () {_this3.initWebsocket();}, 10 * 1000);});uni.onSocketClose(function (res) {_this3.conncted = false;_this3.login = false;setTimeout(function () {_this3.initWebsocket();}, 10 * 1000);});uni.onSocketMessage(this.websocketOnMessage);} // 发送消息
-  }, { key: "send", value: function send(data) {if (!this.conncted) {if (_store.default.state.isImPanel && !this.login) {var params = { tip: true, content: '正在重新连接客服服务，请稍候...' };_store.default.commit('addImHistory', params);}return;}uni.sendSocketMessage({ data: data });} // 关闭
-  }, { key: "closeWebSocket", value: function closeWebSocket() {if (!this.conncted) {return;}uni.closeSocket({ success: function success() {console.log('调用关闭websocket成功');}, fail: function fail() {console.log('调用关闭websocket失败');} });} // 消息处理
-  }, { key: "emojiToText", value: function emojiToText(em) {for (var i = 0; i < this.emojiList.length; i++) {if (this.emojiList[i].url === em.toString()) {return this.emojiList[i].alt;}if (this.emojiList[i].alt === em.toString().trim()) {
-          return this.emojiList[i].url;
-        }
-      }
-    } }]);return websocket;}();
-
-// eslint-disable-next-line
-var _default = new websocket();exports.default = _default;
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./node_modules/@dcloudio/uni-mp-weixin/dist/index.js */ 1)["default"]))
-
-/***/ }),
-
-/***/ 4:
-/*!****************************************************!*\
-  !*** D:/code/HBuilderProjects/通用办公系统示例/pages.json ***!
-  \****************************************************/
-/*! no static exports found */
-/***/ (function(module, exports) {
-
-
-
-/***/ }),
-
-/***/ 40:
-/*!*********************************************************!*\
-  !*** D:/code/HBuilderProjects/通用办公系统示例/api/userInfo.js ***!
-  \*********************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });exports.merchantInfo = exports.worksDetail = exports.worksList = exports.memberLevelIndex = exports.notifySubscriptionConfigIndex = exports.notifySubscriptionConfigUpConfig = exports.notifyUnRreadCount = exports.notifyClearAll = exports.notifyClear = exports.notifyReadAll = exports.notifyRead = exports.notifyView = exports.notifyIndex = exports.thirdPartyAuthDelete = exports.thirdPartyAuthList = exports.opinionDetail = exports.opinionCreate = exports.opinionList = exports.uploadImage = exports.memberUpdate = exports.memberInfo = void 0; /**
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           *@des 个人中心相关接口
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           *@author hjp1011 21931118@qq.com
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           *@blog http://www.wephp.com
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           *@date 2019/11/16 11:04:16
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           */
-// 个人信息
-var memberInfo = '/we-office/v1/member/member/index';
-// 个人信息修改
-exports.memberInfo = memberInfo;var memberUpdate = '/we-office/v1/member/member/update';
-// 机构信息
-exports.memberUpdate = memberUpdate;var merchantInfo = '/we-office/v1/merchant/merchant/index';
-
-// 意见反馈列表
-exports.merchantInfo = merchantInfo;var opinionList = '/we-office/v1/member/opinion/index';
-// 意见反馈创建
-exports.opinionList = opinionList;var opinionCreate = '/we-office/v1/member/opinion';
-// 意见反馈详情
-exports.opinionCreate = opinionCreate;var opinionDetail = '/we-office/v1/member/opinion/view';
-
-// 第三方授权列表
-exports.opinionDetail = opinionDetail;var thirdPartyAuthList = '/we-office/v1/member/auth/index';
-// 解除第三方授权列表
-exports.thirdPartyAuthList = thirdPartyAuthList;var thirdPartyAuthDelete = '/we-office/v1/member/auth/delete';
-
-// 上传图片
-exports.thirdPartyAuthDelete = thirdPartyAuthDelete;var uploadImage = '/we-office/v1/common/file/images';
-
-// 待办工作
-exports.uploadImage = uploadImage;var worksList = '/we-office/v1/member/works/index';exports.worksList = worksList;
-var worksDetail = '/we-office/v1/member/works';
-
-// 消息列表
-exports.worksDetail = worksDetail;var notifyIndex = '/we-office/v1/notify/announce/index';
-// 消息详情
-exports.notifyIndex = notifyIndex;var notifyView = '/we-office/v1/member/notify/view';
-// 单个消息阅读
-exports.notifyView = notifyView;var notifyRead = '/we-office/v1/notify/announce/read';
-// 全部已读
-exports.notifyRead = notifyRead;var notifyReadAll = '/we-office/v1/member/notify/read-all';
-// 删除一条或者多条
-exports.notifyReadAll = notifyReadAll;var notifyClear = '/we-office/v1/member/notify/clear';
-// 清空消息记录
-exports.notifyClear = notifyClear;var notifyClearAll = '/we-office/v1/member/notify/clear-all';
-// 未读消息个数
-exports.notifyClearAll = notifyClearAll;var notifyUnRreadCount = '/we-office/v1/member/notify/un-read-count';
-// 消息提醒配置
-exports.notifyUnRreadCount = notifyUnRreadCount;var notifySubscriptionConfigIndex =
-'/we-office/v1/member/notify-subscription-config/index';
-// 修改消息提醒配置
-exports.notifySubscriptionConfigIndex = notifySubscriptionConfigIndex;var notifySubscriptionConfigUpConfig =
-'/we-office/v1/member/notify-subscription-config/up-config';
-
-// 会员等级
-exports.notifySubscriptionConfigUpConfig = notifySubscriptionConfigUpConfig;var memberLevelIndex = '/we-office/v1/member/member-level/index';exports.memberLevelIndex = memberLevelIndex;
-
-/***/ }),
-
-/***/ 41:
-/*!**********************************************************!*\
-  !*** D:/code/HBuilderProjects/通用办公系统示例/common/moment.js ***!
-  \**********************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-/* WEBPACK VAR INJECTION */(function(module) {!function (e, t) { true ? module.exports = t() : undefined;}(this, function () {'use strict';var e, i;function c() {return e.apply(null, arguments);}function o(e) {return e instanceof Array || '[object Array]' === Object.prototype.toString.call(e);}function u(e) {return null != e && '[object Object]' === Object.prototype.toString.call(e);}function l(e) {return void 0 === e;}function h(e) {return 'number' === typeof e || '[object Number]' === Object.prototype.toString.call(e);}function d(e) {return e instanceof Date || '[object Date]' === Object.prototype.toString.call(e);}function f(e, t) {var n,s = [];for (n = 0; n < e.length; ++n) {s.push(t(e[n], n));}return s;}function m(e, t) {return Object.prototype.hasOwnProperty.call(e, t);}function _(e, t) {for (var _n2 in t) {m(t, _n2) && (e[_n2] = t[_n2]);}return m(t, 'toString') && (e.toString = t.toString), m(t, 'valueOf') && (e.valueOf = t.valueOf), e;}function y(e, t, n, s) {return Tt(e, t, n, s, !0).utc();}function g(e) {return null == e._pf && (e._pf = { empty: !1, unusedTokens: [], unusedInput: [], overflow: -2, charsLeftOver: 0, nullInput: !1, invalidMonth: null, invalidFormat: !1, userInvalidated: !1, iso: !1, parsedDateParts: [], meridiem: null, rfc2822: !1, weekdayMismatch: !1 }), e._pf;}function v(e) {if (null == e._isValid) {var _t2 = g(e),_n3 = i.call(_t2.parsedDateParts, function (e) {return null != e;}),_s = !isNaN(e._d.getTime()) && _t2.overflow < 0 && !_t2.empty && !_t2.invalidMonth && !_t2.invalidWeekday && !_t2.weekdayMismatch && !_t2.nullInput && !_t2.invalidFormat && !_t2.userInvalidated && (!_t2.meridiem || _t2.meridiem && _n3);if (e._strict && (_s = _s && 0 === _t2.charsLeftOver && 0 === _t2.unusedTokens.length && void 0 === _t2.bigHour), null != Object.isFrozen && Object.isFrozen(e)) return _s;e._isValid = _s;}return e._isValid;}function p(e) {var t = y(NaN);return null != e ? _(g(t), e) : g(t).userInvalidated = !0, t;}i = Array.prototype.some ? Array.prototype.some : function (e) {for (var _t3 = Object(this), _n4 = _t3.length >>> 0, _s2 = 0; _s2 < _n4; _s2++) {if (_s2 in _t3 && e.call(this, _t3[_s2], _s2, _t3)) return !0;}return !1;};var r = c.momentProperties = [];function w(e, t) {var n, s, i;if (l(t._isAMomentObject) || (e._isAMomentObject = t._isAMomentObject), l(t._i) || (e._i = t._i), l(t._f) || (e._f = t._f), l(t._l) || (e._l = t._l), l(t._strict) || (e._strict = t._strict), l(t._tzm) || (e._tzm = t._tzm), l(t._isUTC) || (e._isUTC = t._isUTC), l(t._offset) || (e._offset = t._offset), l(t._pf) || (e._pf = g(t)), l(t._locale) || (e._locale = t._locale), 0 < r.length) for (n = 0; n < r.length; n++) {l(i = t[s = r[n]]) || (e[s] = i);}return e;}var t = !1;function M(e) {w(this, e), this._d = new Date(null != e._d ? e._d.getTime() : NaN), this.isValid() || (this._d = new Date(NaN)), !1 === t && (t = !0, c.updateOffset(this), t = !1);}function k(e) {return e instanceof M || null != e && null != e._isAMomentObject;}function S(e) {return e < 0 ? Math.ceil(e) || 0 : Math.floor(e);}function D(e) {var t = +e,n = 0;return 0 !== t && isFinite(t) && (n = S(t)), n;}function a(e, t, n) {var s,i = Math.min(e.length, t.length),r = Math.abs(e.length - t.length),a = 0;for (s = 0; s < i; s++) {(n && e[s] !== t[s] || !n && D(e[s]) !== D(t[s])) && a++;}return a + r;}function Y(e) {!1 === c.suppressDeprecationWarnings && 'undefined' !== typeof console && console.warn && console.warn('Deprecation warning: ' + e);}function n(i, r) {var a = !0;return _(function () {if (null != c.deprecationHandler && c.deprecationHandler(null, i), a) {for (var e, t = [], n = 0; n < arguments.length; n++) {if (e = '', 'object' === typeof arguments[n]) {for (var _s3 in e += '\n[' + n + '] ', arguments[0]) {e += _s3 + ': ' + arguments[0][_s3] + ', ';}e = e.slice(0, -2);} else e = arguments[n];t.push(e);}Y(i + '\nArguments: ' + Array.prototype.slice.call(t).join('') + '\n' + new Error().stack), a = !1;}return r.apply(this, arguments);}, r);}var s,O = {};function T(e, t) {null != c.deprecationHandler && c.deprecationHandler(e, t), O[e] || (Y(t), O[e] = !0);}function b(e) {return e instanceof Function || '[object Function]' === Object.prototype.toString.call(e);}function x(e, t) {var n,s = _({}, e);for (n in t) {m(t, n) && (u(e[n]) && u(t[n]) ? (s[n] = {}, _(s[n], e[n]), _(s[n], t[n])) : null != t[n] ? s[n] = t[n] : delete s[n]);}for (n in e) {m(e, n) && !m(t, n) && u(e[n]) && (s[n] = _({}, s[n]));}return s;}function P(e) {null != e && this.set(e);}c.suppressDeprecationWarnings = !1, c.deprecationHandler = null, s = Object.keys ? Object.keys : function (e) {var t,n = [];for (t in e) {m(e, t) && n.push(t);}return n;};var W = {};function C(e, t) {var n = e.toLowerCase();W[n] = W[n + 's'] = W[t] = e;}function H(e) {return 'string' === typeof e ? W[e] || W[e.toLowerCase()] : void 0;}function R(e) {var t,n,s = {};for (n in e) {m(e, n) && (t = H(n)) && (s[t] = e[n]);}return s;}var U = {};function F(e, t) {U[e] = t;}function L(e, t, n) {var s = '' + Math.abs(e),i = t - s.length;return (0 <= e ? n ? '+' : '' : '-') + Math.pow(10, Math.max(0, i)).toString().substr(1) + s;}var N = /(\[[^\[]*\])|(\\)?([Hh]mm(ss)?|Mo|MM?M?M?|Do|DDDo|DD?D?D?|ddd?d?|do?|w[o|w]?|W[o|W]?|Qo?|YYYYYY|YYYYY|YYYY|YY|gg(ggg?)?|GG(GGG?)?|e|E|a|A|hh?|HH?|kk?|mm?|ss?|S{1,9}|x|X|zz?|ZZ?|.)/g,G = /(\[[^\[]*\])|(\\)?(LTS|LT|LL?L?L?|l{1,4})/g,V = {},E = {};function I(e, t, n, s) {var i = s;'string' === typeof s && (i = function i() {return this[s]();}), e && (E[e] = i), t && (E[t[0]] = function () {return L(i.apply(this, arguments), t[1], t[2]);}), n && (E[n] = function () {return this.localeData().ordinal(i.apply(this, arguments), e);});}function A(e, t) {return e.isValid() ? (t = j(t, e.localeData()), V[t] = V[t] || function (s) {var e,i,t,r = s.match(N);for (e = 0, i = r.length; e < i; e++) {E[r[e]] ? r[e] = E[r[e]] : r[e] = (t = r[e]).match(/\[[\s\S]/) ? t.replace(/^\[|\]$/g, '') : t.replace(/\\/g, '');}return function (e) {var t,n = '';for (t = 0; t < i; t++) {n += b(r[t]) ? r[t].call(e, s) : r[t];}return n;};}(t), V[t](e)) : e.localeData().invalidDate();}function j(e, t) {var n = 5;function s(e) {return t.longDateFormat(e) || e;}for (G.lastIndex = 0; 0 <= n && G.test(e);) {e = e.replace(G, s), G.lastIndex = 0, n -= 1;}return e;}var Z = /\d/,z = /\d\d/,$ = /\d{3}/,q = /\d{4}/,J = /[+-]?\d{6}/,B = /\d\d?/,Q = /\d\d\d\d?/,X = /\d\d\d\d\d\d?/,K = /\d{1,3}/,ee = /\d{1,4}/,te = /[+-]?\d{1,6}/,ne = /\d+/,se = /[+-]?\d+/,ie = /Z|[+-]\d\d:?\d\d/gi,re = /Z|[+-]\d\d(?::?\d\d)?/gi,ae = /[0-9]{0,256}['a-z\u00A0-\u05FF\u0700-\uD7FF\uF900-\uFDCF\uFDF0-\uFF07\uFF10-\uFFEF]{1,256}|[\u0600-\u06FF\/]{1,256}(\s*?[\u0600-\u06FF]{1,256}){1,2}/i,oe = {};function ue(e, n, s) {oe[e] = b(n) ? n : function (e, t) {return e && s ? s : n;};}function le(e, t) {return m(oe, e) ? oe[e](t._strict, t._locale) : new RegExp(he(e.replace('\\', '').replace(/\\(\[)|\\(\])|\[([^\]\[]*)\]|\\(.)/g, function (e, t, n, s, i) {return t || n || s || i;})));}function he(e) {return e.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');}var de = {};function ce(e, n) {var t,s = n;for ('string' === typeof e && (e = [e]), h(n) && (s = function s(e, t) {t[n] = D(e);}), t = 0; t < e.length; t++) {de[e[t]] = s;}}function fe(e, i) {ce(e, function (e, t, n, s) {n._w = n._w || {}, i(e, n._w, n, s);});}var me = 0,_e = 1,ye = 2,ge = 3,ve = 4,pe = 5,we = 6,Me = 7,ke = 8;function Se(e) {return De(e) ? 366 : 365;}function De(e) {return e % 4 == 0 && e % 100 != 0 || e % 400 == 0;}I('Y', 0, 0, function () {var e = this.year();return e <= 9999 ? '' + e : '+' + e;}), I(0, ['YY', 2], 0, function () {return this.year() % 100;}), I(0, ['YYYY', 4], 0, 'year'), I(0, ['YYYYY', 5], 0, 'year'), I(0, ['YYYYYY', 6, !0], 0, 'year'), C('year', 'y'), F('year', 1), ue('Y', se), ue('YY', B, z), ue('YYYY', ee, q), ue('YYYYY', te, J), ue('YYYYYY', te, J), ce(['YYYYY', 'YYYYYY'], me), ce('YYYY', function (e, t) {t[me] = 2 === e.length ? c.parseTwoDigitYear(e) : D(e);}), ce('YY', function (e, t) {t[me] = c.parseTwoDigitYear(e);}), ce('Y', function (e, t) {t[me] = parseInt(e, 10);}), c.parseTwoDigitYear = function (e) {return D(e) + (68 < D(e) ? 1900 : 2e3);};var Ye,Oe = Te('FullYear', !0);function Te(t, n) {return function (e) {return null != e ? (xe(this, t, e), c.updateOffset(this, n), this) : be(this, t);};}function be(e, t) {return e.isValid() ? e._d['get' + (e._isUTC ? 'UTC' : '') + t]() : NaN;}function xe(e, t, n) {e.isValid() && !isNaN(n) && ('FullYear' === t && De(e.year()) && 1 === e.month() && 29 === e.date() ? e._d['set' + (e._isUTC ? 'UTC' : '') + t](n, e.month(), Pe(n, e.month())) : e._d['set' + (e._isUTC ? 'UTC' : '') + t](n));}function Pe(e, t) {if (isNaN(e) || isNaN(t)) return NaN;var n,s = (t % (n = 12) + n) % n;return e += (t - s) / 12, 1 === s ? De(e) ? 29 : 28 : 31 - s % 7 % 2;}Ye = Array.prototype.indexOf ? Array.prototype.indexOf : function (e) {var t;for (t = 0; t < this.length; ++t) {if (this[t] === e) return t;}return -1;}, I('M', ['MM', 2], 'Mo', function () {return this.month() + 1;}), I('MMM', 0, 0, function (e) {return this.localeData().monthsShort(this, e);}), I('MMMM', 0, 0, function (e) {return this.localeData().months(this, e);}), C('month', 'M'), F('month', 8), ue('M', B), ue('MM', B, z), ue('MMM', function (e, t) {return t.monthsShortRegex(e);}), ue('MMMM', function (e, t) {return t.monthsRegex(e);}), ce(['M', 'MM'], function (e, t) {t[_e] = D(e) - 1;}), ce(['MMM', 'MMMM'], function (e, t, n, s) {var i = n._locale.monthsParse(e, s, n._strict);null != i ? t[_e] = i : g(n).invalidMonth = e;});var We = /D[oD]?(\[[^\[\]]*\]|\s)+MMMM?/,Ce = 'January_February_March_April_May_June_July_August_September_October_November_December'.split('_');var He = 'Jan_Feb_Mar_Apr_May_Jun_Jul_Aug_Sep_Oct_Nov_Dec'.split('_');function Re(e, t) {var n;if (!e.isValid()) return e;if ('string' === typeof t) if (/^\d+$/.test(t)) t = D(t);else if (!h(t = e.localeData().monthsParse(t))) return e;return n = Math.min(e.date(), Pe(e.year(), t)), e._d['set' + (e._isUTC ? 'UTC' : '') + 'Month'](t, n), e;}function Ue(e) {return null != e ? (Re(this, e), c.updateOffset(this, !0), this) : be(this, 'Month');}var Fe = ae;var Le = ae;function Ne() {function e(e, t) {return t.length - e.length;}var t,n,s = [],i = [],r = [];for (t = 0; t < 12; t++) {n = y([2e3, t]), s.push(this.monthsShort(n, '')), i.push(this.months(n, '')), r.push(this.months(n, '')), r.push(this.monthsShort(n, ''));}for (s.sort(e), i.sort(e), r.sort(e), t = 0; t < 12; t++) {s[t] = he(s[t]), i[t] = he(i[t]);}for (t = 0; t < 24; t++) {r[t] = he(r[t]);}this._monthsRegex = new RegExp('^(' + r.join('|') + ')', 'i'), this._monthsShortRegex = this._monthsRegex, this._monthsStrictRegex = new RegExp('^(' + i.join('|') + ')', 'i'), this._monthsShortStrictRegex = new RegExp('^(' + s.join('|') + ')', 'i');}function Ge(e) {var t;if (e < 100 && 0 <= e) {var _n5 = Array.prototype.slice.call(arguments);_n5[0] = e + 400, t = new Date(Date.UTC.apply(null, _n5)), isFinite(t.getUTCFullYear()) && t.setUTCFullYear(e);} else t = new Date(Date.UTC.apply(null, arguments));return t;}function Ve(e, t, n) {var s = 7 + t - n;return -((7 + Ge(e, 0, s).getUTCDay() - t) % 7) + s - 1;}function Ee(e, t, n, s, i) {var r,a,o = 1 + 7 * (t - 1) + (7 + n - s) % 7 + Ve(e, s, i);return a = o <= 0 ? Se(r = e - 1) + o : o > Se(e) ? (r = e + 1, o - Se(e)) : (r = e, o), { year: r, dayOfYear: a };}function Ie(e, t, n) {var s,i,r = Ve(e.year(), t, n),a = Math.floor((e.dayOfYear() - r - 1) / 7) + 1;return a < 1 ? s = a + Ae(i = e.year() - 1, t, n) : a > Ae(e.year(), t, n) ? (s = a - Ae(e.year(), t, n), i = e.year() + 1) : (i = e.year(), s = a), { week: s, year: i };}function Ae(e, t, n) {var s = Ve(e, t, n),i = Ve(e + 1, t, n);return (Se(e) - s + i) / 7;}I('w', ['ww', 2], 'wo', 'week'), I('W', ['WW', 2], 'Wo', 'isoWeek'), C('week', 'w'), C('isoWeek', 'W'), F('week', 5), F('isoWeek', 5), ue('w', B), ue('ww', B, z), ue('W', B), ue('WW', B, z), fe(['w', 'ww', 'W', 'WW'], function (e, t, n, s) {t[s.substr(0, 1)] = D(e);});function je(e, t) {return e.slice(t, 7).concat(e.slice(0, t));}I('d', 0, 'do', 'day'), I('dd', 0, 0, function (e) {return this.localeData().weekdaysMin(this, e);}), I('ddd', 0, 0, function (e) {return this.localeData().weekdaysShort(this, e);}), I('dddd', 0, 0, function (e) {return this.localeData().weekdays(this, e);}), I('e', 0, 0, 'weekday'), I('E', 0, 0, 'isoWeekday'), C('day', 'd'), C('weekday', 'e'), C('isoWeekday', 'E'), F('day', 11), F('weekday', 11), F('isoWeekday', 11), ue('d', B), ue('e', B), ue('E', B), ue('dd', function (e, t) {return t.weekdaysMinRegex(e);}), ue('ddd', function (e, t) {return t.weekdaysShortRegex(e);}), ue('dddd', function (e, t) {return t.weekdaysRegex(e);}), fe(['dd', 'ddd', 'dddd'], function (e, t, n, s) {var i = n._locale.weekdaysParse(e, s, n._strict);null != i ? t.d = i : g(n).invalidWeekday = e;}), fe(['d', 'e', 'E'], function (e, t, n, s) {t[s] = D(e);});var Ze = 'Sunday_Monday_Tuesday_Wednesday_Thursday_Friday_Saturday'.split('_');var ze = 'Sun_Mon_Tue_Wed_Thu_Fri_Sat'.split('_');var $e = 'Su_Mo_Tu_We_Th_Fr_Sa'.split('_');var qe = ae;var Je = ae;var Be = ae;function Qe() {function e(e, t) {return t.length - e.length;}var t,n,s,i,r,a = [],o = [],u = [],l = [];for (t = 0; t < 7; t++) {n = y([2e3, 1]).day(t), s = this.weekdaysMin(n, ''), i = this.weekdaysShort(n, ''), r = this.weekdays(n, ''), a.push(s), o.push(i), u.push(r), l.push(s), l.push(i), l.push(r);}for (a.sort(e), o.sort(e), u.sort(e), l.sort(e), t = 0; t < 7; t++) {o[t] = he(o[t]), u[t] = he(u[t]), l[t] = he(l[t]);}this._weekdaysRegex = new RegExp('^(' + l.join('|') + ')', 'i'), this._weekdaysShortRegex = this._weekdaysRegex, this._weekdaysMinRegex = this._weekdaysRegex, this._weekdaysStrictRegex = new RegExp('^(' + u.join('|') + ')', 'i'), this._weekdaysShortStrictRegex = new RegExp('^(' + o.join('|') + ')', 'i'), this._weekdaysMinStrictRegex = new RegExp('^(' + a.join('|') + ')', 'i');}function Xe() {return this.hours() % 12 || 12;}function Ke(e, t) {I(e, 0, 0, function () {return this.localeData().meridiem(this.hours(), this.minutes(), t);});}function et(e, t) {return t._meridiemParse;}I('H', ['HH', 2], 0, 'hour'), I('h', ['hh', 2], 0, Xe), I('k', ['kk', 2], 0, function () {return this.hours() || 24;}), I('hmm', 0, 0, function () {return '' + Xe.apply(this) + L(this.minutes(), 2);}), I('hmmss', 0, 0, function () {return '' + Xe.apply(this) + L(this.minutes(), 2) + L(this.seconds(), 2);}), I('Hmm', 0, 0, function () {return '' + this.hours() + L(this.minutes(), 2);}), I('Hmmss', 0, 0, function () {return '' + this.hours() + L(this.minutes(), 2) + L(this.seconds(), 2);}), Ke('a', !0), Ke('A', !1), C('hour', 'h'), F('hour', 13), ue('a', et), ue('A', et), ue('H', B), ue('h', B), ue('k', B), ue('HH', B, z), ue('hh', B, z), ue('kk', B, z), ue('hmm', Q), ue('hmmss', X), ue('Hmm', Q), ue('Hmmss', X), ce(['H', 'HH'], ge), ce(['k', 'kk'], function (e, t, n) {var s = D(e);t[ge] = 24 === s ? 0 : s;}), ce(['a', 'A'], function (e, t, n) {n._isPm = n._locale.isPM(e), n._meridiem = e;}), ce(['h', 'hh'], function (e, t, n) {t[ge] = D(e), g(n).bigHour = !0;}), ce('hmm', function (e, t, n) {var s = e.length - 2;t[ge] = D(e.substr(0, s)), t[ve] = D(e.substr(s)), g(n).bigHour = !0;}), ce('hmmss', function (e, t, n) {var s = e.length - 4,i = e.length - 2;t[ge] = D(e.substr(0, s)), t[ve] = D(e.substr(s, 2)), t[pe] = D(e.substr(i)), g(n).bigHour = !0;}), ce('Hmm', function (e, t, n) {var s = e.length - 2;t[ge] = D(e.substr(0, s)), t[ve] = D(e.substr(s));}), ce('Hmmss', function (e, t, n) {var s = e.length - 4,i = e.length - 2;t[ge] = D(e.substr(0, s)), t[ve] = D(e.substr(s, 2)), t[pe] = D(e.substr(i));});var tt,nt = Te('Hours', !0),st = { calendar: { sameDay: '[Today at] LT', nextDay: '[Tomorrow at] LT', nextWeek: 'dddd [at] LT', lastDay: '[Yesterday at] LT', lastWeek: '[Last] dddd [at] LT', sameElse: 'L' }, longDateFormat: { LTS: 'h:mm:ss A', LT: 'h:mm A', L: 'MM/DD/YYYY', LL: 'MMMM D, YYYY', LLL: 'MMMM D, YYYY h:mm A', LLLL: 'dddd, MMMM D, YYYY h:mm A' }, invalidDate: 'Invalid date', ordinal: '%d', dayOfMonthOrdinalParse: /\d{1,2}/, relativeTime: { future: 'in %s', past: '%s ago', s: 'a few seconds', ss: '%d seconds', m: 'a minute', mm: '%d minutes', h: 'an hour', hh: '%d hours', d: 'a day', dd: '%d days', M: 'a month', MM: '%d months', y: 'a year', yy: '%d years' }, months: Ce, monthsShort: He, week: { dow: 0, doy: 6 }, weekdays: Ze, weekdaysMin: $e, weekdaysShort: ze, meridiemParse: /[ap]\.?m?\.?/i },it = {},rt = {};function at(e) {return e ? e.toLowerCase().replace('_', '-') : e;}function ot(e) {var t = null;if (!it[e] && 'undefined' !== typeof module && module && module.exports) try {t = tt._abbr, ut(t);} catch (e) {}return it[e];}function ut(e, t) {var n;return e && ((n = l(t) ? ht(e) : lt(e, t)) ? tt = n : 'undefined' !== typeof console && console.warn && console.warn('Locale ' + e + ' not found. Did you forget to load it?')), tt._abbr;}function lt(e, t) {if (null === t) return delete it[e], null;var n,s = st;if (t.abbr = e, null != it[e]) T('defineLocaleOverride', 'use moment.updateLocale(localeName, config) to change an existing locale. moment.defineLocale(localeName, config) should only be used for creating a new locale See http://momentjs.com/guides/#/warnings/define-locale/ for more info.'), s = it[e]._config;else if (null != t.parentLocale) if (null != it[t.parentLocale]) s = it[t.parentLocale]._config;else {if (null == (n = ot(t.parentLocale))) return rt[t.parentLocale] || (rt[t.parentLocale] = []), rt[t.parentLocale].push({ name: e, config: t }), null;s = n._config;}return it[e] = new P(x(s, t)), rt[e] && rt[e].forEach(function (e) {lt(e.name, e.config);}), ut(e), it[e];}function ht(e) {var t;if (e && e._locale && e._locale._abbr && (e = e._locale._abbr), !e) return tt;if (!o(e)) {if (t = ot(e)) return t;e = [e];}return function (e) {for (var t, n, s, i, r = 0; r < e.length;) {for (t = (i = at(e[r]).split('-')).length, n = (n = at(e[r + 1])) ? n.split('-') : null; 0 < t;) {if (s = ot(i.slice(0, t).join('-'))) return s;if (n && n.length >= t && a(i, n, !0) >= t - 1) break;t--;}r++;}return tt;}(e);}function dt(e) {var t,n = e._a;return n && -2 === g(e).overflow && (t = n[_e] < 0 || 11 < n[_e] ? _e : n[ye] < 1 || n[ye] > Pe(n[me], n[_e]) ? ye : n[ge] < 0 || 24 < n[ge] || 24 === n[ge] && (0 !== n[ve] || 0 !== n[pe] || 0 !== n[we]) ? ge : n[ve] < 0 || 59 < n[ve] ? ve : n[pe] < 0 || 59 < n[pe] ? pe : n[we] < 0 || 999 < n[we] ? we : -1, g(e)._overflowDayOfYear && (t < me || ye < t) && (t = ye), g(e)._overflowWeeks && -1 === t && (t = Me), g(e)._overflowWeekday && -1 === t && (t = ke), g(e).overflow = t), e;}function ct(e, t, n) {return null != e ? e : null != t ? t : n;}function ft(e) {var t,n,s,i,r,a = [];if (!e._d) {var _o, _u;for (_o = e, _u = new Date(c.now()), s = _o._useUTC ? [_u.getUTCFullYear(), _u.getUTCMonth(), _u.getUTCDate()] : [_u.getFullYear(), _u.getMonth(), _u.getDate()], e._w && null == e._a[ye] && null == e._a[_e] && function (e) {var t, n, s, i, r, a, o, u;if (null != (t = e._w).GG || null != t.W || null != t.E) r = 1, a = 4, n = ct(t.GG, e._a[me], Ie(bt(), 1, 4).year), s = ct(t.W, 1), ((i = ct(t.E, 1)) < 1 || 7 < i) && (u = !0);else {r = e._locale._week.dow, a = e._locale._week.doy;var _l = Ie(bt(), r, a);n = ct(t.gg, e._a[me], _l.year), s = ct(t.w, _l.week), null != t.d ? ((i = t.d) < 0 || 6 < i) && (u = !0) : null != t.e ? (i = t.e + r, (t.e < 0 || 6 < t.e) && (u = !0)) : i = r;}s < 1 || s > Ae(n, r, a) ? g(e)._overflowWeeks = !0 : null != u ? g(e)._overflowWeekday = !0 : (o = Ee(n, s, i, r, a), e._a[me] = o.year, e._dayOfYear = o.dayOfYear);}(e), null != e._dayOfYear && (r = ct(e._a[me], s[me]), (e._dayOfYear > Se(r) || 0 === e._dayOfYear) && (g(e)._overflowDayOfYear = !0), n = Ge(r, 0, e._dayOfYear), e._a[_e] = n.getUTCMonth(), e._a[ye] = n.getUTCDate()), t = 0; t < 3 && null == e._a[t]; ++t) {e._a[t] = a[t] = s[t];}for (; t < 7; t++) {e._a[t] = a[t] = null == e._a[t] ? 2 === t ? 1 : 0 : e._a[t];}24 === e._a[ge] && 0 === e._a[ve] && 0 === e._a[pe] && 0 === e._a[we] && (e._nextDay = !0, e._a[ge] = 0), e._d = (e._useUTC ? Ge : function (e, t, n, s, i, r, a) {var o;return e < 100 && 0 <= e ? (o = new Date(e + 400, t, n, s, i, r, a), isFinite(o.getFullYear()) && o.setFullYear(e)) : o = new Date(e, t, n, s, i, r, a), o;}).apply(null, a), i = e._useUTC ? e._d.getUTCDay() : e._d.getDay(), null != e._tzm && e._d.setUTCMinutes(e._d.getUTCMinutes() - e._tzm), e._nextDay && (e._a[ge] = 24), e._w && void 0 !== e._w.d && e._w.d !== i && (g(e).weekdayMismatch = !0);}}var mt = /^\s*((?:[+-]\d{6}|\d{4})-(?:\d\d-\d\d|W\d\d-\d|W\d\d|\d\d\d|\d\d))(?:(T| )(\d\d(?::\d\d(?::\d\d(?:[.,]\d+)?)?)?)([\+\-]\d\d(?::?\d\d)?|\s*Z)?)?$/,_t = /^\s*((?:[+-]\d{6}|\d{4})(?:\d\d\d\d|W\d\d\d|W\d\d|\d\d\d|\d\d))(?:(T| )(\d\d(?:\d\d(?:\d\d(?:[.,]\d+)?)?)?)([\+\-]\d\d(?::?\d\d)?|\s*Z)?)?$/,yt = /Z|[+-]\d\d(?::?\d\d)?/,gt = [['YYYYYY-MM-DD', /[+-]\d{6}-\d\d-\d\d/], ['YYYY-MM-DD', /\d{4}-\d\d-\d\d/], ['GGGG-[W]WW-E', /\d{4}-W\d\d-\d/], ['GGGG-[W]WW', /\d{4}-W\d\d/, !1], ['YYYY-DDD', /\d{4}-\d{3}/], ['YYYY-MM', /\d{4}-\d\d/, !1], ['YYYYYYMMDD', /[+-]\d{10}/], ['YYYYMMDD', /\d{8}/], ['GGGG[W]WWE', /\d{4}W\d{3}/], ['GGGG[W]WW', /\d{4}W\d{2}/, !1], ['YYYYDDD', /\d{7}/]],vt = [['HH:mm:ss.SSSS', /\d\d:\d\d:\d\d\.\d+/], ['HH:mm:ss,SSSS', /\d\d:\d\d:\d\d,\d+/], ['HH:mm:ss', /\d\d:\d\d:\d\d/], ['HH:mm', /\d\d:\d\d/], ['HHmmss.SSSS', /\d\d\d\d\d\d\.\d+/], ['HHmmss,SSSS', /\d\d\d\d\d\d,\d+/], ['HHmmss', /\d\d\d\d\d\d/], ['HHmm', /\d\d\d\d/], ['HH', /\d\d/]],pt = /^\/?Date\((\-?\d+)/i;function wt(e) {var t,n,s,i,r,a,o = e._i,u = mt.exec(o) || _t.exec(o);if (u) {for (g(e).iso = !0, t = 0, n = gt.length; t < n; t++) {if (gt[t][1].exec(u[1])) {i = gt[t][0], s = !1 !== gt[t][2];break;}}if (null == i) return void (e._isValid = !1);if (u[3]) {for (t = 0, n = vt.length; t < n; t++) {if (vt[t][1].exec(u[3])) {r = (u[2] || ' ') + vt[t][0];break;}}if (null == r) return void (e._isValid = !1);}if (!s && null != r) return void (e._isValid = !1);if (u[4]) {if (!yt.exec(u[4])) return void (e._isValid = !1);a = 'Z';}e._f = i + (r || '') + (a || ''), Yt(e);} else e._isValid = !1;}var Mt = /^(?:(Mon|Tue|Wed|Thu|Fri|Sat|Sun),?\s)?(\d{1,2})\s(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s(\d{2,4})\s(\d\d):(\d\d)(?::(\d\d))?\s(?:(UT|GMT|[ECMP][SD]T)|([Zz])|([+-]\d{4}))$/;function kt(e, t, n, s, i, r) {var a = [function (e) {var t = parseInt(e, 10);{if (t <= 49) return 2e3 + t;if (t <= 999) return 1900 + t;}return t;}(e), He.indexOf(t), parseInt(n, 10), parseInt(s, 10), parseInt(i, 10)];return r && a.push(parseInt(r, 10)), a;}var St = { UT: 0, GMT: 0, EDT: -240, EST: -300, CDT: -300, CST: -360, MDT: -360, MST: -420, PDT: -420, PST: -480 };function Dt(e) {var t,n,s,i = Mt.exec(e._i.replace(/\([^)]*\)|[\n\t]/g, ' ').replace(/(\s\s+)/g, ' ').replace(/^\s\s*/, '').replace(/\s\s*$/, ''));if (i) {var _r = kt(i[4], i[3], i[2], i[5], i[6], i[7]);if (t = i[1], n = _r, s = e, t && ze.indexOf(t) !== new Date(n[0], n[1], n[2]).getDay() && (g(s).weekdayMismatch = !0, !(s._isValid = !1))) return;e._a = _r, e._tzm = function (e, t, n) {if (e) return St[e];if (t) return 0;var s = parseInt(n, 10),i = s % 100;return (s - i) / 100 * 60 + i;}(i[8], i[9], i[10]), e._d = Ge.apply(null, e._a), e._d.setUTCMinutes(e._d.getUTCMinutes() - e._tzm), g(e).rfc2822 = !0;} else e._isValid = !1;}function Yt(e) {if (e._f !== c.ISO_8601) {if (e._f !== c.RFC_2822) {e._a = [], g(e).empty = !0;var _t4,_n6,_s4,_i,_r2,_a,_o2,_u2,_l2 = '' + e._i,_h = _l2.length,_d = 0;for (_s4 = j(e._f, e._locale).match(N) || [], _t4 = 0; _t4 < _s4.length; _t4++) {_i = _s4[_t4], (_n6 = (_l2.match(le(_i, e)) || [])[0]) && (0 < (_r2 = _l2.substr(0, _l2.indexOf(_n6))).length && g(e).unusedInput.push(_r2), _l2 = _l2.slice(_l2.indexOf(_n6) + _n6.length), _d += _n6.length), E[_i] ? (_n6 ? g(e).empty = !1 : g(e).unusedTokens.push(_i), _a = _i, _u2 = e, null != (_o2 = _n6) && m(de, _a) && de[_a](_o2, _u2._a, _u2, _a)) : e._strict && !_n6 && g(e).unusedTokens.push(_i);}g(e).charsLeftOver = _h - _d, 0 < _l2.length && g(e).unusedInput.push(_l2), e._a[ge] <= 12 && !0 === g(e).bigHour && 0 < e._a[ge] && (g(e).bigHour = void 0), g(e).parsedDateParts = e._a.slice(0), g(e).meridiem = e._meridiem, e._a[ge] = function (e, t, n) {var s;if (null == n) return t;return null != e.meridiemHour ? e.meridiemHour(t, n) : (null != e.isPM && ((s = e.isPM(n)) && t < 12 && (t += 12), s || 12 !== t || (t = 0)), t);}(e._locale, e._a[ge], e._meridiem), ft(e), dt(e);} else Dt(e);} else wt(e);}function Ot(e) {var t,n,s,i,r = e._i,a = e._f;return e._locale = e._locale || ht(e._l), null === r || void 0 === a && '' === r ? p({ nullInput: !0 }) : ('string' === typeof r && (e._i = r = e._locale.preparse(r)), k(r) ? new M(dt(r)) : (d(r) ? e._d = r : o(a) ? function (e) {var t, n, s, i, r;if (0 === e._f.length) return g(e).invalidFormat = !0, e._d = new Date(NaN);for (i = 0; i < e._f.length; i++) {r = 0, t = w({}, e), null != e._useUTC && (t._useUTC = e._useUTC), t._f = e._f[i], Yt(t), v(t) && (r += g(t).charsLeftOver, r += 10 * g(t).unusedTokens.length, g(t).score = r, (null == s || r < s) && (s = r, n = t));}_(e, n || t);}(e) : a ? Yt(e) : l(n = (t = e)._i) ? t._d = new Date(c.now()) : d(n) ? t._d = new Date(n.valueOf()) : 'string' === typeof n ? (s = t, null === (i = pt.exec(s._i)) ? (wt(s), !1 === s._isValid && (delete s._isValid, Dt(s), !1 === s._isValid && (delete s._isValid, c.createFromInputFallback(s)))) : s._d = new Date(+i[1])) : o(n) ? (t._a = f(n.slice(0), function (e) {return parseInt(e, 10);}), ft(t)) : u(n) ? function (e) {if (!e._d) {var _t5 = R(e._i);e._a = f([_t5.year, _t5.month, _t5.day || _t5.date, _t5.hour, _t5.minute, _t5.second, _t5.millisecond], function (e) {return e && parseInt(e, 10);}), ft(e);}}(t) : h(n) ? t._d = new Date(n) : c.createFromInputFallback(t), v(e) || (e._d = null), e));}function Tt(e, t, n, s, i) {var r,a = {};return !0 !== n && !1 !== n || (s = n, n = void 0), (u(e) && function (e) {if (Object.getOwnPropertyNames) return 0 === Object.getOwnPropertyNames(e).length;var t;for (t in e) {if (e.hasOwnProperty(t)) return !1;}return !0;}(e) || o(e) && 0 === e.length) && (e = void 0), a._isAMomentObject = !0, a._useUTC = a._isUTC = i, a._l = n, a._i = e, a._f = t, a._strict = s, (r = new M(dt(Ot(a))))._nextDay && (r.add(1, 'd'), r._nextDay = void 0), r;}function bt(e, t, n, s) {return Tt(e, t, n, s, !1);}c.createFromInputFallback = n('value provided is not in a recognized RFC2822 or ISO format. moment construction falls back to js Date(), which is not reliable across all browsers and versions. Non RFC2822/ISO date formats are discouraged and will be removed in an upcoming major release. Please refer to http://momentjs.com/guides/#/warnings/js-date/ for more info.', function (e) {e._d = new Date(e._i + (e._useUTC ? ' UTC' : ''));}), c.ISO_8601 = function () {}, c.RFC_2822 = function () {};var xt = n('moment().min is deprecated, use moment.max instead. http://momentjs.com/guides/#/warnings/min-max/', function () {var e = bt.apply(null, arguments);return this.isValid() && e.isValid() ? e < this ? this : e : p();}),Pt = n('moment().max is deprecated, use moment.min instead. http://momentjs.com/guides/#/warnings/min-max/', function () {var e = bt.apply(null, arguments);return this.isValid() && e.isValid() ? this < e ? this : e : p();});function Wt(e, t) {var n, s;if (1 === t.length && o(t[0]) && (t = t[0]), !t.length) return bt();for (n = t[0], s = 1; s < t.length; ++s) {t[s].isValid() && !t[s][e](n) || (n = t[s]);}return n;}var Ct = ['year', 'quarter', 'month', 'week', 'day', 'hour', 'minute', 'second', 'millisecond'];function Ht(e) {var t = R(e),n = t.year || 0,s = t.quarter || 0,i = t.month || 0,r = t.week || t.isoWeek || 0,a = t.day || 0,o = t.hour || 0,u = t.minute || 0,l = t.second || 0,h = t.millisecond || 0;this._isValid = function (e) {for (var _t6 in e) {if (-1 === Ye.call(Ct, _t6) || null != e[_t6] && isNaN(e[_t6])) return !1;}for (var _n7 = !1, _s5 = 0; _s5 < Ct.length; ++_s5) {if (e[Ct[_s5]]) {if (_n7) return !1;parseFloat(e[Ct[_s5]]) !== D(e[Ct[_s5]]) && (_n7 = !0);}}return !0;}(t), this._milliseconds = +h + 1e3 * l + 6e4 * u + 1e3 * o * 60 * 60, this._days = +a + 7 * r, this._months = +i + 3 * s + 12 * n, this._data = {}, this._locale = ht(), this._bubble();}function Rt(e) {return e instanceof Ht;}function Ut(e) {return e < 0 ? -1 * Math.round(-1 * e) : Math.round(e);}function Ft(e, n) {I(e, 0, 0, function () {var e = this.utcOffset(),t = '+';return e < 0 && (e = -e, t = '-'), t + L(~~(e / 60), 2) + n + L(~~e % 60, 2);});}Ft('Z', ':'), Ft('ZZ', ''), ue('Z', re), ue('ZZ', re), ce(['Z', 'ZZ'], function (e, t, n) {n._useUTC = !0, n._tzm = Nt(re, e);});var Lt = /([\+\-]|\d\d)/gi;function Nt(e, t) {var n = (t || '').match(e);if (null === n) return null;var s = ((n[n.length - 1] || []) + '').match(Lt) || ['-', 0, 0],i = 60 * s[1] + D(s[2]);return 0 === i ? 0 : '+' === s[0] ? i : -i;}function Gt(e, t) {var n, s;return t._isUTC ? (n = t.clone(), s = (k(e) || d(e) ? e.valueOf() : bt(e).valueOf()) - n.valueOf(), n._d.setTime(n._d.valueOf() + s), c.updateOffset(n, !1), n) : bt(e).local();}function Vt(e) {return 15 * -Math.round(e._d.getTimezoneOffset() / 15);}function Et() {return !!this.isValid() && this._isUTC && 0 === this._offset;}c.updateOffset = function () {};var It = /^(\-|\+)?(?:(\d*)[. ])?(\d+)\:(\d+)(?:\:(\d+)(\.\d*)?)?$/,At = /^(-|\+)?P(?:([-+]?[0-9,.]*)Y)?(?:([-+]?[0-9,.]*)M)?(?:([-+]?[0-9,.]*)W)?(?:([-+]?[0-9,.]*)D)?(?:T(?:([-+]?[0-9,.]*)H)?(?:([-+]?[0-9,.]*)M)?(?:([-+]?[0-9,.]*)S)?)?$/;function jt(e, t) {var n,s,i,r = e,a = null;return Rt(e) ? r = { ms: e._milliseconds, d: e._days, M: e._months } : h(e) ? (r = {}, t ? r[t] = e : r.milliseconds = e) : (a = It.exec(e)) ? (n = '-' === a[1] ? -1 : 1, r = { y: 0, d: D(a[ye]) * n, h: D(a[ge]) * n, m: D(a[ve]) * n, s: D(a[pe]) * n, ms: D(Ut(1e3 * a[we])) * n }) : (a = At.exec(e)) ? (n = '-' === a[1] ? -1 : 1, r = { y: Zt(a[2], n), M: Zt(a[3], n), w: Zt(a[4], n), d: Zt(a[5], n), h: Zt(a[6], n), m: Zt(a[7], n), s: Zt(a[8], n) }) : null == r ? r = {} : 'object' === typeof r && ('from' in r || 'to' in r) && (i = function (e, t) {var n;if (!e.isValid() || !t.isValid()) return { milliseconds: 0, months: 0 };t = Gt(t, e), e.isBefore(t) ? n = zt(e, t) : ((n = zt(t, e)).milliseconds = -n.milliseconds, n.months = -n.months);return n;}(bt(r.from), bt(r.to)), (r = {}).ms = i.milliseconds, r.M = i.months), s = new Ht(r), Rt(e) && m(e, '_locale') && (s._locale = e._locale), s;}function Zt(e, t) {var n = e && parseFloat(e.replace(',', '.'));return (isNaN(n) ? 0 : n) * t;}function zt(e, t) {var n = {};return n.months = t.month() - e.month() + 12 * (t.year() - e.year()), e.clone().add(n.months, 'M').isAfter(t) && --n.months, n.milliseconds = +t - +e.clone().add(n.months, 'M'), n;}function $t(s, i) {return function (e, t) {var n;return null === t || isNaN(+t) || (T(i, 'moment().' + i + '(period, number) is deprecated. Please use moment().' + i + '(number, period). See http://momentjs.com/guides/#/warnings/add-inverted-param/ for more info.'), n = e, e = t, t = n), qt(this, jt(e = 'string' === typeof e ? +e : e, t), s), this;};}function qt(e, t, n, s) {var i = t._milliseconds,r = Ut(t._days),a = Ut(t._months);e.isValid() && (s = null == s || s, a && Re(e, be(e, 'Month') + a * n), r && xe(e, 'Date', be(e, 'Date') + r * n), i && e._d.setTime(e._d.valueOf() + i * n), s && c.updateOffset(e, r || a));}jt.fn = Ht.prototype, jt.invalid = function () {return jt(NaN);};var Jt = $t(1, 'add'),Bt = $t(-1, 'subtract');function Qt(e, t) {var n = 12 * (t.year() - e.year()) + (t.month() - e.month()),s = e.clone().add(n, 'months');return -(n + (t - s < 0 ? (t - s) / (s - e.clone().add(n - 1, 'months')) : (t - s) / (e.clone().add(n + 1, 'months') - s))) || 0;}function Xt(e) {var t;return void 0 === e ? this._locale._abbr : (null != (t = ht(e)) && (this._locale = t), this);}c.defaultFormat = 'YYYY-MM-DDTHH:mm:ssZ', c.defaultFormatUtc = 'YYYY-MM-DDTHH:mm:ss[Z]';var Kt = n('moment().lang() is deprecated. Instead, use moment().localeData() to get the language configuration. Use moment().locale() to change languages.', function (e) {return void 0 === e ? this.localeData() : this.locale(e);});function en() {return this._locale;}var tn = 126227808e5;function nn(e, t) {return (e % t + t) % t;}function sn(e, t, n) {return e < 100 && 0 <= e ? new Date(e + 400, t, n) - tn : new Date(e, t, n).valueOf();}function rn(e, t, n) {return e < 100 && 0 <= e ? Date.UTC(e + 400, t, n) - tn : Date.UTC(e, t, n);}function an(e, t) {I(0, [e, e.length], 0, t);}function on(e, t, n, s, i) {var r;return null == e ? Ie(this, s, i).year : ((r = Ae(e, s, i)) < t && (t = r), function (e, t, n, s, i) {var r = Ee(e, t, n, s, i),a = Ge(r.year, 0, r.dayOfYear);return this.year(a.getUTCFullYear()), this.month(a.getUTCMonth()), this.date(a.getUTCDate()), this;}.call(this, e, t, n, s, i));}I(0, ['gg', 2], 0, function () {return this.weekYear() % 100;}), I(0, ['GG', 2], 0, function () {return this.isoWeekYear() % 100;}), an('gggg', 'weekYear'), an('ggggg', 'weekYear'), an('GGGG', 'isoWeekYear'), an('GGGGG', 'isoWeekYear'), C('weekYear', 'gg'), C('isoWeekYear', 'GG'), F('weekYear', 1), F('isoWeekYear', 1), ue('G', se), ue('g', se), ue('GG', B, z), ue('gg', B, z), ue('GGGG', ee, q), ue('gggg', ee, q), ue('GGGGG', te, J), ue('ggggg', te, J), fe(['gggg', 'ggggg', 'GGGG', 'GGGGG'], function (e, t, n, s) {t[s.substr(0, 2)] = D(e);}), fe(['gg', 'GG'], function (e, t, n, s) {t[s] = c.parseTwoDigitYear(e);}), I('Q', 0, 'Qo', 'quarter'), C('quarter', 'Q'), F('quarter', 7), ue('Q', Z), ce('Q', function (e, t) {t[_e] = 3 * (D(e) - 1);}), I('D', ['DD', 2], 'Do', 'date'), C('date', 'D'), F('date', 9), ue('D', B), ue('DD', B, z), ue('Do', function (e, t) {return e ? t._dayOfMonthOrdinalParse || t._ordinalParse : t._dayOfMonthOrdinalParseLenient;}), ce(['D', 'DD'], ye), ce('Do', function (e, t) {t[ye] = D(e.match(B)[0]);});var un = Te('Date', !0);I('DDD', ['DDDD', 3], 'DDDo', 'dayOfYear'), C('dayOfYear', 'DDD'), F('dayOfYear', 4), ue('DDD', K), ue('DDDD', $), ce(['DDD', 'DDDD'], function (e, t, n) {n._dayOfYear = D(e);}), I('m', ['mm', 2], 0, 'minute'), C('minute', 'm'), F('minute', 14), ue('m', B), ue('mm', B, z), ce(['m', 'mm'], ve);var ln = Te('Minutes', !1);I('s', ['ss', 2], 0, 'second'), C('second', 's'), F('second', 15), ue('s', B), ue('ss', B, z), ce(['s', 'ss'], pe);var hn,dn = Te('Seconds', !1);for (I('S', 0, 0, function () {return ~~(this.millisecond() / 100);}), I(0, ['SS', 2], 0, function () {return ~~(this.millisecond() / 10);}), I(0, ['SSS', 3], 0, 'millisecond'), I(0, ['SSSS', 4], 0, function () {return 10 * this.millisecond();}), I(0, ['SSSSS', 5], 0, function () {return 100 * this.millisecond();}), I(0, ['SSSSSS', 6], 0, function () {return 1e3 * this.millisecond();}), I(0, ['SSSSSSS', 7], 0, function () {return 1e4 * this.millisecond();}), I(0, ['SSSSSSSS', 8], 0, function () {return 1e5 * this.millisecond();}), I(0, ['SSSSSSSSS', 9], 0, function () {return 1e6 * this.millisecond();}), C('millisecond', 'ms'), F('millisecond', 16), ue('S', K, Z), ue('SS', K, z), ue('SSS', K, $), hn = 'SSSS'; hn.length <= 9; hn += 'S') {ue(hn, ne);}function cn(e, t) {t[we] = D(1e3 * ('0.' + e));}for (hn = 'S'; hn.length <= 9; hn += 'S') {ce(hn, cn);}var fn = Te('Milliseconds', !1);I('z', 0, 0, 'zoneAbbr'), I('zz', 0, 0, 'zoneName');var mn = M.prototype;function _n(e) {return e;}mn.add = Jt, mn.calendar = function (e, t) {var n = e || bt(),s = Gt(n, this).startOf('day'),i = c.calendarFormat(this, s) || 'sameElse',r = t && (b(t[i]) ? t[i].call(this, n) : t[i]);return this.format(r || this.localeData().calendar(i, this, bt(n)));}, mn.clone = function () {return new M(this);}, mn.diff = function (e, t, n) {var s, i, r;if (!this.isValid()) return NaN;if (!(s = Gt(e, this)).isValid()) return NaN;switch (i = 6e4 * (s.utcOffset() - this.utcOffset()), t = H(t)) {case 'year':r = Qt(this, s) / 12;break;case 'month':r = Qt(this, s);break;case 'quarter':r = Qt(this, s) / 3;break;case 'second':r = (this - s) / 1e3;break;case 'minute':r = (this - s) / 6e4;break;case 'hour':r = (this - s) / 36e5;break;case 'day':r = (this - s - i) / 864e5;break;case 'week':r = (this - s - i) / 6048e5;break;default:r = this - s;}return n ? r : S(r);}, mn.endOf = function (e) {var t;if (void 0 === (e = H(e)) || 'millisecond' === e || !this.isValid()) return this;var n = this._isUTC ? rn : sn;switch (e) {case 'year':t = n(this.year() + 1, 0, 1) - 1;break;case 'quarter':t = n(this.year(), this.month() - this.month() % 3 + 3, 1) - 1;break;case 'month':t = n(this.year(), this.month() + 1, 1) - 1;break;case 'week':t = n(this.year(), this.month(), this.date() - this.weekday() + 7) - 1;break;case 'isoWeek':t = n(this.year(), this.month(), this.date() - (this.isoWeekday() - 1) + 7) - 1;break;case 'day':case 'date':t = n(this.year(), this.month(), this.date() + 1) - 1;break;case 'hour':t = this._d.valueOf(), t += 36e5 - nn(t + (this._isUTC ? 0 : 6e4 * this.utcOffset()), 36e5) - 1;break;case 'minute':t = this._d.valueOf(), t += 6e4 - nn(t, 6e4) - 1;break;case 'second':t = this._d.valueOf(), t += 1e3 - nn(t, 1e3) - 1;break;}return this._d.setTime(t), c.updateOffset(this, !0), this;}, mn.format = function (e) {e || (e = this.isUtc() ? c.defaultFormatUtc : c.defaultFormat);var t = A(this, e);return this.localeData().postformat(t);}, mn.from = function (e, t) {return this.isValid() && (k(e) && e.isValid() || bt(e).isValid()) ? jt({ to: this, from: e }).locale(this.locale()).humanize(!t) : this.localeData().invalidDate();}, mn.fromNow = function (e) {return this.from(bt(), e);}, mn.to = function (e, t) {return this.isValid() && (k(e) && e.isValid() || bt(e).isValid()) ? jt({ from: this, to: e }).locale(this.locale()).humanize(!t) : this.localeData().invalidDate();}, mn.toNow = function (e) {return this.to(bt(), e);}, mn.get = function (e) {return b(this[e = H(e)]) ? this[e]() : this;}, mn.invalidAt = function () {return g(this).overflow;}, mn.isAfter = function (e, t) {var n = k(e) ? e : bt(e);return !(!this.isValid() || !n.isValid()) && ('millisecond' === (t = H(t) || 'millisecond') ? this.valueOf() > n.valueOf() : n.valueOf() < this.clone().startOf(t).valueOf());}, mn.isBefore = function (e, t) {var n = k(e) ? e : bt(e);return !(!this.isValid() || !n.isValid()) && ('millisecond' === (t = H(t) || 'millisecond') ? this.valueOf() < n.valueOf() : this.clone().endOf(t).valueOf() < n.valueOf());}, mn.isBetween = function (e, t, n, s) {var i = k(e) ? e : bt(e),r = k(t) ? t : bt(t);return !!(this.isValid() && i.isValid() && r.isValid()) && ('(' === (s = s || '()')[0] ? this.isAfter(i, n) : !this.isBefore(i, n)) && (')' === s[1] ? this.isBefore(r, n) : !this.isAfter(r, n));}, mn.isSame = function (e, t) {var n,s = k(e) ? e : bt(e);return !(!this.isValid() || !s.isValid()) && ('millisecond' === (t = H(t) || 'millisecond') ? this.valueOf() === s.valueOf() : (n = s.valueOf(), this.clone().startOf(t).valueOf() <= n && n <= this.clone().endOf(t).valueOf()));}, mn.isSameOrAfter = function (e, t) {return this.isSame(e, t) || this.isAfter(e, t);}, mn.isSameOrBefore = function (e, t) {return this.isSame(e, t) || this.isBefore(e, t);}, mn.isValid = function () {return v(this);}, mn.lang = Kt, mn.locale = Xt, mn.localeData = en, mn.max = Pt, mn.min = xt, mn.parsingFlags = function () {return _({}, g(this));}, mn.set = function (e, t) {if ('object' === typeof e) for (var _n8 = function (e) {var t = [];for (var _n9 in e) {t.push({ unit: _n9, priority: U[_n9] });}return t.sort(function (e, t) {return e.priority - t.priority;}), t;}(e = R(e)), _s6 = 0; _s6 < _n8.length; _s6++) {this[_n8[_s6].unit](e[_n8[_s6].unit]);} else if (b(this[e = H(e)])) return this[e](t);return this;}, mn.startOf = function (e) {var t;if (void 0 === (e = H(e)) || 'millisecond' === e || !this.isValid()) return this;var n = this._isUTC ? rn : sn;switch (e) {case 'year':t = n(this.year(), 0, 1);break;case 'quarter':t = n(this.year(), this.month() - this.month() % 3, 1);break;case 'month':t = n(this.year(), this.month(), 1);break;case 'week':t = n(this.year(), this.month(), this.date() - this.weekday());break;case 'isoWeek':t = n(this.year(), this.month(), this.date() - (this.isoWeekday() - 1));break;case 'day':case 'date':t = n(this.year(), this.month(), this.date());break;case 'hour':t = this._d.valueOf(), t -= nn(t + (this._isUTC ? 0 : 6e4 * this.utcOffset()), 36e5);break;case 'minute':t = this._d.valueOf(), t -= nn(t, 6e4);break;case 'second':t = this._d.valueOf(), t -= nn(t, 1e3);break;}return this._d.setTime(t), c.updateOffset(this, !0), this;}, mn.subtract = Bt, mn.toArray = function () {var e = this;return [e.year(), e.month(), e.date(), e.hour(), e.minute(), e.second(), e.millisecond()];}, mn.toObject = function () {var e = this;return { years: e.year(), months: e.month(), date: e.date(), hours: e.hours(), minutes: e.minutes(), seconds: e.seconds(), milliseconds: e.milliseconds() };}, mn.toDate = function () {return new Date(this.valueOf());}, mn.toISOString = function (e) {if (!this.isValid()) return null;var t = !0 !== e,n = t ? this.clone().utc() : this;return n.year() < 0 || 9999 < n.year() ? A(n, t ? 'YYYYYY-MM-DD[T]HH:mm:ss.SSS[Z]' : 'YYYYYY-MM-DD[T]HH:mm:ss.SSSZ') : b(Date.prototype.toISOString) ? t ? this.toDate().toISOString() : new Date(this.valueOf() + 60 * this.utcOffset() * 1e3).toISOString().replace('Z', A(n, 'Z')) : A(n, t ? 'YYYY-MM-DD[T]HH:mm:ss.SSS[Z]' : 'YYYY-MM-DD[T]HH:mm:ss.SSSZ');}, mn.inspect = function () {if (!this.isValid()) return 'moment.invalid(/* ' + this._i + ' */)';var e = 'moment',t = '';this.isLocal() || (e = 0 === this.utcOffset() ? 'moment.utc' : 'moment.parseZone', t = 'Z');var n = '[' + e + '("]',s = 0 <= this.year() && this.year() <= 9999 ? 'YYYY' : 'YYYYYY',i = t + '[")]';return this.format(n + s + '-MM-DD[T]HH:mm:ss.SSS' + i);}, mn.toJSON = function () {return this.isValid() ? this.toISOString() : null;}, mn.toString = function () {return this.clone().locale('en').format('ddd MMM DD YYYY HH:mm:ss [GMT]ZZ');}, mn.unix = function () {return Math.floor(this.valueOf() / 1e3);}, mn.valueOf = function () {return this._d.valueOf() - 6e4 * (this._offset || 0);}, mn.creationData = function () {return { input: this._i, format: this._f, locale: this._locale, isUTC: this._isUTC, strict: this._strict };}, mn.year = Oe, mn.isLeapYear = function () {return De(this.year());}, mn.weekYear = function (e) {return on.call(this, e, this.week(), this.weekday(), this.localeData()._week.dow, this.localeData()._week.doy);}, mn.isoWeekYear = function (e) {return on.call(this, e, this.isoWeek(), this.isoWeekday(), 1, 4);}, mn.quarter = mn.quarters = function (e) {return null == e ? Math.ceil((this.month() + 1) / 3) : this.month(3 * (e - 1) + this.month() % 3);}, mn.month = Ue, mn.daysInMonth = function () {return Pe(this.year(), this.month());}, mn.week = mn.weeks = function (e) {var t = this.localeData().week(this);return null == e ? t : this.add(7 * (e - t), 'd');}, mn.isoWeek = mn.isoWeeks = function (e) {var t = Ie(this, 1, 4).week;return null == e ? t : this.add(7 * (e - t), 'd');}, mn.weeksInYear = function () {var e = this.localeData()._week;return Ae(this.year(), e.dow, e.doy);}, mn.isoWeeksInYear = function () {return Ae(this.year(), 1, 4);}, mn.date = un, mn.day = mn.days = function (e) {if (!this.isValid()) return null != e ? this : NaN;var t,n,s = this._isUTC ? this._d.getUTCDay() : this._d.getDay();return null != e ? (t = e, n = this.localeData(), e = 'string' !== typeof t ? t : isNaN(t) ? 'number' === typeof (t = n.weekdaysParse(t)) ? t : null : parseInt(t, 10), this.add(e - s, 'd')) : s;}, mn.weekday = function (e) {if (!this.isValid()) return null != e ? this : NaN;var t = (this.day() + 7 - this.localeData()._week.dow) % 7;return null == e ? t : this.add(e - t, 'd');}, mn.isoWeekday = function (e) {if (!this.isValid()) return null != e ? this : NaN;if (null == e) return this.day() || 7;var t,n,s = (t = e, n = this.localeData(), 'string' === typeof t ? n.weekdaysParse(t) % 7 || 7 : isNaN(t) ? null : t);return this.day(this.day() % 7 ? s : s - 7);}, mn.dayOfYear = function (e) {var t = Math.round((this.clone().startOf('day') - this.clone().startOf('year')) / 864e5) + 1;return null == e ? t : this.add(e - t, 'd');}, mn.hour = mn.hours = nt, mn.minute = mn.minutes = ln, mn.second = mn.seconds = dn, mn.millisecond = mn.milliseconds = fn, mn.utcOffset = function (e, t, n) {var s,i = this._offset || 0;if (!this.isValid()) return null != e ? this : NaN;if (null == e) return this._isUTC ? i : Vt(this);if ('string' === typeof e) {if (null === (e = Nt(re, e))) return this;} else Math.abs(e) < 16 && !n && (e *= 60);return !this._isUTC && t && (s = Vt(this)), this._offset = e, this._isUTC = !0, null != s && this.add(s, 'm'), i !== e && (!t || this._changeInProgress ? qt(this, jt(e - i, 'm'), 1, !1) : this._changeInProgress || (this._changeInProgress = !0, c.updateOffset(this, !0), this._changeInProgress = null)), this;}, mn.utc = function (e) {return this.utcOffset(0, e);}, mn.local = function (e) {return this._isUTC && (this.utcOffset(0, e), this._isUTC = !1, e && this.subtract(Vt(this), 'm')), this;}, mn.parseZone = function () {if (null != this._tzm) this.utcOffset(this._tzm, !1, !0);else if ('string' === typeof this._i) {var _e2 = Nt(ie, this._i);null != _e2 ? this.utcOffset(_e2) : this.utcOffset(0, !0);}return this;}, mn.hasAlignedHourOffset = function (e) {return !!this.isValid() && (e = e ? bt(e).utcOffset() : 0, (this.utcOffset() - e) % 60 == 0);}, mn.isDST = function () {return this.utcOffset() > this.clone().month(0).utcOffset() || this.utcOffset() > this.clone().month(5).utcOffset();}, mn.isLocal = function () {return !!this.isValid() && !this._isUTC;}, mn.isUtcOffset = function () {return !!this.isValid() && this._isUTC;}, mn.isUtc = Et, mn.isUTC = Et, mn.zoneAbbr = function () {return this._isUTC ? 'UTC' : '';}, mn.zoneName = function () {return this._isUTC ? 'Coordinated Universal Time' : '';}, mn.dates = n('dates accessor is deprecated. Use date instead.', un), mn.months = n('months accessor is deprecated. Use month instead', Ue), mn.years = n('years accessor is deprecated. Use year instead', Oe), mn.zone = n('moment().zone is deprecated, use moment().utcOffset instead. http://momentjs.com/guides/#/warnings/zone/', function (e, t) {return null != e ? ('string' !== typeof e && (e = -e), this.utcOffset(e, t), this) : -this.utcOffset();}), mn.isDSTShifted = n('isDSTShifted is deprecated. See http://momentjs.com/guides/#/warnings/dst-shifted/ for more information', function () {if (!l(this._isDSTShifted)) return this._isDSTShifted;var e = {};if (w(e, this), (e = Ot(e))._a) {var _t7 = e._isUTC ? y(e._a) : bt(e._a);this._isDSTShifted = this.isValid() && 0 < a(e._a, _t7.toArray());} else this._isDSTShifted = !1;return this._isDSTShifted;});var yn = P.prototype;function gn(e, t, n, s) {var i = ht(),r = y().set(s, t);return i[n](r, e);}function vn(e, t, n) {if (h(e) && (t = e, e = void 0), e = e || '', null != t) return gn(e, t, n, 'month');var s,i = [];for (s = 0; s < 12; s++) {i[s] = gn(e, s, n, 'month');}return i;}function pn(e, t, n, s) {t = ('boolean' === typeof e ? h(t) && (n = t, t = void 0) : (t = e, e = !1, h(n = t) && (n = t, t = void 0)), t || '');var i,r = ht(),a = e ? r._week.dow : 0;if (null != n) return gn(t, (n + a) % 7, s, 'day');var o = [];for (i = 0; i < 7; i++) {o[i] = gn(t, (i + a) % 7, s, 'day');}return o;}yn.calendar = function (e, t, n) {var s = this._calendar[e] || this._calendar.sameElse;return b(s) ? s.call(t, n) : s;}, yn.longDateFormat = function (e) {var t = this._longDateFormat[e],n = this._longDateFormat[e.toUpperCase()];return t || !n ? t : (this._longDateFormat[e] = n.replace(/MMMM|MM|DD|dddd/g, function (e) {return e.slice(1);}), this._longDateFormat[e]);}, yn.invalidDate = function () {return this._invalidDate;}, yn.ordinal = function (e) {return this._ordinal.replace('%d', e);}, yn.preparse = _n, yn.postformat = _n, yn.relativeTime = function (e, t, n, s) {var i = this._relativeTime[n];return b(i) ? i(e, t, n, s) : i.replace(/%d/i, e);}, yn.pastFuture = function (e, t) {var n = this._relativeTime[0 < e ? 'future' : 'past'];return b(n) ? n(t) : n.replace(/%s/i, t);}, yn.set = function (e) {var t, n;for (n in e) {b(t = e[n]) ? this[n] = t : this['_' + n] = t;}this._config = e, this._dayOfMonthOrdinalParseLenient = new RegExp((this._dayOfMonthOrdinalParse.source || this._ordinalParse.source) + '|' + /\d{1,2}/.source);}, yn.months = function (e, t) {return e ? o(this._months) ? this._months[e.month()] : this._months[(this._months.isFormat || We).test(t) ? 'format' : 'standalone'][e.month()] : o(this._months) ? this._months : this._months.standalone;}, yn.monthsShort = function (e, t) {return e ? o(this._monthsShort) ? this._monthsShort[e.month()] : this._monthsShort[We.test(t) ? 'format' : 'standalone'][e.month()] : o(this._monthsShort) ? this._monthsShort : this._monthsShort.standalone;}, yn.monthsParse = function (e, t, n) {var s, i, r;if (this._monthsParseExact) return function (e, t, n) {var s,i,r,a = e.toLocaleLowerCase();if (!this._monthsParse) for (this._monthsParse = [], this._longMonthsParse = [], this._shortMonthsParse = [], s = 0; s < 12; ++s) {r = y([2e3, s]), this._shortMonthsParse[s] = this.monthsShort(r, '').toLocaleLowerCase(), this._longMonthsParse[s] = this.months(r, '').toLocaleLowerCase();}return n ? 'MMM' === t ? -1 !== (i = Ye.call(this._shortMonthsParse, a)) ? i : null : -1 !== (i = Ye.call(this._longMonthsParse, a)) ? i : null : 'MMM' === t ? -1 !== (i = Ye.call(this._shortMonthsParse, a)) ? i : -1 !== (i = Ye.call(this._longMonthsParse, a)) ? i : null : -1 !== (i = Ye.call(this._longMonthsParse, a)) ? i : -1 !== (i = Ye.call(this._shortMonthsParse, a)) ? i : null;}.call(this, e, t, n);for (this._monthsParse || (this._monthsParse = [], this._longMonthsParse = [], this._shortMonthsParse = []), s = 0; s < 12; s++) {if (i = y([2e3, s]), n && !this._longMonthsParse[s] && (this._longMonthsParse[s] = new RegExp('^' + this.months(i, '').replace('.', '') + '$', 'i'), this._shortMonthsParse[s] = new RegExp('^' + this.monthsShort(i, '').replace('.', '') + '$', 'i')), n || this._monthsParse[s] || (r = '^' + this.months(i, '') + '|^' + this.monthsShort(i, ''), this._monthsParse[s] = new RegExp(r.replace('.', ''), 'i')), n && 'MMMM' === t && this._longMonthsParse[s].test(e)) return s;if (n && 'MMM' === t && this._shortMonthsParse[s].test(e)) return s;if (!n && this._monthsParse[s].test(e)) return s;}}, yn.monthsRegex = function (e) {return this._monthsParseExact ? (m(this, '_monthsRegex') || Ne.call(this), e ? this._monthsStrictRegex : this._monthsRegex) : (m(this, '_monthsRegex') || (this._monthsRegex = Le), this._monthsStrictRegex && e ? this._monthsStrictRegex : this._monthsRegex);}, yn.monthsShortRegex = function (e) {return this._monthsParseExact ? (m(this, '_monthsRegex') || Ne.call(this), e ? this._monthsShortStrictRegex : this._monthsShortRegex) : (m(this, '_monthsShortRegex') || (this._monthsShortRegex = Fe), this._monthsShortStrictRegex && e ? this._monthsShortStrictRegex : this._monthsShortRegex);}, yn.week = function (e) {return Ie(e, this._week.dow, this._week.doy).week;}, yn.firstDayOfYear = function () {return this._week.doy;}, yn.firstDayOfWeek = function () {return this._week.dow;}, yn.weekdays = function (e, t) {var n = o(this._weekdays) ? this._weekdays : this._weekdays[e && !0 !== e && this._weekdays.isFormat.test(t) ? 'format' : 'standalone'];return !0 === e ? je(n, this._week.dow) : e ? n[e.day()] : n;}, yn.weekdaysMin = function (e) {return !0 === e ? je(this._weekdaysMin, this._week.dow) : e ? this._weekdaysMin[e.day()] : this._weekdaysMin;}, yn.weekdaysShort = function (e) {return !0 === e ? je(this._weekdaysShort, this._week.dow) : e ? this._weekdaysShort[e.day()] : this._weekdaysShort;}, yn.weekdaysParse = function (e, t, n) {var s, i, r;if (this._weekdaysParseExact) return function (e, t, n) {var s,i,r,a = e.toLocaleLowerCase();if (!this._weekdaysParse) for (this._weekdaysParse = [], this._shortWeekdaysParse = [], this._minWeekdaysParse = [], s = 0; s < 7; ++s) {r = y([2e3, 1]).day(s), this._minWeekdaysParse[s] = this.weekdaysMin(r, '').toLocaleLowerCase(), this._shortWeekdaysParse[s] = this.weekdaysShort(r, '').toLocaleLowerCase(), this._weekdaysParse[s] = this.weekdays(r, '').toLocaleLowerCase();}return n ? 'dddd' === t ? -1 !== (i = Ye.call(this._weekdaysParse, a)) ? i : null : 'ddd' === t ? -1 !== (i = Ye.call(this._shortWeekdaysParse, a)) ? i : null : -1 !== (i = Ye.call(this._minWeekdaysParse, a)) ? i : null : 'dddd' === t ? -1 !== (i = Ye.call(this._weekdaysParse, a)) ? i : -1 !== (i = Ye.call(this._shortWeekdaysParse, a)) ? i : -1 !== (i = Ye.call(this._minWeekdaysParse, a)) ? i : null : 'ddd' === t ? -1 !== (i = Ye.call(this._shortWeekdaysParse, a)) ? i : -1 !== (i = Ye.call(this._weekdaysParse, a)) ? i : -1 !== (i = Ye.call(this._minWeekdaysParse, a)) ? i : null : -1 !== (i = Ye.call(this._minWeekdaysParse, a)) ? i : -1 !== (i = Ye.call(this._weekdaysParse, a)) ? i : -1 !== (i = Ye.call(this._shortWeekdaysParse, a)) ? i : null;}.call(this, e, t, n);for (this._weekdaysParse || (this._weekdaysParse = [], this._minWeekdaysParse = [], this._shortWeekdaysParse = [], this._fullWeekdaysParse = []), s = 0; s < 7; s++) {if (i = y([2e3, 1]).day(s), n && !this._fullWeekdaysParse[s] && (this._fullWeekdaysParse[s] = new RegExp('^' + this.weekdays(i, '').replace('.', '\\.?') + '$', 'i'), this._shortWeekdaysParse[s] = new RegExp('^' + this.weekdaysShort(i, '').replace('.', '\\.?') + '$', 'i'), this._minWeekdaysParse[s] = new RegExp('^' + this.weekdaysMin(i, '').replace('.', '\\.?') + '$', 'i')), this._weekdaysParse[s] || (r = '^' + this.weekdays(i, '') + '|^' + this.weekdaysShort(i, '') + '|^' + this.weekdaysMin(i, ''), this._weekdaysParse[s] = new RegExp(r.replace('.', ''), 'i')), n && 'dddd' === t && this._fullWeekdaysParse[s].test(e)) return s;if (n && 'ddd' === t && this._shortWeekdaysParse[s].test(e)) return s;if (n && 'dd' === t && this._minWeekdaysParse[s].test(e)) return s;if (!n && this._weekdaysParse[s].test(e)) return s;}}, yn.weekdaysRegex = function (e) {return this._weekdaysParseExact ? (m(this, '_weekdaysRegex') || Qe.call(this), e ? this._weekdaysStrictRegex : this._weekdaysRegex) : (m(this, '_weekdaysRegex') || (this._weekdaysRegex = qe), this._weekdaysStrictRegex && e ? this._weekdaysStrictRegex : this._weekdaysRegex);}, yn.weekdaysShortRegex = function (e) {return this._weekdaysParseExact ? (m(this, '_weekdaysRegex') || Qe.call(this), e ? this._weekdaysShortStrictRegex : this._weekdaysShortRegex) : (m(this, '_weekdaysShortRegex') || (this._weekdaysShortRegex = Je), this._weekdaysShortStrictRegex && e ? this._weekdaysShortStrictRegex : this._weekdaysShortRegex);}, yn.weekdaysMinRegex = function (e) {return this._weekdaysParseExact ? (m(this, '_weekdaysRegex') || Qe.call(this), e ? this._weekdaysMinStrictRegex : this._weekdaysMinRegex) : (m(this, '_weekdaysMinRegex') || (this._weekdaysMinRegex = Be), this._weekdaysMinStrictRegex && e ? this._weekdaysMinStrictRegex : this._weekdaysMinRegex);}, yn.isPM = function (e) {return 'p' === (e + '').toLowerCase().charAt(0);}, yn.meridiem = function (e, t, n) {return 11 < e ? n ? 'pm' : 'PM' : n ? 'am' : 'AM';}, ut('en', { dayOfMonthOrdinalParse: /\d{1,2}(th|st|nd|rd)/, ordinal: function ordinal(e) {var t = e % 10;return e + (1 === D(e % 100 / 10) ? 'th' : 1 === t ? 'st' : 2 === t ? 'nd' : 3 === t ? 'rd' : 'th');} }), c.lang = n('moment.lang is deprecated. Use moment.locale instead.', ut), c.langData = n('moment.langData is deprecated. Use moment.localeData instead.', ht);var wn = Math.abs;function Mn(e, t, n, s) {var i = jt(t, n);return e._milliseconds += s * i._milliseconds, e._days += s * i._days, e._months += s * i._months, e._bubble();}function kn(e) {return e < 0 ? Math.floor(e) : Math.ceil(e);}function Sn(e) {return 4800 * e / 146097;}function Dn(e) {return 146097 * e / 4800;}function Yn(e) {return function () {return this.as(e);};}var On = Yn('ms'),Tn = Yn('s'),bn = Yn('m'),xn = Yn('h'),Pn = Yn('d'),Wn = Yn('w'),Cn = Yn('M'),Hn = Yn('Q'),Rn = Yn('y');function Un(e) {return function () {return this.isValid() ? this._data[e] : NaN;};}var Fn = Un('milliseconds'),Ln = Un('seconds'),Nn = Un('minutes'),Gn = Un('hours'),Vn = Un('days'),En = Un('months'),In = Un('years');var An = Math.round,jn = { ss: 44, s: 45, m: 45, h: 22, d: 26, M: 11 };var Zn = Math.abs;function zn(e) {return (0 < e) - (e < 0) || +e;}function $n() {if (!this.isValid()) return this.localeData().invalidDate();var e,t,n = Zn(this._milliseconds) / 1e3,s = Zn(this._days),i = Zn(this._months);t = S((e = S(n / 60)) / 60), n %= 60, e %= 60;var r = S(i / 12),a = i %= 12,o = s,u = t,l = e,h = n ? n.toFixed(3).replace(/\.?0+$/, '') : '',d = this.asSeconds();if (!d) return 'P0D';var c = d < 0 ? '-' : '',f = zn(this._months) !== zn(d) ? '-' : '',m = zn(this._days) !== zn(d) ? '-' : '',_ = zn(this._milliseconds) !== zn(d) ? '-' : '';return c + 'P' + (r ? f + r + 'Y' : '') + (a ? f + a + 'M' : '') + (o ? m + o + 'D' : '') + (u || l || h ? 'T' : '') + (u ? _ + u + 'H' : '') + (l ? _ + l + 'M' : '') + (h ? _ + h + 'S' : '');}var qn = Ht.prototype;return qn.isValid = function () {return this._isValid;}, qn.abs = function () {var e = this._data;return this._milliseconds = wn(this._milliseconds), this._days = wn(this._days), this._months = wn(this._months), e.milliseconds = wn(e.milliseconds), e.seconds = wn(e.seconds), e.minutes = wn(e.minutes), e.hours = wn(e.hours), e.months = wn(e.months), e.years = wn(e.years), this;}, qn.add = function (e, t) {return Mn(this, e, t, 1);}, qn.subtract = function (e, t) {return Mn(this, e, t, -1);}, qn.as = function (e) {if (!this.isValid()) return NaN;var t,n,s = this._milliseconds;if ('month' === (e = H(e)) || 'quarter' === e || 'year' === e) switch (t = this._days + s / 864e5, n = this._months + Sn(t), e) {case 'month':return n;case 'quarter':return n / 3;case 'year':return n / 12;} else switch (t = this._days + Math.round(Dn(this._months)), e) {case 'week':return t / 7 + s / 6048e5;case 'day':return t + s / 864e5;case 'hour':return 24 * t + s / 36e5;case 'minute':return 1440 * t + s / 6e4;case 'second':return 86400 * t + s / 1e3;case 'millisecond':return Math.floor(864e5 * t) + s;default:throw new Error('Unknown unit ' + e);}}, qn.asMilliseconds = On, qn.asSeconds = Tn, qn.asMinutes = bn, qn.asHours = xn, qn.asDays = Pn, qn.asWeeks = Wn, qn.asMonths = Cn, qn.asQuarters = Hn, qn.asYears = Rn, qn.valueOf = function () {return this.isValid() ? this._milliseconds + 864e5 * this._days + this._months % 12 * 2592e6 + 31536e6 * D(this._months / 12) : NaN;}, qn._bubble = function () {var e,t,n,s,i,r = this._milliseconds,a = this._days,o = this._months,u = this._data;return 0 <= r && 0 <= a && 0 <= o || r <= 0 && a <= 0 && o <= 0 || (r += 864e5 * kn(Dn(o) + a), o = a = 0), u.milliseconds = r % 1e3, e = S(r / 1e3), u.seconds = e % 60, t = S(e / 60), u.minutes = t % 60, n = S(t / 60), u.hours = n % 24, o += i = S(Sn(a += S(n / 24))), a -= kn(Dn(i)), s = S(o / 12), o %= 12, u.days = a, u.months = o, u.years = s, this;}, qn.clone = function () {return jt(this);}, qn.get = function (e) {return e = H(e), this.isValid() ? this[e + 's']() : NaN;}, qn.milliseconds = Fn, qn.seconds = Ln, qn.minutes = Nn, qn.hours = Gn, qn.days = Vn, qn.weeks = function () {return S(this.days() / 7);}, qn.months = En, qn.years = In, qn.humanize = function (e) {if (!this.isValid()) return this.localeData().invalidDate();var t,n,s,i,r,a,o,u,l,h,d,c = this.localeData(),f = (n = !e, s = c, i = jt(t = this).abs(), r = An(i.as('s')), a = An(i.as('m')), o = An(i.as('h')), u = An(i.as('d')), l = An(i.as('M')), h = An(i.as('y')), (d = r <= jn.ss && ['s', r] || r < jn.s && ['ss', r] || a <= 1 && ['m'] || a < jn.m && ['mm', a] || o <= 1 && ['h'] || o < jn.h && ['hh', o] || u <= 1 && ['d'] || u < jn.d && ['dd', u] || l <= 1 && ['M'] || l < jn.M && ['MM', l] || h <= 1 && ['y'] || ['yy', h])[2] = n, d[3] = 0 < +t, d[4] = s, function (e, t, n, s, i) {return i.relativeTime(t || 1, !!n, e, s);}.apply(null, d));return e && (f = c.pastFuture(+this, f)), c.postformat(f);}, qn.toISOString = $n, qn.toString = $n, qn.toJSON = $n, qn.locale = Xt, qn.localeData = en, qn.toIsoString = n('toIsoString() is deprecated. Please use toISOString() instead (notice the capitals)', $n), qn.lang = Kt, I('X', 0, 0, 'unix'), I('x', 0, 0, 'valueOf'), ue('x', se), ue('X', /[+-]?\d+(\.\d{1,3})?/), ce('X', function (e, t, n) {n._d = new Date(1e3 * parseFloat(e, 10));}), ce('x', function (e, t, n) {n._d = new Date(D(e));}), c.version = '2.24.0', e = bt, c.fn = mn, c.min = function () {return Wt('isBefore', [].slice.call(arguments, 0));}, c.max = function () {return Wt('isAfter', [].slice.call(arguments, 0));}, c.now = function () {return Date.now ? Date.now() : +new Date();}, c.utc = y, c.unix = function (e) {return bt(1e3 * e);}, c.months = function (e, t) {return vn(e, t, 'months');}, c.isDate = d, c.locale = ut, c.invalid = p, c.duration = jt, c.isMoment = k, c.weekdays = function (e, t, n) {return pn(e, t, n, 'weekdays');}, c.parseZone = function () {return bt.apply(null, arguments).parseZone();}, c.localeData = ht, c.isDuration = Rt, c.monthsShort = function (e, t) {return vn(e, t, 'monthsShort');}, c.weekdaysMin = function (e, t, n) {return pn(e, t, n, 'weekdaysMin');}, c.defineLocale = lt, c.updateLocale = function (e, t) {if (null != t) {var _n10,_s7,_i2 = st;null != (_s7 = ot(e)) && (_i2 = _s7._config), (_n10 = new P(t = x(_i2, t))).parentLocale = it[e], it[e] = _n10, ut(e);} else null != it[e] && (null != it[e].parentLocale ? it[e] = it[e].parentLocale : null != it[e] && delete it[e]);return it[e];}, c.locales = function () {return s(it);}, c.weekdaysShort = function (e, t, n) {return pn(e, t, n, 'weekdaysShort');}, c.normalizeUnits = H, c.relativeTimeRounding = function (e) {return void 0 === e ? An : 'function' === typeof e && (An = e, !0);}, c.relativeTimeThreshold = function (e, t) {return void 0 !== jn[e] && (void 0 === t ? jn[e] : (jn[e] = t, 's' === e && (jn.ss = t - 1), !0));}, c.calendarFormat = function (e, t) {var n = e.diff(t, 'days', !0);return n < -6 ? 'sameElse' : n < -1 ? 'lastWeek' : n < 0 ? 'lastDay' : n < 1 ? 'sameDay' : n < 2 ? 'nextDay' : n < 7 ? 'nextWeek' : 'sameElse';}, c.prototype = mn, c.HTML5_FMT = { DATETIME_LOCAL: 'YYYY-MM-DDTHH:mm', DATETIME_LOCAL_SECONDS: 'YYYY-MM-DDTHH:mm:ss', DATETIME_LOCAL_MS: 'YYYY-MM-DDTHH:mm:ss.SSS', DATE: 'YYYY-MM-DD', TIME: 'HH:mm', TIME_SECONDS: 'HH:mm:ss', TIME_MS: 'HH:mm:ss.SSS', WEEK: 'GGGG-[W]WW', MONTH: 'YYYY-MM' }, c;});
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../home/Tools/HBuilderX/plugins/uniapp-cli/node_modules/webpack/buildin/module.js */ 42)(module)))
-
-/***/ }),
-
-/***/ 42:
-/*!***********************************!*\
-  !*** (webpack)/buildin/module.js ***!
-  \***********************************/
-/*! no static exports found */
-/***/ (function(module, exports) {
-
-module.exports = function(module) {
-	if (!module.webpackPolyfill) {
-		module.deprecate = function() {};
-		module.paths = [];
-		// module.parent = undefined by default
-		if (!module.children) module.children = [];
-		Object.defineProperty(module, "loaded", {
-			enumerable: true,
-			get: function() {
-				return module.l;
-			}
-		});
-		Object.defineProperty(module, "id", {
-			enumerable: true,
-			get: function() {
-				return module.i;
-			}
-		});
-		module.webpackPolyfill = 1;
-	}
-	return module;
-};
-
-
-/***/ }),
-
-/***/ 692:
-/*!*********************************************************!*\
-  !*** D:/code/HBuilderProjects/通用办公系统示例/api/merchant.js ***!
-  \*********************************************************/
-/*! no static exports found */
-/***/ (function(module, exports) {
-
-
-
-/***/ }),
-
-/***/ 725:
+/***/ 205:
 /*!*************************************************************************!*\
   !*** D:/code/HBuilderProjects/通用办公系统示例/components/u-charts/u-charts.js ***!
   \*************************************************************************/
@@ -19799,25 +16711,2568 @@ if ( true && typeof module.exports === "object") {
 
 /***/ }),
 
-/***/ 734:
+/***/ 21:
+/*!*******************************************************************!*\
+  !*** D:/code/HBuilderProjects/通用办公系统示例/config/formRule.config.js ***!
+  \*******************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });exports.default = void 0; /*
+                                                                                                      * 应用表单校验相关配置
+                                                                                                      * 依赖：graceChecker.js 进行校验
+                                                                                                      *
+                                                                                                      * 使用：引入该js到页面，let res = graceChecker.check({phoneNo:"",code:""},formRule.loginRule)
+                                                                                                      */var _default =
+
+{
+  /* 用户密码登录 */
+  loginByPassRule: [{
+    name: 'mobile',
+    checkType: 'notnull',
+    checkRule: '',
+    errorMsg: '手机号不能为空' },
+  {
+    name: 'mobile',
+    checkType: 'phoneno',
+    checkRule: '',
+    errorMsg: '手机号格式不正确' },
+  {
+    name: 'password',
+    checkType: 'string',
+    checkRule: '6,18',
+    errorMsg: '请输入6-18位密码' }],
+
+
+  /* 用户验证码登录 */
+  loginByCodeRule: [{
+    name: 'mobile',
+    checkType: 'notnull',
+    checkRule: '',
+    errorMsg: '手机号不能为空' },
+  {
+    name: 'mobile',
+    checkType: 'phoneno',
+    checkRule: '',
+    errorMsg: '手机号格式不正确' },
+  {
+    name: 'code',
+    checkType: 'string',
+    checkRule: '4',
+    errorMsg: '请输入4位验证码' }],
+
+
+  /* 发送验证码验证手机号 */
+  sendCodeRule: [{
+    name: 'mobile',
+    checkType: 'notnull',
+    checkRule: '',
+    errorMsg: '手机号不能为空' },
+  {
+    name: 'mobile',
+    checkType: 'phoneno',
+    checkRule: '',
+    errorMsg: '手机号格式不正确' }],
+
+
+  /* 编辑新增个人发票 */
+  pInvoiceRule: [{
+    name: 'title',
+    checkType: 'notnull',
+    checkRule: '',
+    errorMsg: '发票抬头不能为空' }],
+
+
+  /* 编辑新增公司发票 */
+  cInvoiceRule: [{
+    name: 'title',
+    checkType: 'notnull',
+    checkRule: '',
+    errorMsg: '发票抬头不能为空' },
+  {
+    name: 'duty_paragraph',
+    checkType: 'notnull',
+    checkRule: '',
+    errorMsg: '发票税号不能为空' }],
+
+
+  /* 用户注册 */
+  registerRule: [{
+    name: 'mobile',
+    checkType: 'notnull',
+    checkRule: '',
+    errorMsg: '手机号不能为空' },
+  {
+    name: 'mobile',
+    checkType: 'phoneno',
+    checkRule: '',
+    errorMsg: '手机号格式不正确' },
+  {
+    name: 'code',
+    checkType: 'string',
+    checkRule: '4',
+    errorMsg: '请输入4位验证码' },
+  {
+    name: 'password',
+    checkType: 'string',
+    checkRule: '6,18',
+    errorMsg: '请输入6-18位密码' }],
+
+
+
+  /* 密码重置 */
+  resetPasswordRule: [{
+    name: 'mobile',
+    checkType: 'notnull',
+    checkRule: '',
+    errorMsg: '手机号不能为空' },
+  {
+    name: 'mobile',
+    checkType: 'phoneno',
+    checkRule: '',
+    errorMsg: '手机号格式不正确' },
+  {
+    name: 'code',
+    checkType: 'string',
+    checkRule: '4',
+    errorMsg: '请输入4位验证码' },
+  {
+    name: 'password',
+    checkType: 'string',
+    checkRule: '6,18',
+    errorMsg: '请输入6-18位密码' }] };exports.default = _default;
+
+/***/ }),
+
+/***/ 22:
+/*!********************************************************************!*\
+  !*** D:/code/HBuilderProjects/通用办公系统示例/config/websocket.config.js ***!
+  \********************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });exports.default = void 0; /*
+                                                                                                      * websocket 请求路由说明
+                                                                                                      * 连接成功后会发送一个 fd 回来，为自己的客户端id，注意保存，后续以这个判断消息是自己发的还是别人发的
+                                                                                                      *
+                                                                                                      * 公共状态码说明
+                                                                                                      * 1006: 意外断开
+                                                                                                      * 2000: OK。一切正常
+                                                                                                      * 2001: 连接成功
+                                                                                                      * 2002: 心跳成功
+                                                                                                      * 2003: 排队中
+                                                                                                      * 2004: 排队成功
+                                                                                                      * 2005: xxx客服为您服务
+                                                                                                      * 2006: xxx用户来了
+                                                                                                      * 4000: 客户端未响应连接关闭数据，无效的操作参数，等等
+                                                                                                      * 4001: 用户验证失败
+                                                                                                      * 4002: 正常报错提示
+                                                                                                      * 4004: 所请求的资源不存在
+                                                                                                      * 4101: 已在别处登录
+                                                                                                      * 4102: 用户已离线
+                                                                                                      * 4103: 当前接待人数过多
+                                                                                                      * 4104: 客服不在线
+                                                                                                      * 5000: 内部服务器错误。 这可能是由于内部程序错误引起的。
+                                                                                                      *
+                                                                                                      */var _default =
+
+{
+  // 登录
+  login: 'site.login',
+
+  // 客服列表
+  serviceIndex: 'service.index',
+
+  // 连接客服
+  queueUpMatching: 'queueUp.matching',
+
+  // 排队查询
+  queueUpIndex: 'queueUp.index',
+
+  // 发送消息
+  serviceMessage: 'service.message',
+
+  // 主动结束会话
+  memberClose: 'member.close',
+
+  // 客服转接[只接收]
+  bubbleTransferring: 'bubble.transferring',
+
+  // 被客服结束会话[只接收]
+  bubbleClose: 'bubble.close',
+
+  // 当前会话历史消息
+  memberConversation: 'member.conversation',
+
+  // 自动回复 发送消息
+  ruleMessage: 'rule.message',
+
+  // 心跳
+  ping: 'site.ping' };exports.default = _default;
+
+/***/ }),
+
+/***/ 23:
+/*!******************************************************************!*\
+  !*** D:/code/HBuilderProjects/通用办公系统示例/config/setting.config.js ***!
+  \******************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });exports.default = void 0;var _assets = _interopRequireDefault(__webpack_require__(/*! ./assets.config */ 18));
+var _constData = _interopRequireDefault(__webpack_require__(/*! ./constData.config */ 17));function _interopRequireDefault(obj) {return obj && obj.__esModule ? obj : { default: obj };}function _classCallCheck(instance, Constructor) {if (!(instance instanceof Constructor)) {throw new TypeError("Cannot call a class as a function");}}function _defineProperties(target, props) {for (var i = 0; i < props.length; i++) {var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);}}function _createClass(Constructor, protoProps, staticProps) {if (protoProps) _defineProperties(Constructor.prototype, protoProps);if (staticProps) _defineProperties(Constructor, staticProps);return Constructor;}var
+Setting = /*#__PURE__*/function () {
+  function Setting(
+  appName,
+  appLogo,
+  appServiceType,
+  appServiceQr,
+  appAgreementDefaultSelect,
+  isOpenCommission,
+  isOpenScan,
+  isOpenLiveStreaming,
+  styleLoadingIsOpen,
+  styleLoadingType,
+  styleUserIsOpen,
+  styleType,
+  isOpenRecharge,
+  isOpenIndexCate,
+  isOpenSite,
+  productPosterTitle,
+  productPosterCoverType,
+  closeLogin,
+  closeRegister,
+  closeThirdPartyLogin,
+  closeSiteDate,
+  closeSiteExplain,
+  styleCateType,
+  styleLoginType,
+  productPosterQrType,
+  closeRegisterPromoCode)
+  {_classCallCheck(this, Setting);
+    this._appName = appName; // 应用名称
+    this._appLogo = appLogo; // 应用Logo
+    this._appServiceType = appServiceType; // 客服显示类型
+    this._appServiceQr = appServiceQr; // 客服二维码
+    this._appAgreementDefaultSelect = appAgreementDefaultSelect; // 协议默认选中
+    // this._isOpenCommission = isOpenCommission; // 开启分销
+    this._isOpenScan = isOpenScan; // 开启扫一扫入口
+    this._isOpenLiveStreaming = isOpenLiveStreaming; // 开启直播入口
+    this._styleLoadingIsOpen = styleLoadingIsOpen; // 开启加载
+    this._styleLoadingType = styleLoadingType; // 用户可否自定义风格
+    this._styleUserIsOpen = styleUserIsOpen; // 加载类型
+    this._styleType = styleType; // 加载类型
+    this._isOpenRecharge = isOpenRecharge; // 充值入口开启
+    this._isOpenIndexCate = isOpenIndexCate; // 首页分类开启
+    this._isOpenSite = isOpenSite; // 开放站点
+    this._productPosterTitle = productPosterTitle; // 商品海报推广语
+    this._productPosterCoverType = productPosterCoverType; // 左上角头像显示类型
+    this._closeLogin = closeLogin; // 关闭登录
+    this._closeRegister = closeRegister; // 关闭注册
+    this._closeThirdPartyLogin = closeThirdPartyLogin; // 关闭第三方授权登录
+    this._closeSiteExplain = closeSiteExplain; // 关闭站点说明
+    this._closeSiteDate = closeSiteDate; // 关闭站点时间
+    this._styleCateType = styleCateType; // 分类风格
+    this._styleLoginType = styleLoginType; // 登录注册页面风格
+    this._productPosterQrType = productPosterQrType; // 海报二维码显示类型
+    this._closeRegisterPromoCode = closeRegisterPromoCode; // 关闭注册激活码输入框
+  }_createClass(Setting, [{ key: "productPosterQrType", get: function get()
+
+    {
+      return this._productPosterQrType;
+    }, set: function set(
+
+    value) {
+      this._productPosterQrType = value;
+    } }, { key: "closeRegisterPromoCode", get: function get()
+
+    {
+      return this._closeRegisterPromoCode;
+    }, set: function set(
+
+    value) {
+      this._closeRegisterPromoCode = value;
+    } }, { key: "closeSiteDate", get: function get()
+
+    {
+      return this._closeSiteDate;
+    }, set: function set(
+
+    value) {
+      this._closeSiteDate = value;
+    } }, { key: "closeSiteExplain", get: function get()
+
+    {
+      return this._closeSiteExplain;
+    }, set: function set(
+
+    value) {
+      this._closeSiteExplain = value;
+    } }, { key: "styleCateType", get: function get()
+
+    {
+      return this._styleCateType;
+    }, set: function set(
+
+    value) {
+      this._styleCateType = value;
+    } }, { key: "styleLoginType", get: function get()
+
+    {
+      return this._styleLoginType;
+    }, set: function set(
+
+    value) {
+      this._styleLoginType = value;
+    } }, { key: "closeLogin", get: function get()
+
+    {
+      return this._closeLogin;
+    }, set: function set(
+
+    value) {
+      this._closeLogin = value;
+    } }, { key: "closeRegister", get: function get()
+
+    {
+      return this._closeRegister;
+    }, set: function set(
+
+    value) {
+      this._closeRegister = value;
+    } }, { key: "productPosterTitle", get: function get()
+
+    {
+      return this._productPosterTitle;
+    }, set: function set(
+
+    value) {
+      this._productPosterTitle = value;
+    } }, { key: "productPosterCoverType", get: function get()
+
+    {
+      return this._productPosterCoverType;
+    }, set: function set(
+
+    value) {
+      this._productPosterCoverType = value;
+    } }, { key: "closeThirdPartyLogin", get: function get()
+
+    {
+      return this._closeThirdPartyLogin;
+    }, set: function set(
+
+    value) {
+      this._closeThirdPartyLogin = value;
+    } }, { key: "isOpenSite", get: function get()
+
+    {
+      return this._isOpenSite;
+    }, set: function set(
+
+    value) {
+      this._isOpenSite = value;
+    } }, { key: "styleUserIsOpen", get: function get()
+
+    {
+      return this._styleUserIsOpen;
+    }, set: function set(
+
+    value) {
+      this._styleUserIsOpen = value;
+    } }, { key: "styleType", get: function get()
+
+    {
+      return this._styleType;
+    }, set: function set(
+
+    value) {
+      this._styleType = value;
+    } }, { key: "appName", get: function get()
+
+    {
+      return this._appName;
+    }, set: function set(
+
+    value) {
+      this._appName = value;
+    } }, { key: "appLogo", get: function get()
+
+    {
+      return this._appLogo;
+    }, set: function set(
+
+    value) {
+      this._appLogo = value;
+    } }, { key: "appServiceType", get: function get()
+
+    {
+      return this._appServiceType;
+    }, set: function set(
+
+    value) {
+      this._appServiceType = value;
+    } }, { key: "appServiceQr", get: function get()
+
+    {
+      return this._appServiceQr;
+    }, set: function set(
+
+    value) {
+      this._appServiceQr = value;
+    } }, { key: "appAgreementDefaultSelect", get: function get()
+
+    {
+      return this._appAgreementDefaultSelect;
+    }, set: function set(
+
+    value) {
+      this._appAgreementDefaultSelect = value;
+    } }, { key: "isOpenCommission", get: function get()
+
+    {
+      return this._isOpenCommission;
+    }, set: function set(
+
+    value) {
+      this._isOpenCommission = value;
+    } }, { key: "isOpenScan", get: function get()
+
+    {
+      return this._isOpenScan;
+    }, set: function set(
+
+    value) {
+      this._isOpenScan = value;
+    } }, { key: "isOpenLiveStreaming", get: function get()
+
+    {
+      return this._isOpenLiveStreaming;
+    }, set: function set(
+
+    value) {
+      this._isOpenLiveStreaming = value;
+    } }, { key: "styleLoadingIsOpen", get: function get()
+
+    {
+      return this._styleLoadingIsOpen;
+    }, set: function set(
+
+    value) {
+      this._styleLoadingIsOpen = value;
+    } }, { key: "styleLoadingType", get: function get()
+
+    {
+      return this._styleLoadingType;
+    }, set: function set(
+
+    value) {
+      this._styleLoadingType = value;
+    } }, { key: "isOpenRecharge", get: function get()
+
+    {
+      return this._isOpenRecharge;
+    }, set: function set(
+
+    value) {
+      this._isOpenRecharge = value;
+    } }, { key: "isOpenIndexCate", get: function get()
+
+    {
+      return this._isOpenIndexCate;
+    }, set: function set(
+
+    value) {
+      this._isOpenIndexCate = value;
+    } }]);return Setting;}();var _default =
+
+new Setting(
+_constData.default.appName,
+_assets.default.logo,
+'0',
+_assets.default.logo,
+true,
+true,
+true,
+true,
+true,
+'loop',
+true,
+'rf',
+false,
+true,
+true,
+'为您挑选了一个好物',
+'roundness',
+false,
+false,
+false,
+'',
+'系统正在维护中...',
+'one_two_three_cover',
+'one',
+'common_qr',
+true);exports.default = _default;
+
+/***/ }),
+
+/***/ 24:
+/*!****************************************************************!*\
+  !*** D:/code/HBuilderProjects/通用办公系统示例/utils/request/index.js ***!
+  \****************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+/* WEBPACK VAR INJECTION */(function(uni) {Object.defineProperty(exports, "__esModule", { value: true });exports.http = void 0;var _regenerator = _interopRequireDefault(__webpack_require__(/*! ./node_modules/@babel/runtime/regenerator */ 8));
+var _request = _interopRequireDefault(__webpack_require__(/*! ./request */ 25));
+var _login = __webpack_require__(/*! @/api/login */ 26);
+var _index = _interopRequireDefault(__webpack_require__(/*! @/config/index.config */ 19));
+var _helper = _interopRequireDefault(__webpack_require__(/*! @/utils/helper */ 27));
+var _store = _interopRequireDefault(__webpack_require__(/*! @/store */ 16));function _interopRequireDefault(obj) {return obj && obj.__esModule ? obj : { default: obj };}function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {try {var info = gen[key](arg);var value = info.value;} catch (error) {reject(error);return;}if (info.done) {resolve(value);} else {Promise.resolve(value).then(_next, _throw);}}function _asyncToGenerator(fn) {return function () {var self = this,args = arguments;return new Promise(function (resolve, reject) {var gen = fn.apply(self, args);function _next(value) {asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value);}function _throw(err) {asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err);}_next(undefined);});};}function ownKeys(object, enumerableOnly) {var keys = Object.keys(object);if (Object.getOwnPropertySymbols) {var symbols = Object.getOwnPropertySymbols(object);if (enumerableOnly) symbols = symbols.filter(function (sym) {return Object.getOwnPropertyDescriptor(object, sym).enumerable;});keys.push.apply(keys, symbols);}return keys;}function _objectSpread(target) {for (var i = 1; i < arguments.length; i++) {var source = arguments[i] != null ? arguments[i] : {};if (i % 2) {ownKeys(Object(source), true).forEach(function (key) {_defineProperty(target, key, source[key]);});} else if (Object.getOwnPropertyDescriptors) {Object.defineProperties(target, Object.getOwnPropertyDescriptors(source));} else {ownKeys(Object(source)).forEach(function (key) {Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key));});}}return target;}function _defineProperty(obj, key, value) {if (key in obj) {Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true });} else {obj[key] = value;}return obj;}
+
+var http = new _request.default();
+
+// request全局参数设置
+exports.http = http;http.setConfig(function (config) {
+  /* 设置全局配置 */
+  config.baseUrl = _index.default.baseUrl; /* 根域名不同 */
+  var systemInfo = uni.getSystemInfoSync();
+  var systemInfoHeaders = {
+    'device-name': systemInfo.brand, // 设备名称
+    width: systemInfo.screenWidth, // 屏幕宽度
+    height: systemInfo.screenHeight, // 屏幕高度
+    os: systemInfo.platform, // 客户端平台
+    'os-version': systemInfo.system // 操作系统版本
+  };
+  config.header = _objectSpread(_objectSpread({},
+  config.header),
+  systemInfoHeaders);
+
+  return config;
+});
+
+var isRefreshing = false;
+var requests = [];
+http.interceptor.request(
+function (config) {
+  /* 请求之前拦截器 */
+  var token = uni.getStorageSync('accessToken');
+  if (token && !config.header['Authorization']) config.header['Authorization'] = 'Bearer ' + token;
+  // 单商户
+  // config.header['merchant-id'] = uni.getStorageSync('merchantId') || 1;
+  return config;
+},
+function (error) {
+  return Promise.reject(error);
+});
+
+
+// 刷新refreshToken
+function handleRefreshToken(_x) {return _handleRefreshToken.apply(this, arguments);}function _handleRefreshToken() {_handleRefreshToken = _asyncToGenerator( /*#__PURE__*/_regenerator.default.mark(function _callee3(refresh_token) {var params;return _regenerator.default.wrap(function _callee3$(_context3) {while (1) {switch (_context3.prev = _context3.next) {case 0:
+            params = {};
+            params.group = _helper.default.platformGroupFilter();
+            params.refresh_token = refresh_token;_context3.next = 5;return (
+              http.post(_login.refreshToken, params).then( /*#__PURE__*/function () {var _ref2 = _asyncToGenerator( /*#__PURE__*/_regenerator.default.mark(function _callee2(r) {return _regenerator.default.wrap(function _callee2$(_context2) {while (1) {switch (_context2.prev = _context2.next) {case 0:
+                          _store.default.commit('login', r.data);
+                          isRefreshing = false;case 2:case "end":return _context2.stop();}}}, _callee2);}));return function (_x3) {return _ref2.apply(this, arguments);};}()));case 5:case "end":return _context3.stop();}}}, _callee3);}));return _handleRefreshToken.apply(this, arguments);}
+
+
+http.interceptor.response( /*#__PURE__*/function () {var _ref = _asyncToGenerator( /*#__PURE__*/_regenerator.default.mark(
+  function _callee(response) {return _regenerator.default.wrap(function _callee$(_context) {while (1) {switch (_context.prev = _context.next) {case 0:_context.t0 =
+
+            response.data.code;_context.next = _context.t0 ===
+            0 ? 3 : _context.t0 ===
+
+            200 ? 4 : _context.t0 ===
+
+            400 ? 5 : _context.t0 ===
+
+
+
+            401 ? 8 : _context.t0 ===
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            405 ? 37 : _context.t0 ===
+
+
+            404 ? 39 : _context.t0 ===
+
+
+            429 ? 41 : _context.t0 ===
+
+
+            500 ? 43 : 45;break;case 3:return _context.abrupt("return", response.data);case 4:return _context.abrupt("return", response.data);case 5:_helper.default.toast('错误的请求');return _context.abrupt("return", Promise.reject(response.data.msg));case 8:isRefreshing = false; // refreshToken 的返回状态为401
+            if (!(response.config.url === _login.refreshToken)) {_context.next = 17;break;}uni.removeStorageSync('accessToken');_context.next = 13;return _store.default.commit('logout');case 13:uni.showModal({ content: '会话已过期，是否跳转登录页面？', success: function success(confirmRes) {if (confirmRes.confirm) {_helper.default.backToLogin();throw response.data.msg;}} });return _context.abrupt("break", 46);case 17:if (_store.default.state.refreshToken) {_context.next = 25;break;}uni.removeStorageSync('accessToken');_context.next = 21;return _store.default.commit('logout');case 21:_helper.default.backToLogin(); // uni.showModal({
+            // 	content: '会话已过期，是否跳转登录页面？',
+            // 	success: confirmRes => {
+            // 		if (confirmRes.confirm) {
+            // 			mHelper.backToLogin();
+            // 			throw response.data.msg;
+            // 		}
+            // 	}
+            // });
+            throw response.data.msg;case 25:if (isRefreshing) {_context.next = 35;break;}isRefreshing = true; // 刷新token
+            _context.next = 29;return handleRefreshToken(_store.default.state.refreshToken, response);case 29:requests.forEach(function (cb) {return cb();});requests = [];isRefreshing = false;return _context.abrupt("return", http.request(response.config));case 35:return _context.abrupt("return", new Promise(function (resolve) {// 将resolve放进队列，用一个函数形式来保存，等token刷新后直接执行
+              requests.push(function () {resolve(http.request(response.config));});}));case 36:return _context.abrupt("break", 46);case 37:_helper.default.toast('当前操作不被允许');return _context.abrupt("return", Promise.reject(response.data.msg));case 39:_helper.default.toast(response.data.msg);return _context.abrupt("return", Promise.reject(response.data.msg));case 41:_helper.default.toast('请求过多，先休息一下吧');return _context.abrupt("return", Promise.reject(response.data.msg));case 43:_helper.default.toast('服务器打瞌睡了');return _context.abrupt("return", Promise.reject(response.data.msg));case 45:return _context.abrupt("return", response.data);case 46:case "end":return _context.stop();}}}, _callee);}));return function (_x2) {return _ref.apply(this, arguments);};}(), function (error) {return error;});
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./node_modules/@dcloudio/uni-mp-weixin/dist/index.js */ 1)["default"]))
+
+/***/ }),
+
+/***/ 25:
+/*!******************************************************************!*\
+  !*** D:/code/HBuilderProjects/通用办公系统示例/utils/request/request.js ***!
+  \******************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+/* WEBPACK VAR INJECTION */(function(uni) {Object.defineProperty(exports, "__esModule", { value: true });exports.default = void 0;var _regenerator = _interopRequireDefault(__webpack_require__(/*! ./node_modules/@babel/runtime/regenerator */ 8));function _interopRequireDefault(obj) {return obj && obj.__esModule ? obj : { default: obj };}function ownKeys(object, enumerableOnly) {var keys = Object.keys(object);if (Object.getOwnPropertySymbols) {var symbols = Object.getOwnPropertySymbols(object);if (enumerableOnly) symbols = symbols.filter(function (sym) {return Object.getOwnPropertyDescriptor(object, sym).enumerable;});keys.push.apply(keys, symbols);}return keys;}function _objectSpread(target) {for (var i = 1; i < arguments.length; i++) {var source = arguments[i] != null ? arguments[i] : {};if (i % 2) {ownKeys(Object(source), true).forEach(function (key) {_defineProperty(target, key, source[key]);});} else if (Object.getOwnPropertyDescriptors) {Object.defineProperties(target, Object.getOwnPropertyDescriptors(source));} else {ownKeys(Object(source)).forEach(function (key) {Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key));});}}return target;}function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {try {var info = gen[key](arg);var value = info.value;} catch (error) {reject(error);return;}if (info.done) {resolve(value);} else {Promise.resolve(value).then(_next, _throw);}}function _asyncToGenerator(fn) {return function () {var self = this,args = arguments;return new Promise(function (resolve, reject) {var gen = fn.apply(self, args);function _next(value) {asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value);}function _throw(err) {asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err);}_next(undefined);});};}function _classCallCheck(instance, Constructor) {if (!(instance instanceof Constructor)) {throw new TypeError("Cannot call a class as a function");}}function _defineProperties(target, props) {for (var i = 0; i < props.length; i++) {var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);}}function _createClass(Constructor, protoProps, staticProps) {if (protoProps) _defineProperties(Constructor.prototype, protoProps);if (staticProps) _defineProperties(Constructor, staticProps);return Constructor;}function _defineProperty(obj, key, value) {if (key in obj) {Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true });} else {obj[key] = value;}return obj;} /**
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * Request 1.0.6
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * @Class Request
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * @description luch-request 1.0.6 http请求插件
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * @Author lu-ch
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * @Date 2020-03-17
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * @Email webwork.s@qq.com
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * http://ext.dcloud.net.cn/plugin?id=392
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      */var
+Request = /*#__PURE__*/function () {function Request() {var _this = this;_classCallCheck(this, Request);_defineProperty(this, "config",
+    {
+      baseUrl: '',
+      header: {
+        'content-type': 'application/json' },
+
+      method: 'GET',
+      dataType: 'json',
+
+      responseType: 'text',
+
+      custom: {} });_defineProperty(this, "interceptor",
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    {
+      /**
+       * @param {Request~requestCallback} cb - 请求之前拦截,接收一个函数（config, cancel）=> {return config}。第一个参数为全局config,第二个参数为函数，调用则取消本次请求。
+       */
+      request: function request(cb) {
+        if (cb) {
+          _this.requestBeforeFun = cb;
+        }
+      },
+      /**
+          * @param {Request~responseCallback} cb 响应拦截器，对响应数据做点什么
+          * @param {Request~responseErrCallback} ecb 响应拦截器，对响应错误做点什么
+          */
+      response: function response(cb, ecb) {
+        if (cb) {
+          _this.requestComFun = cb;
+        }
+        if (ecb) {
+          _this.requestComFail = ecb;
+        }
+      } });}_createClass(Request, [{ key: "requestBeforeFun", value: function requestBeforeFun(
+
+
+    config) {
+      return config;
+    } }, { key: "requestComFun", value: function requestComFun(
+
+    response) {
+      return response;
+    } }, { key: "requestComFail", value: function requestComFail(
+
+    response) {
+      return response;
+    }
+
+    /**
+       * 自定义验证器，如果返回true 则进入响应拦截器的响应成功函数(resolve)，否则进入响应拦截器的响应错误函数(reject)
+       * @param { Number } statusCode - 请求响应体statusCode（只读）
+       * @return { Boolean } 如果为true,则 resolve, 否则 reject
+       */ }, { key: "validateStatus", value: function validateStatus(
+    statusCode) {
+      return statusCode === 200;
+    }
+
+    /**
+       * @Function
+       * @param {Request~setConfigCallback} f - 设置全局默认配置
+       */ }, { key: "setConfig", value: function setConfig(
+    f) {
+      this.config = f(this.config);
+    }
+
+    /**
+       * @Function
+       * @param {Object} options - 请求配置项
+       * @prop {String} options.url - 请求路径
+       * @prop {Object} options.data - 请求参数
+       * @prop {Object} [options.responseType = config.responseType] [text|arraybuffer] - 响应的数据类型
+       * @prop {Object} [options.dataType = config.dataType] - 如果设为 json，会尝试对返回的数据做一次 JSON.parse
+       * @prop {Object} [options.header = config.header] - 请求header
+       * @prop {Object} [options.method = config.method] - 请求方法
+       * @returns {Promise<unknown>}
+       */ }, { key: "request", value: function () {var _request = _asyncToGenerator( /*#__PURE__*/_regenerator.default.mark(function _callee() {var _this2 = this;var options,_args = arguments;return _regenerator.default.wrap(function _callee$(_context) {while (1) {switch (_context.prev = _context.next) {case 0:
+                options = _args.length > 0 && _args[0] !== undefined ? _args[0] : {};
+                options.baseUrl = this.config.baseUrl;
+                options.dataType = options.dataType || this.config.dataType;
+
+                options.responseType = options.responseType || this.config.responseType;
+
+
+
+
+                options.url = options.url || '';
+                options.data = options.data || {};
+                options.params = options.params || {};
+                options.header = options.header || this.config.header;
+                options.method = options.method || this.config.method;
+                options.custom = _objectSpread(_objectSpread({}, this.config.custom), options.custom || {});
+
+
+
+
+
+
+                options.getTask = options.getTask || this.config.getTask;return _context.abrupt("return",
+                new Promise(function (resolve, reject) {
+                  var next = true;
+                  var cancel = function cancel() {var t = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'handle cancel';var config = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : options;
+                    var err = {
+                      errMsg: t,
+                      config: config };
+
+                    reject(err);
+                    next = false;
+                  };
+
+                  var handleRe = _objectSpread({}, _this2.requestBeforeFun(options, cancel));
+                  var _config = _objectSpread({}, handleRe);
+                  if (!next) return;
+                  var requestTask = uni.request({
+                    url: Request.mergeUrl(_config.url, _config.baseUrl, _config.params),
+                    data: _config.data,
+                    header: _config.header,
+                    method: _config.method,
+
+
+
+                    dataType: _config.dataType,
+
+                    responseType: _config.responseType,
+
+
+
+
+                    complete: function complete(response) {
+                      response.config = handleRe;
+                      if (_this2.validateStatus(response.statusCode)) {
+                        // 成功
+                        response = _this2.requestComFun(response);
+                        resolve(response);
+                      } else {
+                        response = _this2.requestComFail(response);
+                        reject(response);
+                      }
+                    } });
+
+                  if (handleRe.getTask) {
+                    handleRe.getTask(requestTask, handleRe);
+                  }
+                }));case 12:case "end":return _context.stop();}}}, _callee, this);}));function request() {return _request.apply(this, arguments);}return request;}() }, { key: "get", value: function get(
+
+
+    url) {var params = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+      var options = {};
+      options.params = params;
+      return this.request(_objectSpread({
+        url: url,
+        method: 'GET' },
+      options));
+
+    } }, { key: "post", value: function post(
+
+    url, data) {var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+      return this.request(_objectSpread({
+        url: url,
+        data: data,
+        method: 'POST' },
+      options));
+
+    } }, { key: "put", value: function put(
+
+
+    url, data) {var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+      return this.request(_objectSpread({
+        url: url,
+        data: data,
+        method: 'PUT' },
+      options));
+
+    } }, { key: "delete", value: function _delete(
+
+
+
+
+    url, data) {var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+      return this.request(_objectSpread({
+        url: url,
+        data: data,
+        method: 'DELETE' },
+      options));
+
+    } }, { key: "connect", value: function connect(
+
+
+
+
+    url, data) {var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+      return this.request(_objectSpread({
+        url: url,
+        data: data,
+        method: 'CONNECT' },
+      options));
+
+    } }, { key: "head", value: function head(
+
+
+
+
+    url, data) {var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+      return this.request(_objectSpread({
+        url: url,
+        data: data,
+        method: 'HEAD' },
+      options));
+
+    } }, { key: "options", value: function options(
+
+
+
+
+    url, data) {var _options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+      return this.request(_objectSpread({
+        url: url,
+        data: data,
+        method: 'OPTIONS' },
+      _options));
+
+    } }, { key: "trace", value: function trace(
+
+
+
+
+    url, data) {var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+      return this.request(_objectSpread({
+        url: url,
+        data: data,
+        method: 'TRACE' },
+      options));
+
+    } }, { key: "upload", value: function upload(
+
+
+
+
+    url, _ref)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    {var _this3 = this;var filePath = _ref.filePath,name = _ref.name,header = _ref.header,_ref$formData = _ref.formData,formData = _ref$formData === void 0 ? {} : _ref$formData,_ref$custom = _ref.custom,custom = _ref$custom === void 0 ? {} : _ref$custom,_ref$params = _ref.params,params = _ref$params === void 0 ? {} : _ref$params,getTask = _ref.getTask;
+      return new Promise(function (resolve, reject) {
+        var next = true;
+        var globalHeader = _objectSpread({}, _this3.config.header);
+        delete globalHeader['content-type'];
+        delete globalHeader['Content-Type'];
+        var pubConfig = {
+          baseUrl: _this3.config.baseUrl,
+          url: url,
+
+
+
+          filePath: filePath,
+          method: 'UPLOAD',
+          name: name,
+          header: header || globalHeader,
+          formData: formData,
+          params: params,
+          custom: _objectSpread(_objectSpread({}, _this3.config.custom), custom),
+          getTask: getTask || _this3.config.getTask };
+
+
+
+
+
+
+        var cancel = function cancel() {var t = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'handle cancel';var config = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : pubConfig;
+          var err = {
+            errMsg: t,
+            config: config };
+
+          reject(err);
+          next = false;
+        };
+
+        var handleRe = _objectSpread({}, _this3.requestBeforeFun(pubConfig, cancel));
+        var _config = {
+          url: Request.mergeUrl(handleRe.url, handleRe.baseUrl, handleRe.params),
+
+
+
+          filePath: handleRe.filePath,
+          name: handleRe.name,
+          header: handleRe.header,
+          formData: handleRe.formData,
+          complete: function complete(response) {
+            response.config = handleRe;
+            if (typeof response.data === 'string') {
+              response.data = JSON.parse(response.data);
+            }
+            if (_this3.validateStatus(response.statusCode)) {
+              // 成功
+              response = _this3.requestComFun(response);
+              resolve(response);
+            } else {
+              response = _this3.requestComFail(response);
+              reject(response);
+            }
+          } };
+
+
+
+
+
+
+        if (!next) return;
+        var requestTask = uni.uploadFile(_config);
+        if (handleRe.getTask) {
+          handleRe.getTask(requestTask, handleRe);
+        }
+      });
+    } }, { key: "download", value: function download(
+
+    url) {var _this4 = this;var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+      return new Promise(function (resolve, reject) {
+        var next = true;
+        var pubConfig = {
+          baseUrl: _this4.config.baseUrl,
+          url: url,
+          method: 'DOWNLOAD',
+          header: options.header || _this4.config.header,
+          params: options.params || {},
+          custom: _objectSpread(_objectSpread({}, _this4.config.custom), options.custom || {}),
+          getTask: options.getTask || _this4.config.getTask };
+
+        var cancel = function cancel() {var t = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'handle cancel';var config = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : pubConfig;
+          var err = {
+            errMsg: t,
+            config: config };
+
+          reject(err);
+          next = false;
+        };
+
+        var handleRe = _objectSpread({}, _this4.requestBeforeFun(pubConfig, cancel));
+        if (!next) return;
+        var requestTask = uni.downloadFile({
+          url: Request.mergeUrl(handleRe.url, handleRe.baseUrl, handleRe.params),
+          header: handleRe.header,
+          complete: function complete(response) {
+            response.config = handleRe;
+            if (_this4.validateStatus(response.statusCode)) {
+              // 成功
+              response = _this4.requestComFun(response);
+              resolve(response);
+            } else {
+              response = _this4.requestComFail(response);
+              reject(response);
+            }
+          } });
+
+        if (handleRe.getTask) {
+          handleRe.getTask(requestTask, handleRe);
+        }
+      });
+    } }], [{ key: "posUrl", value: function posUrl(url) {/* 判断url是否为绝对路径 */return /(http|https):\/\/([\w.]+\/?)\S*/.test(url);} }, { key: "mergeUrl", value: function mergeUrl(url, baseUrl, params) {var mergeUrl = Request.posUrl(url) ? url : "".concat(baseUrl).concat(url);if (Object.keys(params).length !== 0) {var paramsH = Request.addQueryString(params);mergeUrl += mergeUrl.includes('?') ? "&".concat(paramsH) : "?".concat(paramsH);}return mergeUrl;} }, { key: "addQueryString", value: function addQueryString(params) {var paramsData = '';Object.keys(params).forEach(function (key) {paramsData += key + '=' + encodeURIComponent(params[key]) + '&';});return paramsData.substring(0, paramsData.length - 1);} /**
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * @property {Function} request 请求拦截器
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * @property {Function} response 响应拦截器
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * @type {{request: Request.interceptor.request, response: Request.interceptor.response}}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      */ }]);return Request;}(); /**
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  * setConfig回调
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  * @return {Object} - 返回操作后的config
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  * @callback Request~setConfigCallback
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  * @param {Object} config - 全局默认config
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  */ /**
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * 请求拦截器回调
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * @return {Object} - 返回操作后的config
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * @callback Request~requestCallback
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * @param {Object} config - 全局config
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * @param {Function} [cancel] - 取消请求钩子，调用会取消本次请求
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      */ /**
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          * 响应拦截器回调
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          * @return {Object} - 返回操作后的response
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          * @callback Request~responseCallback
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          * @param {Object} response - 请求结果 response
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          */
+/**
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              * 响应错误拦截器回调
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              * @return {Object} - 返回操作后的response
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              * @callback Request~responseErrCallback
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              * @param {Object} response - 请求结果 response
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              */exports.default = Request;
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./node_modules/@dcloudio/uni-mp-weixin/dist/index.js */ 1)["default"]))
+
+/***/ }),
+
+/***/ 26:
+/*!******************************************************!*\
+  !*** D:/code/HBuilderProjects/通用办公系统示例/api/login.js ***!
+  \******************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });exports.refreshToken = exports.logout = exports.accountBind = exports.loginBySmsCode = exports.smsCode = exports.updatePassword = exports.authLogin = exports.thirdPartyApple = exports.thirdPartyWechatOpenPlatform = exports.mpWechatLogin = exports.wechatH5Login = exports.isBindingCheck = exports.loginByPass = exports.registerByPass = void 0; /**
+                                                                                                                                                                                                                                                                                                                                                                                                                                   *@des 登录注册相关接口
+                                                                                                                                                                                                                                                                                                                                                                                                                                   *@author hjp1011 21931118@qq.com
+                                                                                                                                                                                                                                                                                                                                                                                                                                   *@blog http://www.wephp.com
+                                                                                                                                                                                                                                                                                                                                                                                                                                   *@date 2019/11/15 15:14:47
+                                                                                                                                                                                                                                                                                                                                                                                                                                   *@param login.js
+                                                                                                                                                                                                                                                                                                                                                                                                                                   */
+
+// 密码注册
+var registerByPass = '/we-office/v1/site/register';
+
+// 密码登录
+exports.registerByPass = registerByPass;var loginByPass = '/we-office/v1/site/login';
+
+// 微信授权登录
+exports.loginByPass = loginByPass;var wechatH5Login = '/we-office/v1/third-party/wechat';
+
+// 微信小程序授权登录
+exports.wechatH5Login = wechatH5Login;var mpWechatLogin = '/we-office/v1/third-party/wechat-mp';
+
+// App微信授权登录
+exports.mpWechatLogin = mpWechatLogin;var thirdPartyWechatOpenPlatform = '/we-office/v1/third-party/wechat-open-platform';
+
+// Ios苹果扥估
+exports.thirdPartyWechatOpenPlatform = thirdPartyWechatOpenPlatform;var thirdPartyApple = '/we-office/v1/third-party/apple';
+
+// 密码重置
+exports.thirdPartyApple = thirdPartyApple;var updatePassword = '/we-office/v1/site/up-pwd';
+
+// 第三方绑定
+exports.updatePassword = updatePassword;var authLogin = '/we-office/v1/member/auth/create';
+
+// 查询绑定状态
+exports.authLogin = authLogin;var isBindingCheck = '/we-office/v1/member/auth/is-binding';
+
+// 手机号登录,获取token
+exports.isBindingCheck = isBindingCheck;var loginBySmsCode = '/auth/mobile/token/sms';
+
+// 获取手机验证码
+exports.loginBySmsCode = loginBySmsCode;var smsCode = '/admin/mobile/';
+
+// code 调用pigx 后台接口绑定
+exports.smsCode = smsCode;var accountBind = '/admin/social/bind';
+
+// 退出登录
+exports.accountBind = accountBind;var logout = '/we-office/v1/site/logout';
+
+// 刷新token
+exports.logout = logout;var refreshToken = '/we-office/v1/site/refresh';exports.refreshToken = refreshToken;
+
+/***/ }),
+
+/***/ 27:
+/*!*********************************************************!*\
+  !*** D:/code/HBuilderProjects/通用办公系统示例/utils/helper.js ***!
+  \*********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+/* WEBPACK VAR INJECTION */(function(uni) {Object.defineProperty(exports, "__esModule", { value: true });exports.default = void 0;var _regenerator = _interopRequireDefault(__webpack_require__(/*! ./node_modules/@babel/runtime/regenerator */ 8));
+var _router = _interopRequireDefault(__webpack_require__(/*! @/utils/router */ 28));
+var _constData = _interopRequireDefault(__webpack_require__(/*! @/config/constData.config */ 17));
+var _store = _interopRequireDefault(__webpack_require__(/*! @/store */ 16));
+var _share = _interopRequireDefault(__webpack_require__(/*! @/utils/share */ 29));
+
+
+
+
+var _request = __webpack_require__(/*! @/utils/request */ 24);
+var _basic = __webpack_require__(/*! @/api/basic */ 11);function _interopRequireDefault(obj) {return obj && obj.__esModule ? obj : { default: obj };}function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {try {var info = gen[key](arg);var value = info.value;} catch (error) {reject(error);return;}if (info.done) {resolve(value);} else {Promise.resolve(value).then(_next, _throw);}}function _asyncToGenerator(fn) {return function () {var self = this,args = arguments;return new Promise(function (resolve, reject) {var gen = fn.apply(self, args);function _next(value) {asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value);}function _throw(err) {asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err);}_next(undefined);});};}
+//常用方法集合
+var _default = {
+  /**
+                  * toast提示
+                  */
+  toast: function toast(title) {var duration = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 3000;var mask = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;var icon = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 'none';
+    if (Boolean(title) === false) {
+      return;
+    }
+    uni.showToast({
+      title: title,
+      duration: duration,
+      mask: mask,
+      icon: icon });
+
+  },
+  /**
+      * 返回登录页面
+      */
+  backToLogin: function backToLogin() {return _asyncToGenerator( /*#__PURE__*/_regenerator.default.mark(function _callee() {var currentPage, params;return _regenerator.default.wrap(function _callee$(_context) {while (1) {switch (_context.prev = _context.next) {case 0:
+              // 存当前页面的地址
+              currentPage = getCurrentPages()[getCurrentPages().length - 1];
+              params = {};
+
+
+
+
+
+              params.route = "/".concat(currentPage.$vm.__route__);
+              params.query = currentPage.$vm.$mp && currentPage.$vm.$mp.query;
+
+
+
+
+
+              uni.setStorageSync('backToPage', JSON.stringify(params));
+              uni.removeTabBarBadge({ index: _constData.default.worksIndex });
+              uni.removeTabBarBadge({ index: _constData.default.notifyIndex });_context.next = 9;return (
+                _store.default.commit('logout'));case 9:
+              _router.default.push({ route: '/pages/public/login' });case 10:case "end":return _context.stop();}}}, _callee);}))();
+  },
+  /**
+      * 返回上一页携带参数
+      */
+  prePage: function prePage(index) {
+    var pages = getCurrentPages();
+    var prePage = pages[pages.length - (index || 2)];
+
+
+
+    return prePage.$vm;
+  },
+  /**
+      * 开发环境全局打印日志
+      * @param {Object} title
+      */
+  log: function log(title) {
+    if ( true && Boolean(title) === true) {
+      console.log(JSON.stringify(title));
+    }
+  },
+  /**
+      * 异步获取设备信息
+      */
+  getInfoAsync: function getInfoAsync() {
+    return new Promise(function (resolve, reject) {
+      plus.device.getInfo({
+        success: function success(e) {
+          resolve(e);
+        },
+        fail: function fail(e) {
+          reject(e.message);
+        } });
+
+    });
+  },
+  /**
+      * 安卓10不支持IMEI,则获取OAID
+      */
+  getOaidAsync: function getOaidAsync() {
+    return new Promise(function (resolve, reject) {
+      plus.device.getOAID({
+        success: function success(e) {
+          resolve(e);
+        },
+        fail: function fail(e) {
+          reject(e.message);
+        } });
+
+    });
+  },
+  /**
+      * 获取一个随机数
+      * @param {Object} min
+      * @param {Object} max
+      */
+  random: function random(min, max) {
+    switch (arguments.length) {
+      case 1:
+        return parseInt(Math.random() * min + 1, 10);
+        break;
+      case 2:
+        return parseInt(Math.random() * (max - min + 1) + min, 10);
+        break;
+      default:
+        return 0;
+        break;}
+
+  },
+  /**
+      * 获取ios的IDFA
+      */
+  getIdfa: function getIdfa() {
+    var idfa = '';
+    try {
+      if ('iOS' == plus.os.name) {
+        var manager = plus.ios.invoke('ASIdentifierManager', 'sharedManager');
+        if (plus.ios.invoke(manager, 'isAdvertisingTrackingEnabled')) {
+          var identifier = plus.ios.invoke(manager, 'advertisingIdentifier');
+          idfa = plus.ios.invoke(identifier, 'UUIDString');
+          plus.ios.deleteObject(identifier);
+        }
+        plus.ios.deleteObject(manager);
+      }
+    } catch (e) {
+      console.error('获取idfa失败');
+    }
+    return idfa;
+  },
+  /*
+      * obj 转 params字符串参数
+      * 例子：{a:1,b:2} => a=1&b=2
+      */
+  objParseParam: function objParseParam(obj) {
+    var paramsStr = '';
+    if (obj instanceof Array) return paramsStr;
+    if (!(obj instanceof Object)) return paramsStr;
+    for (var key in obj) {
+      paramsStr += "".concat(key, "=").concat(obj[key], "&");
+    }
+    return paramsStr.substring(0, paramsStr.length - 1);
+  },
+  /*
+      * obj 转 路由地址带参数
+      * 例子：{a:1,b:2} => /pages/index/index?a=1&b=2
+      */
+  objParseUrlAndParam: function objParseUrlAndParam(path, obj) {
+    var url = path || '/';
+    var paramsStr = '';
+    if (obj instanceof Array) return url;
+    if (!(obj instanceof Object)) return url;
+    paramsStr = this.objParseParam(obj);
+    paramsStr && (url += '?');
+    url += paramsStr;
+    return url;
+  },
+  /*
+      * 获取url字符串参数
+      */
+  getRequestParameters: function getRequestParameters(locationhref) {
+    var href = locationhref || '';
+    var theRequest = new Object();
+    var str = href.split('?')[1];
+    if (str != undefined) {
+      var strs = str.split('&');
+      for (var i = 0; i < strs.length; i++) {
+        theRequest[strs[i].split('=')[0]] = strs[i].split('=')[1];
+      }
+    }
+    return theRequest;
+  },
+  /**
+      * 加密字符串
+      */
+  strEncode: function strEncode(str) {
+    var key = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    var l = key.length;
+    var a = key.split('');
+    var s = '',
+    b,
+    b1,
+    b2,
+    b3;
+    for (var i = 0; i < str.length; i++) {
+      b = str.charCodeAt(i);
+      b1 = b % l;
+      b = (b - b1) / l;
+      b2 = b % l;
+      b = (b - b2) / l;
+      b3 = b % l;
+      s += a[b3] + a[b2] + a[b1];
+    }
+    return s;
+  },
+  /**
+      * 解密字符串
+      */
+  strDecode: function strDecode(str) {
+    var key = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    var l = key.length;
+    var b,
+    b1,
+    b2,
+    b3,
+    d = 0,
+    s;
+    s = new Array(Math.floor(str.length / 3));
+    b = s.length;
+    for (var i = 0; i < b; i++) {
+      b1 = key.indexOf(str.charAt(d));
+      d++;
+      b2 = key.indexOf(str.charAt(d));
+      d++;
+      b3 = key.indexOf(str.charAt(d));
+      d++;
+      s[i] = b1 * l * l + b2 * l + b3;
+    }
+    b = eval('String.fromCharCode(' + s.join(',') + ')');
+    return b;
+  },
+  /**
+      * 比较版本号
+      */
+  compareVersion: function compareVersion(reqV, curV) {
+    if (curV && reqV) {
+      var arr1 = curV.split('.'),
+      arr2 = reqV.split('.');
+      var minLength = Math.min(arr1.length, arr2.length),
+      position = 0,
+      diff = 0;
+      while (
+      position < minLength &&
+      (diff = parseInt(arr1[position]) - parseInt(arr2[position])) == 0)
+      {
+        position++;
+      }
+      diff = diff != 0 ? diff : arr1.length - arr2.length;
+      if (diff > 0) {
+        if (position == minLength - 1) {
+          return 1;
+        } else {
+          return 2;
+        }
+      } else {
+        return 0;
+      }
+    } else {
+      return 0;
+    }
+  },
+  /**
+      * H5复制
+      */
+  h5Copy: function h5Copy(content) {
+    var textarea = document.createElement('textarea');
+    textarea.value = content;
+    textarea.readOnly = 'readOnly';
+    document.body.appendChild(textarea);
+    textarea.select(); // 选择对象
+    textarea.setSelectionRange(0, content.length); //核心
+    var result = document.execCommand('Copy'); // 执行浏览器复制命令
+    textarea.remove();
+    var msg = result ? '复制成功' : '复制失败';
+    this.toast(msg);
+  },
+  /**
+      * app分享
+      */
+  handleAppShare: function handleAppShare(shareUrl, shareTitle, shareContent, shareImg) {
+    var shareData = {
+      shareUrl: shareUrl,
+      shareTitle: shareTitle,
+      shareContent: shareContent,
+      shareImg: shareImg };
+
+    (0, _share.default)(shareData, function (res) {});
+  },
+
+  handleWxH5Share: function handleWxH5Share(title, desc, link, imgUrl) {return _asyncToGenerator( /*#__PURE__*/_regenerator.default.mark(function _callee2() {return _regenerator.default.wrap(function _callee2$(_context2) {while (1) {switch (_context2.prev = _context2.next) {case 0:case "end":return _context2.stop();}}}, _callee2);}))();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  },
+
+  // 去掉字符串中的空格
+  trim: function trim(str) {
+    if (!str) {
+      return '';
+    }
+    return str.replace(/\s*/g, '');
+  },
+
+  // 判断两个对象是否相同
+  isObjectValueEqual: function isObjectValueEqual(x, y) {
+    // 指向同一内存时
+    if (x === y) {
+      return true;
+    } else if (
+    typeof x == 'object' &&
+    x != null &&
+    typeof y == 'object' && y != null)
+    {
+      if (Object.keys(x).length != Object.keys(y).length) return false;
+
+      for (var prop in x) {
+        if (y.hasOwnProperty(prop)) {
+          if (!this.isObjectValueEqual(x[prop], y[prop])) return false;
+        } else return false;
+      }
+
+      return true;
+    } else return false;
+  },
+
+  platformGroupFilter: function platformGroupFilter() {
+    var platformGroup = 'tinyShop';
+
+
+
+
+
+
+
+
+
+
+
+    platformGroup = 'wechatMp';
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    return platformGroup;
+  },
+
+  // 广告图跳转封装
+  handleBannerNavTo: function handleBannerNavTo(data, id, advId) {
+    var url;
+    _request.http.get(_basic.advView, { id: advId });
+    switch (data) {
+      case 'notify_announce_view': // 公告详情
+        url = "/pages/index/notice/detail?id=".concat(id);
+        break;
+      case 'product_view': // 产品详情
+        url = "/pages/product/product?id=".concat(id);
+        break;
+      case 'combination_view': // 某分类下产品列表
+        url = "/pages/marketing/combination/list?id=".concat(id);
+        break;
+      case 'coupon_view': // 优惠券详情
+        url = "/pages/user/coupon/detail?id=".concat(id);
+        break;
+      case 'helper_view': // 站点帮助详情
+        url = '/pages/set/helper/index';
+        break;
+      case 'bargain_list': // 砍价列表
+        url = '/pages/marketing/bargain/list';
+        break;
+      case 'discount_list': // 限时折扣
+        url = '/pages/marketing/discount/list';
+        break;
+      case 'group_buy_list': // 团购列表
+        url = '/pages/marketing/group/list';
+        break;
+      case 'wholesale_list': // 拼团列表
+        url = '/pages/marketing/wholesale/list';
+        break;
+      case 'product_list_for_cate': // 某分类下产品列表
+        url = "/pages/product/list?cate_id=".concat(id);
+        break;
+      case 'mini_program_live_view': // 跳转至带货直播间
+
+        url = "plugin-private://wx2b03c6e691cd7370/pages/live-player-plugin?room_id=".concat([id]);
+
+
+
+
+        break;
+      default:
+        break;}
+
+    if (url) {
+      _router.default.push({ route: url });
+    }
+  } };exports.default = _default;
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./node_modules/@dcloudio/uni-mp-weixin/dist/index.js */ 1)["default"]))
+
+/***/ }),
+
+/***/ 28:
+/*!*********************************************************!*\
+  !*** D:/code/HBuilderProjects/通用办公系统示例/utils/router.js ***!
+  \*********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+/* WEBPACK VAR INJECTION */(function(uni) {Object.defineProperty(exports, "__esModule", { value: true });exports.default = void 0;function _classCallCheck(instance, Constructor) {if (!(instance instanceof Constructor)) {throw new TypeError("Cannot call a class as a function");}}function _defineProperties(target, props) {for (var i = 0; i < props.length; i++) {var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);}}function _createClass(Constructor, protoProps, staticProps) {if (protoProps) _defineProperties(Constructor.prototype, protoProps);if (staticProps) _defineProperties(Constructor, staticProps);return Constructor;} /*
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   * 路由对象
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   * 中心思想：需要路由鉴权,由于uni-app没有vue中的全局钩子函数，所以封装了Router对象。
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   * 说明：应用中的路由跳转尽量使用该Router的方法，并配合config中的路由表对象进行跳转。
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   * 示例：this.$mRouter.push({route:this.$mRoutesConfig.main,query:{a:1}})
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   */var
+Router = /*#__PURE__*/function () {
+  function Router() {_classCallCheck(this, Router);
+    this.callBack = function () {};
+  }_createClass(Router, [{ key: "beforeEach", value: function beforeEach(
+
+    callBack) {
+      if (callBack instanceof Function) this.callBack = callBack;
+    } }, { key: "push", value: function push(
+
+    to) {
+      this.callBack('navigateTo', to);
+    } }, { key: "redirectTo", value: function redirectTo(
+
+    to) {
+      this.callBack('redirectTo', to);
+    } }, { key: "reLaunch", value: function reLaunch(
+
+    to) {
+      this.callBack('reLaunch', to);
+    } }, { key: "switchTab", value: function switchTab(
+
+    to) {
+      this.callBack('switchTab', to);
+    } }, { key: "back", value: function back(
+
+    delta) {
+
+
+
+
+      uni.navigateBack({
+        delta: delta });
+
+
+    } }]);return Router;}();var _default =
+
+
+new Router();exports.default = _default;
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./node_modules/@dcloudio/uni-mp-weixin/dist/index.js */ 1)["default"]))
+
+/***/ }),
+
+/***/ 29:
+/*!********************************************************!*\
+  !*** D:/code/HBuilderProjects/通用办公系统示例/utils/share.js ***!
+  \********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+/* eslint-disable */
+
+/***/ }),
+
+/***/ 3:
+/*!***********************************!*\
+  !*** (webpack)/buildin/global.js ***!
+  \***********************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+var g;
+
+// This works in non-strict mode
+g = (function() {
+	return this;
+})();
+
+try {
+	// This works if eval is allowed (see CSP)
+	g = g || new Function("return this")();
+} catch (e) {
+	// This works if the window reference is available
+	if (typeof window === "object") g = window;
+}
+
+// g can still be undefined, but nothing to do about it...
+// We return undefined, instead of nothing here, so it's
+// easier to handle this case. if(!global) { ...}
+
+module.exports = g;
+
+
+/***/ }),
+
+/***/ 30:
+/*!***************************************************************!*\
+  !*** D:/code/HBuilderProjects/通用办公系统示例/utils/graceChecker.js ***!
+  \***************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+/* eslint-disable */
+/**
+                      *@des 表单验证
+                      *@author hjp1011 21931118@qq.com
+                      *@blog http://www.wephp.com
+                      *@date 2019/11/15 10:55:56
+                      */
+module.exports = {
+  error: '',
+  check: function check(data, rule) {
+    for (var i = 0; i < rule.length; i++) {
+      if (!rule[i].checkType) {
+        return true;
+      }
+      if (!rule[i].name) {
+        return true;
+      }
+      if (!rule[i].errorMsg) {
+        return true;
+      }
+      if (!data[rule[i].name]) {
+        this.error = rule[i].errorMsg;
+        return false;
+      }
+      switch (rule[i].checkType) {
+        case 'string':
+          var reg = new RegExp('^.{' + rule[i].checkRule + '}$');
+          if (!reg.test(data[rule[i].name])) {
+            this.error = rule[i].errorMsg;
+            return false;
+          }
+          break;
+        case 'int':
+          var reg = new RegExp(
+          '^(-[1-9]|[1-9])[0-9]{' + rule[i].checkRule + '}$');
+
+          if (!reg.test(data[rule[i].name])) {
+            this.error = rule[i].errorMsg;
+            return false;
+          }
+          break;
+          break;
+        case 'between':
+          if (!this.isNumber(data[rule[i].name])) {
+            this.error = rule[i].errorMsg;
+            return false;
+          }
+          var minMax = rule[i].checkRule.split(',');
+          minMax[0] = Number(minMax[0]);
+          minMax[1] = Number(minMax[1]);
+          if (
+          data[rule[i].name] > minMax[1] ||
+          data[rule[i].name] < minMax[0])
+          {
+            this.error = rule[i].errorMsg;
+            return false;
+          }
+          break;
+        case 'betweenD':
+          var reg = /^-?[1-9][0-9]?$/;
+          if (!reg.test(data[rule[i].name])) {
+            this.error = rule[i].errorMsg;
+            return false;
+          }
+          var minMax = rule[i].checkRule.split(',');
+          minMax[0] = Number(minMax[0]);
+          minMax[1] = Number(minMax[1]);
+          if (
+          data[rule[i].name] > minMax[1] ||
+          data[rule[i].name] < minMax[0])
+          {
+            this.error = rule[i].errorMsg;
+            return false;
+          }
+          break;
+        case 'betweenF':
+          var reg = /^-?[0-9][0-9]?.+[0-9]+$/;
+          if (!reg.test(data[rule[i].name])) {
+            this.error = rule[i].errorMsg;
+            return false;
+          }
+          var minMax = rule[i].checkRule.split(',');
+          minMax[0] = Number(minMax[0]);
+          minMax[1] = Number(minMax[1]);
+          if (
+          data[rule[i].name] > minMax[1] ||
+          data[rule[i].name] < minMax[0])
+          {
+            this.error = rule[i].errorMsg;
+            return false;
+          }
+          break;
+        case 'same':
+          if (data[rule[i].name] != rule[i].checkRule) {
+            this.error = rule[i].errorMsg;
+            return false;
+          }
+          break;
+        case 'notsame':
+          if (data[rule[i].name] == rule[i].checkRule) {
+            this.error = rule[i].errorMsg;
+            return false;
+          }
+          break;
+        case 'email':
+          var reg = /^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/;
+          if (!reg.test(data[rule[i].name])) {
+            this.error = rule[i].errorMsg;
+            return false;
+          }
+          break;
+        case 'phoneno':
+          var reg = /^(?:(?:\+|00)86)?1[3-9]\d{9}$/;
+          if (!reg.test(data[rule[i].name])) {
+            this.error = rule[i].errorMsg;
+            return false;
+          }
+          break;
+        case 'zipcode':
+          var reg = /^[0-9]{6}$/;
+          if (!reg.test(data[rule[i].name])) {
+            this.error = rule[i].errorMsg;
+            return false;
+          }
+          break;
+        case 'reg':
+          var reg = new RegExp(rule[i].checkRule);
+          if (!reg.test(data[rule[i].name])) {
+            this.error = rule[i].errorMsg;
+            return false;
+          }
+          break;
+        case 'in':
+          if (rule[i].checkRule.indexOf(data[rule[i].name]) == -1) {
+            this.error = rule[i].errorMsg;
+            return false;
+          }
+          break;
+        case 'notnull':
+          if (data[rule[i].name] == null || data[rule[i].name].length < 1) {
+            this.error = rule[i].errorMsg;
+            return false;
+          }
+          break;}
+
+    }
+    return true;
+  },
+  isNumber: function isNumber(checkVal) {
+    var reg = /^-?[1-9][0-9]?.?[0-9]*$/;
+    return reg.test(checkVal);
+  } };
+
+/***/ }),
+
+/***/ 31:
 /*!**********************************************************!*\
-  !*** D:/code/HBuilderProjects/通用办公系统示例/api/websocket.js ***!
+  !*** D:/code/HBuilderProjects/通用办公系统示例/utils/payment.js ***!
   \**********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });exports.memberConversation = exports.questionsView = exports.questionsIndex = exports.tinyServiceUploadFile = void 0; // 客服上传图片
-var tinyServiceUploadFile = '/tiny-service/v1/common/file/images';
-// 客服配置
-exports.tinyServiceUploadFile = tinyServiceUploadFile;var questionsIndex = '/tiny-service/v1/questions/index';
+/* WEBPACK VAR INJECTION */(function(uni) {Object.defineProperty(exports, "__esModule", { value: true });exports.default = void 0;var _regenerator = _interopRequireDefault(__webpack_require__(/*! ./node_modules/@babel/runtime/regenerator */ 8));
 
-// 问题详情
-exports.questionsIndex = questionsIndex;var questionsView = '/tiny-service/v1/questions/view';
 
-// 请求路由
-// 当前会话历史消息
-exports.questionsView = questionsView;var memberConversation = 'member.conversation';exports.memberConversation = memberConversation;
+
+
+
+var _login = __webpack_require__(/*! @/api/login */ 26);
+var _basic = __webpack_require__(/*! @/api/basic */ 11);
+var _request = __webpack_require__(/*! @/utils/request */ 24);
+var _helper = _interopRequireDefault(__webpack_require__(/*! @/utils/helper */ 27));
+var _router = _interopRequireDefault(__webpack_require__(/*! @/utils/router */ 28));
+var _product = __webpack_require__(/*! @/api/product */ 32);function _interopRequireDefault(obj) {return obj && obj.__esModule ? obj : { default: obj };}function ownKeys(object, enumerableOnly) {var keys = Object.keys(object);if (Object.getOwnPropertySymbols) {var symbols = Object.getOwnPropertySymbols(object);if (enumerableOnly) symbols = symbols.filter(function (sym) {return Object.getOwnPropertyDescriptor(object, sym).enumerable;});keys.push.apply(keys, symbols);}return keys;}function _objectSpread(target) {for (var i = 1; i < arguments.length; i++) {var source = arguments[i] != null ? arguments[i] : {};if (i % 2) {ownKeys(Object(source), true).forEach(function (key) {_defineProperty(target, key, source[key]);});} else if (Object.getOwnPropertyDescriptors) {Object.defineProperties(target, Object.getOwnPropertyDescriptors(source));} else {ownKeys(Object(source)).forEach(function (key) {Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key));});}}return target;}function _defineProperty(obj, key, value) {if (key in obj) {Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true });} else {obj[key] = value;}return obj;}function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {try {var info = gen[key](arg);var value = info.value;} catch (error) {reject(error);return;}if (info.done) {resolve(value);} else {Promise.resolve(value).then(_next, _throw);}}function _asyncToGenerator(fn) {return function () {var self = this,args = arguments;return new Promise(function (resolve, reject) {var gen = fn.apply(self, args);function _next(value) {asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value);}function _throw(err) {asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err);}_next(undefined);});};}var _default =
+{
+  // 判断是否公众号（微信H5）
+  isWechat: function isWechat() {
+
+
+
+
+
+
+
+
+  },
+
+  // wxjssdk
+  wxConfigH5: function wxConfigH5(url) {var _this = this;return _asyncToGenerator( /*#__PURE__*/_regenerator.default.mark(function _callee() {var jsApiList;return _regenerator.default.wrap(function _callee$(_context) {while (1) {switch (_context.prev = _context.next) {case 0:if (!
+              _this.isWechat()) {_context.next = 4;break;}
+              jsApiList = JSON.stringify([
+              'chooseWXPay',
+              'scanQRCode',
+              'updateAppMessageShareData',
+              'updateTimelineShareData']);_context.next = 4;return (
+
+                _request.http.
+                post("".concat(wechatConfig), {
+                  url: url,
+                  jsApiList: jsApiList, // 需要调用微信的原生方法
+                  debug: false // 是否打开调试
+                }).
+                then(function (r) {
+                  jweixin.config(_objectSpread({},
+                  r.data));
+
+                }));case 4:case "end":return _context.stop();}}}, _callee);}))();
+
+  },
+
+  /*
+      *@des 微信支付
+      *
+      *@param order_group 订单:order;充值:recharge;
+      *@param data 订单 {“order_id”:199} 充值 {“money”:100};
+      */
+  weixinPay: function weixinPay(order_group, data) {var _arguments = arguments;return _asyncToGenerator( /*#__PURE__*/_regenerator.default.mark(function _callee3() {var route, code;return _regenerator.default.wrap(function _callee3$(_context3) {while (1) {switch (_context3.prev = _context3.next) {case 0:route = _arguments.length > 2 && _arguments[2] !== undefined ? _arguments[2] : '/pages/user/money/success';code = _arguments.length > 3 ? _arguments[3] : undefined;_context3.next = 4;return (
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                _request.http.
+                post("".concat(_login.isBindingCheck), {
+
+
+
+
+                  oauth_client: 'wechatMp' }).
+
+
+                then( /*#__PURE__*/function () {var _ref = _asyncToGenerator( /*#__PURE__*/_regenerator.default.mark(function _callee2(res) {return _regenerator.default.wrap(function _callee2$(_context2) {while (1) {switch (_context2.prev = _context2.next) {case 0:if (!
+                            res.data.openid) {_context2.next = 5;break;}_context2.next = 3;return (
+                              _request.http.
+                              post("".concat(_basic.payCreate), {
+                                order_group: order_group,
+                                pay_type: 1,
+
+
+
+
+                                trade_type: 'mini_program',
+
+                                data: data,
+                                openid: res.data.openid }).
+
+                              then(function (r) {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                uni.requestPayment(_objectSpread(_objectSpread({},
+                                r.data.config), {}, {
+                                  timeStamp: r.data.config.timestamp,
+                                  success: function success() {
+                                    _helper.default.toast('支付成功');
+                                    _router.default.redirectTo({ route: route });
+                                  },
+                                  fail: function fail(res) {
+                                    _helper.default.toast('支付已取消');
+                                  },
+                                  complete: function complete() {} }));
+
+
+                              }));case 3:_context2.next = 6;break;case 5:
+
+
+                            uni.login({
+                              provider: 'weixin',
+                              success: function success(loginRes) {
+                                _request.http.
+                                post("".concat(_basic.payCreate, "?code=").concat(loginRes.code), {
+                                  order_group: order_group,
+                                  pay_type: 1,
+                                  trade_type: 'mini_program',
+                                  data: data }).
+
+                                then(function (r) {
+                                  uni.requestPayment(_objectSpread(_objectSpread({},
+                                  r.data.config), {}, {
+                                    timeStamp: r.data.config.timestamp,
+                                    success: function success() {
+                                      _helper.default.toast('支付成功');
+                                      _router.default.redirectTo({ route: route });
+                                    },
+                                    fail: function fail(res) {
+                                      _helper.default.toast('支付已取消');
+                                    },
+                                    complete: function complete() {} }));
+
+                                });
+                              },
+                              fail: function fail(err) {
+                                _helper.default.log(err);
+                              } });case 6:case "end":return _context2.stop();}}}, _callee2);}));return function (_x) {return _ref.apply(this, arguments);};}()));case 4:case "end":return _context3.stop();}}}, _callee3);}))();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  },
+
+  /*
+      *@des 支付宝支付
+      *
+      *@param order_group 订单:order;充值:recharge;
+      *@param data 订单 {“order_id”:199} 充值 {“money”:100};
+      */
+  aliPay: function aliPay(order_group, data) {var _arguments2 = arguments;return _asyncToGenerator( /*#__PURE__*/_regenerator.default.mark(function _callee4() {var route;return _regenerator.default.wrap(function _callee4$(_context4) {while (1) {switch (_context4.prev = _context4.next) {case 0:route = _arguments2.length > 2 && _arguments2[2] !== undefined ? _arguments2[2] : '/pages/user/money/success';
+
+
+
+
+
+              _helper.default.toast('微信小程序不支持支付宝充值');return _context4.abrupt("return");case 5:case "end":return _context4.stop();}}}, _callee4);}))();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  },
+
+  /*
+      *@des 余额支付
+      *
+      *@param data 支付参数
+      */
+  balancePay: function balancePay(data) {var _arguments3 = arguments;return _asyncToGenerator( /*#__PURE__*/_regenerator.default.mark(function _callee5() {var route;return _regenerator.default.wrap(function _callee5$(_context5) {while (1) {switch (_context5.prev = _context5.next) {case 0:route = _arguments3.length > 1 && _arguments3[1] !== undefined ? _arguments3[1] : '/pages/user/money/success';_context5.next = 3;return (
+                _request.http.
+                post("".concat(_product.orderPay), {
+                  order_group: 'order',
+                  trade_type: 'js',
+                  pay_type: 5,
+                  data: data }).
+
+                then(function () {
+                  _router.default.redirectTo({ route: route });
+                }));case 3:case "end":return _context5.stop();}}}, _callee5);}))();
+  } };exports.default = _default;
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./node_modules/@dcloudio/uni-mp-weixin/dist/index.js */ 1)["default"]))
+
+/***/ }),
+
+/***/ 32:
+/*!********************************************************!*\
+  !*** D:/code/HBuilderProjects/通用办公系统示例/api/product.js ***!
+  \********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+
+
+/***/ }),
+
+/***/ 33:
+/*!************************************************************!*\
+  !*** D:/code/HBuilderProjects/通用办公系统示例/utils/websocket.js ***!
+  \************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+/* WEBPACK VAR INJECTION */(function(uni) {Object.defineProperty(exports, "__esModule", { value: true });exports.default = void 0;
+var _index = _interopRequireDefault(__webpack_require__(/*! @/config/index.config */ 19));
+var _websocket = _interopRequireDefault(__webpack_require__(/*! @/config/websocket.config */ 22));
+var _helper = _interopRequireDefault(__webpack_require__(/*! @/utils/helper */ 27));
+var _store = _interopRequireDefault(__webpack_require__(/*! @/store */ 16));function _interopRequireDefault(obj) {return obj && obj.__esModule ? obj : { default: obj };}function _classCallCheck(instance, Constructor) {if (!(instance instanceof Constructor)) {throw new TypeError("Cannot call a class as a function");}}function _defineProperties(target, props) {for (var i = 0; i < props.length; i++) {var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);}}function _createClass(Constructor, protoProps, staticProps) {if (protoProps) _defineProperties(Constructor.prototype, protoProps);if (staticProps) _defineProperties(Constructor, staticProps);return Constructor;}function _defineProperty(obj, key, value) {if (key in obj) {Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true });} else {obj[key] = value;}return obj;}var
+websocket = /*#__PURE__*/function () {
+  function websocket() {var _this2 = this;_classCallCheck(this, websocket);_defineProperty(this, "websocketOnMessage",
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    function (e) {
+      var data = JSON.parse(e.data);
+      var _this = _this2;
+      var params = {};
+      if (data.route === _websocket.default.login) {
+        _this2.login = true;
+        if (_store.default.state.isImPanel) {
+          var _params = {
+            tip: true,
+            content: '客服连线成功' };
+
+          _store.default.commit('addImHistory', _params);
+        }
+        return;
+      }
+      if (data.route === _websocket.default.memberClose) {
+        _store.default.commit('setIsStuffService', false);
+      }
+      if (data.route === _websocket.default.bubbleClose) {
+        _store.default.commit('setIsStuffService', false);
+        var _params2 = {
+          tip: true,
+          content: '会话已结束，现在由机器人精灵为您服务' };
+
+        _store.default.commit('addImHistory', _params2);
+        return;
+      }
+      if (data.route === _websocket.default.serviceIndex) {
+        _this2.serviceList = data.data;
+        _this2.fd = data.member.fd;
+        return;
+      }
+      switch (parseInt(data.code)) {
+        case 1006:
+          break;
+        case 2000:
+          // eslint-disable-next-line
+          var content;
+          switch (data.data.type) {
+            case 'text':
+              content = data.data.content.replace(
+              new RegExp('\\[(.+?)\\]', 'g'),
+              function (r) {
+                return r;
+              });
+
+              break;
+            case 'voice':
+              break;
+            case 'video':
+              break;
+            case 'image':
+              content =
+              '<img style="max-width:200px" src="' +
+              data.data.content +
+              '"></img>';
+              break;
+            case 'longitudeAndLatitude':
+              break;
+            default:
+              content = data.data.content;
+              break;}
+
+          params = {
+            user_type: data.data.user_type,
+            content: content,
+            serviceNickname:
+            data.data.user_type === 'member' ? '' : data.member.realname,
+            avatar:
+            data.data.user_type === 'member' ?
+            'background-image:url(' + _store.default.state.userInfo.head_portrait + ')' :
+            'background-image:url(' + data.member.head_portrait + ')',
+            created_at: data.timestamp };
+
+          _store.default.commit('addImHistory', params);
+          break;
+        case 2001:
+          _this2.fd = data.data.fd;
+          if (_store.default.state.isImPanel) {
+            var _params3 = {
+              tip: true,
+              content: '会话连线成功，正在进行客服连线...' };
+
+            _store.default.commit('addImHistory', _params3);
+          }
+          break;
+        case 2002:
+          break;
+        case 2003:
+          _store.default.commit('setIsStuffService', false);
+          params = {
+            tip: true,
+            content: data.data };
+
+          _store.default.commit('addImHistory', params);
+          break;
+        case 2005:
+          _store.default.commit('setIsStuffService', true);
+          params = {
+            tip: true,
+            content: data.message };
+
+          _store.default.commit('addImHistory', params);
+          break;
+        case 4000:
+          _store.default.commit('setIsStuffService', false);
+          params = {
+            tip: true,
+            content: data.message };
+
+          _store.default.commit('addImHistory', params);
+          break;
+        case 4104:
+          _store.default.commit('setIsStuffService', false);
+          params = {
+            tip: true,
+            content: data.message };
+
+          _store.default.commit('addImHistory', params);
+          break;
+        case 4001:
+          // 用户验证失败
+          _helper.default.toast('您的登录令牌已过期,请重新登录~');
+          _store.default.commit('logout', '');
+          break;
+        case 4002:
+          break;
+        case 4004:
+          break;
+        case 4101:
+          // 用户在其它地方登录
+          _helper.default.toast('您的账户已在其它地方登录');
+          _store.default.commit('logout', '');
+          break;
+        case 4102:
+          params = {
+            tip: true,
+            content: data.message };
+
+          _store.default.commit('addImHistory', params);
+          break;
+        case 5000:
+          break;
+        default:
+          break;}
+
+    });this.conncted = false;this.login = false;this.serviceList = [];this.fd = null;} // 初始化websocketet
+  _createClass(websocket, [{ key: "initWebsocket", value: function initWebsocket() {var _this3 = this;if (!_store.default.state.accessToken) {_helper.default.log('未登录');return;} // 连接webSocket
+      uni.connectSocket({ url: _index.default.websocketUrl }); // 监听webSocket连接成功
+      uni.onSocketOpen(function (res) {_this3.conncted = true;if (_store.default.state.isImPanel) {var params = { tip: true, content: '连接成功，正在准备会话连线...' };_store.default.commit('addImHistory', params);}_this3.send(JSON.stringify({ route: _websocket.default.login, token: _store.default.state.accessToken }));setInterval(function () {_this3.send(JSON.stringify({ route: _websocket.default.ping }));}, 60 * 1000);}); // 监听webSocket出错
+      uni.onSocketError(function (res) {_this3.conncted = false;_this3.login = false;setTimeout(function () {_this3.initWebsocket();}, 10 * 1000);});uni.onSocketClose(function (res) {_this3.conncted = false;_this3.login = false;setTimeout(function () {_this3.initWebsocket();}, 10 * 1000);});uni.onSocketMessage(this.websocketOnMessage);} // 发送消息
+  }, { key: "send", value: function send(data) {if (!this.conncted) {if (_store.default.state.isImPanel && !this.login) {var params = { tip: true, content: '正在重新连接客服服务，请稍候...' };_store.default.commit('addImHistory', params);}return;}uni.sendSocketMessage({ data: data });} // 关闭
+  }, { key: "closeWebSocket", value: function closeWebSocket() {if (!this.conncted) {return;}uni.closeSocket({ success: function success() {console.log('调用关闭websocket成功');}, fail: function fail() {console.log('调用关闭websocket失败');} });} // 消息处理
+  }]);return websocket;}(); // eslint-disable-next-line
+var _default = new websocket();exports.default = _default;
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./node_modules/@dcloudio/uni-mp-weixin/dist/index.js */ 1)["default"]))
+
+/***/ }),
+
+/***/ 4:
+/*!****************************************************!*\
+  !*** D:/code/HBuilderProjects/通用办公系统示例/pages.json ***!
+  \****************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+
+
+/***/ }),
+
+/***/ 40:
+/*!*********************************************************!*\
+  !*** D:/code/HBuilderProjects/通用办公系统示例/api/userInfo.js ***!
+  \*********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });exports.merchantInfo = exports.worksDetail = exports.worksList = exports.memberLevelIndex = exports.notifySubscriptionConfigIndex = exports.notifySubscriptionConfigUpConfig = exports.notifyUnRreadCount = exports.notifyClearAll = exports.notifyClear = exports.notifyReadAll = exports.notifyRead = exports.notifyView = exports.notifyIndex = exports.thirdPartyAuthDelete = exports.thirdPartyAuthList = exports.opinionDetail = exports.opinionCreate = exports.opinionList = exports.uploadImage = exports.memberUpdate = exports.memberInfo = void 0; /**
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           *@des 个人中心相关接口
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           *@author hjp1011 21931118@qq.com
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           *@blog http://www.wephp.com
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           *@date 2019/11/16 11:04:16
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           */
+// 个人信息
+var memberInfo = '/we-office/v1/member/member/index';
+// 个人信息修改
+exports.memberInfo = memberInfo;var memberUpdate = '/we-office/v1/member/member/update';
+// 机构信息
+exports.memberUpdate = memberUpdate;var merchantInfo = '/we-office/v1/merchant/merchant/index';
+
+// 意见反馈列表
+exports.merchantInfo = merchantInfo;var opinionList = '/we-office/v1/member/opinion/index';
+// 意见反馈创建
+exports.opinionList = opinionList;var opinionCreate = '/we-office/v1/member/opinion';
+// 意见反馈详情
+exports.opinionCreate = opinionCreate;var opinionDetail = '/we-office/v1/member/opinion/view';
+
+// 第三方授权列表
+exports.opinionDetail = opinionDetail;var thirdPartyAuthList = '/we-office/v1/member/auth/index';
+// 解除第三方授权列表
+exports.thirdPartyAuthList = thirdPartyAuthList;var thirdPartyAuthDelete = '/we-office/v1/member/auth/delete';
+
+// 上传图片
+exports.thirdPartyAuthDelete = thirdPartyAuthDelete;var uploadImage = '/we-office/v1/common/file/images';
+
+// 待办工作
+exports.uploadImage = uploadImage;var worksList = '/we-office/v1/member/works/index';exports.worksList = worksList;
+var worksDetail = '/we-office/v1/member/works';
+
+// 消息列表
+exports.worksDetail = worksDetail;var notifyIndex = '/nfnet/dzznews/page';
+// 消息详情
+exports.notifyIndex = notifyIndex;var notifyView = '/we-office/v1/member/notify/view';
+// 单个消息阅读
+exports.notifyView = notifyView;var notifyRead = '/we-office/v1/notify/announce/read';
+// 全部已读
+exports.notifyRead = notifyRead;var notifyReadAll = '/we-office/v1/member/notify/read-all';
+// 删除一条或者多条
+exports.notifyReadAll = notifyReadAll;var notifyClear = '/we-office/v1/member/notify/clear';
+// 清空消息记录
+exports.notifyClear = notifyClear;var notifyClearAll = '/we-office/v1/member/notify/clear-all';
+// 未读消息个数
+exports.notifyClearAll = notifyClearAll;var notifyUnRreadCount = '/we-office/v1/member/notify/un-read-count';
+// 消息提醒配置
+exports.notifyUnRreadCount = notifyUnRreadCount;var notifySubscriptionConfigIndex =
+'/we-office/v1/member/notify-subscription-config/index';
+// 修改消息提醒配置
+exports.notifySubscriptionConfigIndex = notifySubscriptionConfigIndex;var notifySubscriptionConfigUpConfig =
+'/we-office/v1/member/notify-subscription-config/up-config';
+
+// 会员等级
+exports.notifySubscriptionConfigUpConfig = notifySubscriptionConfigUpConfig;var memberLevelIndex = '/we-office/v1/member/member-level/index';exports.memberLevelIndex = memberLevelIndex;
+
+/***/ }),
+
+/***/ 41:
+/*!**********************************************************!*\
+  !*** D:/code/HBuilderProjects/通用办公系统示例/common/moment.js ***!
+  \**********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+/* WEBPACK VAR INJECTION */(function(module) {!function (e, t) { true ? module.exports = t() : undefined;}(this, function () {'use strict';var e, i;function c() {return e.apply(null, arguments);}function o(e) {return e instanceof Array || '[object Array]' === Object.prototype.toString.call(e);}function u(e) {return null != e && '[object Object]' === Object.prototype.toString.call(e);}function l(e) {return void 0 === e;}function h(e) {return 'number' === typeof e || '[object Number]' === Object.prototype.toString.call(e);}function d(e) {return e instanceof Date || '[object Date]' === Object.prototype.toString.call(e);}function f(e, t) {var n,s = [];for (n = 0; n < e.length; ++n) {s.push(t(e[n], n));}return s;}function m(e, t) {return Object.prototype.hasOwnProperty.call(e, t);}function _(e, t) {for (var _n2 in t) {m(t, _n2) && (e[_n2] = t[_n2]);}return m(t, 'toString') && (e.toString = t.toString), m(t, 'valueOf') && (e.valueOf = t.valueOf), e;}function y(e, t, n, s) {return Tt(e, t, n, s, !0).utc();}function g(e) {return null == e._pf && (e._pf = { empty: !1, unusedTokens: [], unusedInput: [], overflow: -2, charsLeftOver: 0, nullInput: !1, invalidMonth: null, invalidFormat: !1, userInvalidated: !1, iso: !1, parsedDateParts: [], meridiem: null, rfc2822: !1, weekdayMismatch: !1 }), e._pf;}function v(e) {if (null == e._isValid) {var _t2 = g(e),_n3 = i.call(_t2.parsedDateParts, function (e) {return null != e;}),_s = !isNaN(e._d.getTime()) && _t2.overflow < 0 && !_t2.empty && !_t2.invalidMonth && !_t2.invalidWeekday && !_t2.weekdayMismatch && !_t2.nullInput && !_t2.invalidFormat && !_t2.userInvalidated && (!_t2.meridiem || _t2.meridiem && _n3);if (e._strict && (_s = _s && 0 === _t2.charsLeftOver && 0 === _t2.unusedTokens.length && void 0 === _t2.bigHour), null != Object.isFrozen && Object.isFrozen(e)) return _s;e._isValid = _s;}return e._isValid;}function p(e) {var t = y(NaN);return null != e ? _(g(t), e) : g(t).userInvalidated = !0, t;}i = Array.prototype.some ? Array.prototype.some : function (e) {for (var _t3 = Object(this), _n4 = _t3.length >>> 0, _s2 = 0; _s2 < _n4; _s2++) {if (_s2 in _t3 && e.call(this, _t3[_s2], _s2, _t3)) return !0;}return !1;};var r = c.momentProperties = [];function w(e, t) {var n, s, i;if (l(t._isAMomentObject) || (e._isAMomentObject = t._isAMomentObject), l(t._i) || (e._i = t._i), l(t._f) || (e._f = t._f), l(t._l) || (e._l = t._l), l(t._strict) || (e._strict = t._strict), l(t._tzm) || (e._tzm = t._tzm), l(t._isUTC) || (e._isUTC = t._isUTC), l(t._offset) || (e._offset = t._offset), l(t._pf) || (e._pf = g(t)), l(t._locale) || (e._locale = t._locale), 0 < r.length) for (n = 0; n < r.length; n++) {l(i = t[s = r[n]]) || (e[s] = i);}return e;}var t = !1;function M(e) {w(this, e), this._d = new Date(null != e._d ? e._d.getTime() : NaN), this.isValid() || (this._d = new Date(NaN)), !1 === t && (t = !0, c.updateOffset(this), t = !1);}function k(e) {return e instanceof M || null != e && null != e._isAMomentObject;}function S(e) {return e < 0 ? Math.ceil(e) || 0 : Math.floor(e);}function D(e) {var t = +e,n = 0;return 0 !== t && isFinite(t) && (n = S(t)), n;}function a(e, t, n) {var s,i = Math.min(e.length, t.length),r = Math.abs(e.length - t.length),a = 0;for (s = 0; s < i; s++) {(n && e[s] !== t[s] || !n && D(e[s]) !== D(t[s])) && a++;}return a + r;}function Y(e) {!1 === c.suppressDeprecationWarnings && 'undefined' !== typeof console && console.warn && console.warn('Deprecation warning: ' + e);}function n(i, r) {var a = !0;return _(function () {if (null != c.deprecationHandler && c.deprecationHandler(null, i), a) {for (var e, t = [], n = 0; n < arguments.length; n++) {if (e = '', 'object' === typeof arguments[n]) {for (var _s3 in e += '\n[' + n + '] ', arguments[0]) {e += _s3 + ': ' + arguments[0][_s3] + ', ';}e = e.slice(0, -2);} else e = arguments[n];t.push(e);}Y(i + '\nArguments: ' + Array.prototype.slice.call(t).join('') + '\n' + new Error().stack), a = !1;}return r.apply(this, arguments);}, r);}var s,O = {};function T(e, t) {null != c.deprecationHandler && c.deprecationHandler(e, t), O[e] || (Y(t), O[e] = !0);}function b(e) {return e instanceof Function || '[object Function]' === Object.prototype.toString.call(e);}function x(e, t) {var n,s = _({}, e);for (n in t) {m(t, n) && (u(e[n]) && u(t[n]) ? (s[n] = {}, _(s[n], e[n]), _(s[n], t[n])) : null != t[n] ? s[n] = t[n] : delete s[n]);}for (n in e) {m(e, n) && !m(t, n) && u(e[n]) && (s[n] = _({}, s[n]));}return s;}function P(e) {null != e && this.set(e);}c.suppressDeprecationWarnings = !1, c.deprecationHandler = null, s = Object.keys ? Object.keys : function (e) {var t,n = [];for (t in e) {m(e, t) && n.push(t);}return n;};var W = {};function C(e, t) {var n = e.toLowerCase();W[n] = W[n + 's'] = W[t] = e;}function H(e) {return 'string' === typeof e ? W[e] || W[e.toLowerCase()] : void 0;}function R(e) {var t,n,s = {};for (n in e) {m(e, n) && (t = H(n)) && (s[t] = e[n]);}return s;}var U = {};function F(e, t) {U[e] = t;}function L(e, t, n) {var s = '' + Math.abs(e),i = t - s.length;return (0 <= e ? n ? '+' : '' : '-') + Math.pow(10, Math.max(0, i)).toString().substr(1) + s;}var N = /(\[[^\[]*\])|(\\)?([Hh]mm(ss)?|Mo|MM?M?M?|Do|DDDo|DD?D?D?|ddd?d?|do?|w[o|w]?|W[o|W]?|Qo?|YYYYYY|YYYYY|YYYY|YY|gg(ggg?)?|GG(GGG?)?|e|E|a|A|hh?|HH?|kk?|mm?|ss?|S{1,9}|x|X|zz?|ZZ?|.)/g,G = /(\[[^\[]*\])|(\\)?(LTS|LT|LL?L?L?|l{1,4})/g,V = {},E = {};function I(e, t, n, s) {var i = s;'string' === typeof s && (i = function i() {return this[s]();}), e && (E[e] = i), t && (E[t[0]] = function () {return L(i.apply(this, arguments), t[1], t[2]);}), n && (E[n] = function () {return this.localeData().ordinal(i.apply(this, arguments), e);});}function A(e, t) {return e.isValid() ? (t = j(t, e.localeData()), V[t] = V[t] || function (s) {var e,i,t,r = s.match(N);for (e = 0, i = r.length; e < i; e++) {E[r[e]] ? r[e] = E[r[e]] : r[e] = (t = r[e]).match(/\[[\s\S]/) ? t.replace(/^\[|\]$/g, '') : t.replace(/\\/g, '');}return function (e) {var t,n = '';for (t = 0; t < i; t++) {n += b(r[t]) ? r[t].call(e, s) : r[t];}return n;};}(t), V[t](e)) : e.localeData().invalidDate();}function j(e, t) {var n = 5;function s(e) {return t.longDateFormat(e) || e;}for (G.lastIndex = 0; 0 <= n && G.test(e);) {e = e.replace(G, s), G.lastIndex = 0, n -= 1;}return e;}var Z = /\d/,z = /\d\d/,$ = /\d{3}/,q = /\d{4}/,J = /[+-]?\d{6}/,B = /\d\d?/,Q = /\d\d\d\d?/,X = /\d\d\d\d\d\d?/,K = /\d{1,3}/,ee = /\d{1,4}/,te = /[+-]?\d{1,6}/,ne = /\d+/,se = /[+-]?\d+/,ie = /Z|[+-]\d\d:?\d\d/gi,re = /Z|[+-]\d\d(?::?\d\d)?/gi,ae = /[0-9]{0,256}['a-z\u00A0-\u05FF\u0700-\uD7FF\uF900-\uFDCF\uFDF0-\uFF07\uFF10-\uFFEF]{1,256}|[\u0600-\u06FF\/]{1,256}(\s*?[\u0600-\u06FF]{1,256}){1,2}/i,oe = {};function ue(e, n, s) {oe[e] = b(n) ? n : function (e, t) {return e && s ? s : n;};}function le(e, t) {return m(oe, e) ? oe[e](t._strict, t._locale) : new RegExp(he(e.replace('\\', '').replace(/\\(\[)|\\(\])|\[([^\]\[]*)\]|\\(.)/g, function (e, t, n, s, i) {return t || n || s || i;})));}function he(e) {return e.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');}var de = {};function ce(e, n) {var t,s = n;for ('string' === typeof e && (e = [e]), h(n) && (s = function s(e, t) {t[n] = D(e);}), t = 0; t < e.length; t++) {de[e[t]] = s;}}function fe(e, i) {ce(e, function (e, t, n, s) {n._w = n._w || {}, i(e, n._w, n, s);});}var me = 0,_e = 1,ye = 2,ge = 3,ve = 4,pe = 5,we = 6,Me = 7,ke = 8;function Se(e) {return De(e) ? 366 : 365;}function De(e) {return e % 4 == 0 && e % 100 != 0 || e % 400 == 0;}I('Y', 0, 0, function () {var e = this.year();return e <= 9999 ? '' + e : '+' + e;}), I(0, ['YY', 2], 0, function () {return this.year() % 100;}), I(0, ['YYYY', 4], 0, 'year'), I(0, ['YYYYY', 5], 0, 'year'), I(0, ['YYYYYY', 6, !0], 0, 'year'), C('year', 'y'), F('year', 1), ue('Y', se), ue('YY', B, z), ue('YYYY', ee, q), ue('YYYYY', te, J), ue('YYYYYY', te, J), ce(['YYYYY', 'YYYYYY'], me), ce('YYYY', function (e, t) {t[me] = 2 === e.length ? c.parseTwoDigitYear(e) : D(e);}), ce('YY', function (e, t) {t[me] = c.parseTwoDigitYear(e);}), ce('Y', function (e, t) {t[me] = parseInt(e, 10);}), c.parseTwoDigitYear = function (e) {return D(e) + (68 < D(e) ? 1900 : 2e3);};var Ye,Oe = Te('FullYear', !0);function Te(t, n) {return function (e) {return null != e ? (xe(this, t, e), c.updateOffset(this, n), this) : be(this, t);};}function be(e, t) {return e.isValid() ? e._d['get' + (e._isUTC ? 'UTC' : '') + t]() : NaN;}function xe(e, t, n) {e.isValid() && !isNaN(n) && ('FullYear' === t && De(e.year()) && 1 === e.month() && 29 === e.date() ? e._d['set' + (e._isUTC ? 'UTC' : '') + t](n, e.month(), Pe(n, e.month())) : e._d['set' + (e._isUTC ? 'UTC' : '') + t](n));}function Pe(e, t) {if (isNaN(e) || isNaN(t)) return NaN;var n,s = (t % (n = 12) + n) % n;return e += (t - s) / 12, 1 === s ? De(e) ? 29 : 28 : 31 - s % 7 % 2;}Ye = Array.prototype.indexOf ? Array.prototype.indexOf : function (e) {var t;for (t = 0; t < this.length; ++t) {if (this[t] === e) return t;}return -1;}, I('M', ['MM', 2], 'Mo', function () {return this.month() + 1;}), I('MMM', 0, 0, function (e) {return this.localeData().monthsShort(this, e);}), I('MMMM', 0, 0, function (e) {return this.localeData().months(this, e);}), C('month', 'M'), F('month', 8), ue('M', B), ue('MM', B, z), ue('MMM', function (e, t) {return t.monthsShortRegex(e);}), ue('MMMM', function (e, t) {return t.monthsRegex(e);}), ce(['M', 'MM'], function (e, t) {t[_e] = D(e) - 1;}), ce(['MMM', 'MMMM'], function (e, t, n, s) {var i = n._locale.monthsParse(e, s, n._strict);null != i ? t[_e] = i : g(n).invalidMonth = e;});var We = /D[oD]?(\[[^\[\]]*\]|\s)+MMMM?/,Ce = 'January_February_March_April_May_June_July_August_September_October_November_December'.split('_');var He = 'Jan_Feb_Mar_Apr_May_Jun_Jul_Aug_Sep_Oct_Nov_Dec'.split('_');function Re(e, t) {var n;if (!e.isValid()) return e;if ('string' === typeof t) if (/^\d+$/.test(t)) t = D(t);else if (!h(t = e.localeData().monthsParse(t))) return e;return n = Math.min(e.date(), Pe(e.year(), t)), e._d['set' + (e._isUTC ? 'UTC' : '') + 'Month'](t, n), e;}function Ue(e) {return null != e ? (Re(this, e), c.updateOffset(this, !0), this) : be(this, 'Month');}var Fe = ae;var Le = ae;function Ne() {function e(e, t) {return t.length - e.length;}var t,n,s = [],i = [],r = [];for (t = 0; t < 12; t++) {n = y([2e3, t]), s.push(this.monthsShort(n, '')), i.push(this.months(n, '')), r.push(this.months(n, '')), r.push(this.monthsShort(n, ''));}for (s.sort(e), i.sort(e), r.sort(e), t = 0; t < 12; t++) {s[t] = he(s[t]), i[t] = he(i[t]);}for (t = 0; t < 24; t++) {r[t] = he(r[t]);}this._monthsRegex = new RegExp('^(' + r.join('|') + ')', 'i'), this._monthsShortRegex = this._monthsRegex, this._monthsStrictRegex = new RegExp('^(' + i.join('|') + ')', 'i'), this._monthsShortStrictRegex = new RegExp('^(' + s.join('|') + ')', 'i');}function Ge(e) {var t;if (e < 100 && 0 <= e) {var _n5 = Array.prototype.slice.call(arguments);_n5[0] = e + 400, t = new Date(Date.UTC.apply(null, _n5)), isFinite(t.getUTCFullYear()) && t.setUTCFullYear(e);} else t = new Date(Date.UTC.apply(null, arguments));return t;}function Ve(e, t, n) {var s = 7 + t - n;return -((7 + Ge(e, 0, s).getUTCDay() - t) % 7) + s - 1;}function Ee(e, t, n, s, i) {var r,a,o = 1 + 7 * (t - 1) + (7 + n - s) % 7 + Ve(e, s, i);return a = o <= 0 ? Se(r = e - 1) + o : o > Se(e) ? (r = e + 1, o - Se(e)) : (r = e, o), { year: r, dayOfYear: a };}function Ie(e, t, n) {var s,i,r = Ve(e.year(), t, n),a = Math.floor((e.dayOfYear() - r - 1) / 7) + 1;return a < 1 ? s = a + Ae(i = e.year() - 1, t, n) : a > Ae(e.year(), t, n) ? (s = a - Ae(e.year(), t, n), i = e.year() + 1) : (i = e.year(), s = a), { week: s, year: i };}function Ae(e, t, n) {var s = Ve(e, t, n),i = Ve(e + 1, t, n);return (Se(e) - s + i) / 7;}I('w', ['ww', 2], 'wo', 'week'), I('W', ['WW', 2], 'Wo', 'isoWeek'), C('week', 'w'), C('isoWeek', 'W'), F('week', 5), F('isoWeek', 5), ue('w', B), ue('ww', B, z), ue('W', B), ue('WW', B, z), fe(['w', 'ww', 'W', 'WW'], function (e, t, n, s) {t[s.substr(0, 1)] = D(e);});function je(e, t) {return e.slice(t, 7).concat(e.slice(0, t));}I('d', 0, 'do', 'day'), I('dd', 0, 0, function (e) {return this.localeData().weekdaysMin(this, e);}), I('ddd', 0, 0, function (e) {return this.localeData().weekdaysShort(this, e);}), I('dddd', 0, 0, function (e) {return this.localeData().weekdays(this, e);}), I('e', 0, 0, 'weekday'), I('E', 0, 0, 'isoWeekday'), C('day', 'd'), C('weekday', 'e'), C('isoWeekday', 'E'), F('day', 11), F('weekday', 11), F('isoWeekday', 11), ue('d', B), ue('e', B), ue('E', B), ue('dd', function (e, t) {return t.weekdaysMinRegex(e);}), ue('ddd', function (e, t) {return t.weekdaysShortRegex(e);}), ue('dddd', function (e, t) {return t.weekdaysRegex(e);}), fe(['dd', 'ddd', 'dddd'], function (e, t, n, s) {var i = n._locale.weekdaysParse(e, s, n._strict);null != i ? t.d = i : g(n).invalidWeekday = e;}), fe(['d', 'e', 'E'], function (e, t, n, s) {t[s] = D(e);});var Ze = 'Sunday_Monday_Tuesday_Wednesday_Thursday_Friday_Saturday'.split('_');var ze = 'Sun_Mon_Tue_Wed_Thu_Fri_Sat'.split('_');var $e = 'Su_Mo_Tu_We_Th_Fr_Sa'.split('_');var qe = ae;var Je = ae;var Be = ae;function Qe() {function e(e, t) {return t.length - e.length;}var t,n,s,i,r,a = [],o = [],u = [],l = [];for (t = 0; t < 7; t++) {n = y([2e3, 1]).day(t), s = this.weekdaysMin(n, ''), i = this.weekdaysShort(n, ''), r = this.weekdays(n, ''), a.push(s), o.push(i), u.push(r), l.push(s), l.push(i), l.push(r);}for (a.sort(e), o.sort(e), u.sort(e), l.sort(e), t = 0; t < 7; t++) {o[t] = he(o[t]), u[t] = he(u[t]), l[t] = he(l[t]);}this._weekdaysRegex = new RegExp('^(' + l.join('|') + ')', 'i'), this._weekdaysShortRegex = this._weekdaysRegex, this._weekdaysMinRegex = this._weekdaysRegex, this._weekdaysStrictRegex = new RegExp('^(' + u.join('|') + ')', 'i'), this._weekdaysShortStrictRegex = new RegExp('^(' + o.join('|') + ')', 'i'), this._weekdaysMinStrictRegex = new RegExp('^(' + a.join('|') + ')', 'i');}function Xe() {return this.hours() % 12 || 12;}function Ke(e, t) {I(e, 0, 0, function () {return this.localeData().meridiem(this.hours(), this.minutes(), t);});}function et(e, t) {return t._meridiemParse;}I('H', ['HH', 2], 0, 'hour'), I('h', ['hh', 2], 0, Xe), I('k', ['kk', 2], 0, function () {return this.hours() || 24;}), I('hmm', 0, 0, function () {return '' + Xe.apply(this) + L(this.minutes(), 2);}), I('hmmss', 0, 0, function () {return '' + Xe.apply(this) + L(this.minutes(), 2) + L(this.seconds(), 2);}), I('Hmm', 0, 0, function () {return '' + this.hours() + L(this.minutes(), 2);}), I('Hmmss', 0, 0, function () {return '' + this.hours() + L(this.minutes(), 2) + L(this.seconds(), 2);}), Ke('a', !0), Ke('A', !1), C('hour', 'h'), F('hour', 13), ue('a', et), ue('A', et), ue('H', B), ue('h', B), ue('k', B), ue('HH', B, z), ue('hh', B, z), ue('kk', B, z), ue('hmm', Q), ue('hmmss', X), ue('Hmm', Q), ue('Hmmss', X), ce(['H', 'HH'], ge), ce(['k', 'kk'], function (e, t, n) {var s = D(e);t[ge] = 24 === s ? 0 : s;}), ce(['a', 'A'], function (e, t, n) {n._isPm = n._locale.isPM(e), n._meridiem = e;}), ce(['h', 'hh'], function (e, t, n) {t[ge] = D(e), g(n).bigHour = !0;}), ce('hmm', function (e, t, n) {var s = e.length - 2;t[ge] = D(e.substr(0, s)), t[ve] = D(e.substr(s)), g(n).bigHour = !0;}), ce('hmmss', function (e, t, n) {var s = e.length - 4,i = e.length - 2;t[ge] = D(e.substr(0, s)), t[ve] = D(e.substr(s, 2)), t[pe] = D(e.substr(i)), g(n).bigHour = !0;}), ce('Hmm', function (e, t, n) {var s = e.length - 2;t[ge] = D(e.substr(0, s)), t[ve] = D(e.substr(s));}), ce('Hmmss', function (e, t, n) {var s = e.length - 4,i = e.length - 2;t[ge] = D(e.substr(0, s)), t[ve] = D(e.substr(s, 2)), t[pe] = D(e.substr(i));});var tt,nt = Te('Hours', !0),st = { calendar: { sameDay: '[Today at] LT', nextDay: '[Tomorrow at] LT', nextWeek: 'dddd [at] LT', lastDay: '[Yesterday at] LT', lastWeek: '[Last] dddd [at] LT', sameElse: 'L' }, longDateFormat: { LTS: 'h:mm:ss A', LT: 'h:mm A', L: 'MM/DD/YYYY', LL: 'MMMM D, YYYY', LLL: 'MMMM D, YYYY h:mm A', LLLL: 'dddd, MMMM D, YYYY h:mm A' }, invalidDate: 'Invalid date', ordinal: '%d', dayOfMonthOrdinalParse: /\d{1,2}/, relativeTime: { future: 'in %s', past: '%s ago', s: 'a few seconds', ss: '%d seconds', m: 'a minute', mm: '%d minutes', h: 'an hour', hh: '%d hours', d: 'a day', dd: '%d days', M: 'a month', MM: '%d months', y: 'a year', yy: '%d years' }, months: Ce, monthsShort: He, week: { dow: 0, doy: 6 }, weekdays: Ze, weekdaysMin: $e, weekdaysShort: ze, meridiemParse: /[ap]\.?m?\.?/i },it = {},rt = {};function at(e) {return e ? e.toLowerCase().replace('_', '-') : e;}function ot(e) {var t = null;if (!it[e] && 'undefined' !== typeof module && module && module.exports) try {t = tt._abbr, ut(t);} catch (e) {}return it[e];}function ut(e, t) {var n;return e && ((n = l(t) ? ht(e) : lt(e, t)) ? tt = n : 'undefined' !== typeof console && console.warn && console.warn('Locale ' + e + ' not found. Did you forget to load it?')), tt._abbr;}function lt(e, t) {if (null === t) return delete it[e], null;var n,s = st;if (t.abbr = e, null != it[e]) T('defineLocaleOverride', 'use moment.updateLocale(localeName, config) to change an existing locale. moment.defineLocale(localeName, config) should only be used for creating a new locale See http://momentjs.com/guides/#/warnings/define-locale/ for more info.'), s = it[e]._config;else if (null != t.parentLocale) if (null != it[t.parentLocale]) s = it[t.parentLocale]._config;else {if (null == (n = ot(t.parentLocale))) return rt[t.parentLocale] || (rt[t.parentLocale] = []), rt[t.parentLocale].push({ name: e, config: t }), null;s = n._config;}return it[e] = new P(x(s, t)), rt[e] && rt[e].forEach(function (e) {lt(e.name, e.config);}), ut(e), it[e];}function ht(e) {var t;if (e && e._locale && e._locale._abbr && (e = e._locale._abbr), !e) return tt;if (!o(e)) {if (t = ot(e)) return t;e = [e];}return function (e) {for (var t, n, s, i, r = 0; r < e.length;) {for (t = (i = at(e[r]).split('-')).length, n = (n = at(e[r + 1])) ? n.split('-') : null; 0 < t;) {if (s = ot(i.slice(0, t).join('-'))) return s;if (n && n.length >= t && a(i, n, !0) >= t - 1) break;t--;}r++;}return tt;}(e);}function dt(e) {var t,n = e._a;return n && -2 === g(e).overflow && (t = n[_e] < 0 || 11 < n[_e] ? _e : n[ye] < 1 || n[ye] > Pe(n[me], n[_e]) ? ye : n[ge] < 0 || 24 < n[ge] || 24 === n[ge] && (0 !== n[ve] || 0 !== n[pe] || 0 !== n[we]) ? ge : n[ve] < 0 || 59 < n[ve] ? ve : n[pe] < 0 || 59 < n[pe] ? pe : n[we] < 0 || 999 < n[we] ? we : -1, g(e)._overflowDayOfYear && (t < me || ye < t) && (t = ye), g(e)._overflowWeeks && -1 === t && (t = Me), g(e)._overflowWeekday && -1 === t && (t = ke), g(e).overflow = t), e;}function ct(e, t, n) {return null != e ? e : null != t ? t : n;}function ft(e) {var t,n,s,i,r,a = [];if (!e._d) {var _o, _u;for (_o = e, _u = new Date(c.now()), s = _o._useUTC ? [_u.getUTCFullYear(), _u.getUTCMonth(), _u.getUTCDate()] : [_u.getFullYear(), _u.getMonth(), _u.getDate()], e._w && null == e._a[ye] && null == e._a[_e] && function (e) {var t, n, s, i, r, a, o, u;if (null != (t = e._w).GG || null != t.W || null != t.E) r = 1, a = 4, n = ct(t.GG, e._a[me], Ie(bt(), 1, 4).year), s = ct(t.W, 1), ((i = ct(t.E, 1)) < 1 || 7 < i) && (u = !0);else {r = e._locale._week.dow, a = e._locale._week.doy;var _l = Ie(bt(), r, a);n = ct(t.gg, e._a[me], _l.year), s = ct(t.w, _l.week), null != t.d ? ((i = t.d) < 0 || 6 < i) && (u = !0) : null != t.e ? (i = t.e + r, (t.e < 0 || 6 < t.e) && (u = !0)) : i = r;}s < 1 || s > Ae(n, r, a) ? g(e)._overflowWeeks = !0 : null != u ? g(e)._overflowWeekday = !0 : (o = Ee(n, s, i, r, a), e._a[me] = o.year, e._dayOfYear = o.dayOfYear);}(e), null != e._dayOfYear && (r = ct(e._a[me], s[me]), (e._dayOfYear > Se(r) || 0 === e._dayOfYear) && (g(e)._overflowDayOfYear = !0), n = Ge(r, 0, e._dayOfYear), e._a[_e] = n.getUTCMonth(), e._a[ye] = n.getUTCDate()), t = 0; t < 3 && null == e._a[t]; ++t) {e._a[t] = a[t] = s[t];}for (; t < 7; t++) {e._a[t] = a[t] = null == e._a[t] ? 2 === t ? 1 : 0 : e._a[t];}24 === e._a[ge] && 0 === e._a[ve] && 0 === e._a[pe] && 0 === e._a[we] && (e._nextDay = !0, e._a[ge] = 0), e._d = (e._useUTC ? Ge : function (e, t, n, s, i, r, a) {var o;return e < 100 && 0 <= e ? (o = new Date(e + 400, t, n, s, i, r, a), isFinite(o.getFullYear()) && o.setFullYear(e)) : o = new Date(e, t, n, s, i, r, a), o;}).apply(null, a), i = e._useUTC ? e._d.getUTCDay() : e._d.getDay(), null != e._tzm && e._d.setUTCMinutes(e._d.getUTCMinutes() - e._tzm), e._nextDay && (e._a[ge] = 24), e._w && void 0 !== e._w.d && e._w.d !== i && (g(e).weekdayMismatch = !0);}}var mt = /^\s*((?:[+-]\d{6}|\d{4})-(?:\d\d-\d\d|W\d\d-\d|W\d\d|\d\d\d|\d\d))(?:(T| )(\d\d(?::\d\d(?::\d\d(?:[.,]\d+)?)?)?)([\+\-]\d\d(?::?\d\d)?|\s*Z)?)?$/,_t = /^\s*((?:[+-]\d{6}|\d{4})(?:\d\d\d\d|W\d\d\d|W\d\d|\d\d\d|\d\d))(?:(T| )(\d\d(?:\d\d(?:\d\d(?:[.,]\d+)?)?)?)([\+\-]\d\d(?::?\d\d)?|\s*Z)?)?$/,yt = /Z|[+-]\d\d(?::?\d\d)?/,gt = [['YYYYYY-MM-DD', /[+-]\d{6}-\d\d-\d\d/], ['YYYY-MM-DD', /\d{4}-\d\d-\d\d/], ['GGGG-[W]WW-E', /\d{4}-W\d\d-\d/], ['GGGG-[W]WW', /\d{4}-W\d\d/, !1], ['YYYY-DDD', /\d{4}-\d{3}/], ['YYYY-MM', /\d{4}-\d\d/, !1], ['YYYYYYMMDD', /[+-]\d{10}/], ['YYYYMMDD', /\d{8}/], ['GGGG[W]WWE', /\d{4}W\d{3}/], ['GGGG[W]WW', /\d{4}W\d{2}/, !1], ['YYYYDDD', /\d{7}/]],vt = [['HH:mm:ss.SSSS', /\d\d:\d\d:\d\d\.\d+/], ['HH:mm:ss,SSSS', /\d\d:\d\d:\d\d,\d+/], ['HH:mm:ss', /\d\d:\d\d:\d\d/], ['HH:mm', /\d\d:\d\d/], ['HHmmss.SSSS', /\d\d\d\d\d\d\.\d+/], ['HHmmss,SSSS', /\d\d\d\d\d\d,\d+/], ['HHmmss', /\d\d\d\d\d\d/], ['HHmm', /\d\d\d\d/], ['HH', /\d\d/]],pt = /^\/?Date\((\-?\d+)/i;function wt(e) {var t,n,s,i,r,a,o = e._i,u = mt.exec(o) || _t.exec(o);if (u) {for (g(e).iso = !0, t = 0, n = gt.length; t < n; t++) {if (gt[t][1].exec(u[1])) {i = gt[t][0], s = !1 !== gt[t][2];break;}}if (null == i) return void (e._isValid = !1);if (u[3]) {for (t = 0, n = vt.length; t < n; t++) {if (vt[t][1].exec(u[3])) {r = (u[2] || ' ') + vt[t][0];break;}}if (null == r) return void (e._isValid = !1);}if (!s && null != r) return void (e._isValid = !1);if (u[4]) {if (!yt.exec(u[4])) return void (e._isValid = !1);a = 'Z';}e._f = i + (r || '') + (a || ''), Yt(e);} else e._isValid = !1;}var Mt = /^(?:(Mon|Tue|Wed|Thu|Fri|Sat|Sun),?\s)?(\d{1,2})\s(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s(\d{2,4})\s(\d\d):(\d\d)(?::(\d\d))?\s(?:(UT|GMT|[ECMP][SD]T)|([Zz])|([+-]\d{4}))$/;function kt(e, t, n, s, i, r) {var a = [function (e) {var t = parseInt(e, 10);{if (t <= 49) return 2e3 + t;if (t <= 999) return 1900 + t;}return t;}(e), He.indexOf(t), parseInt(n, 10), parseInt(s, 10), parseInt(i, 10)];return r && a.push(parseInt(r, 10)), a;}var St = { UT: 0, GMT: 0, EDT: -240, EST: -300, CDT: -300, CST: -360, MDT: -360, MST: -420, PDT: -420, PST: -480 };function Dt(e) {var t,n,s,i = Mt.exec(e._i.replace(/\([^)]*\)|[\n\t]/g, ' ').replace(/(\s\s+)/g, ' ').replace(/^\s\s*/, '').replace(/\s\s*$/, ''));if (i) {var _r = kt(i[4], i[3], i[2], i[5], i[6], i[7]);if (t = i[1], n = _r, s = e, t && ze.indexOf(t) !== new Date(n[0], n[1], n[2]).getDay() && (g(s).weekdayMismatch = !0, !(s._isValid = !1))) return;e._a = _r, e._tzm = function (e, t, n) {if (e) return St[e];if (t) return 0;var s = parseInt(n, 10),i = s % 100;return (s - i) / 100 * 60 + i;}(i[8], i[9], i[10]), e._d = Ge.apply(null, e._a), e._d.setUTCMinutes(e._d.getUTCMinutes() - e._tzm), g(e).rfc2822 = !0;} else e._isValid = !1;}function Yt(e) {if (e._f !== c.ISO_8601) {if (e._f !== c.RFC_2822) {e._a = [], g(e).empty = !0;var _t4,_n6,_s4,_i,_r2,_a,_o2,_u2,_l2 = '' + e._i,_h = _l2.length,_d = 0;for (_s4 = j(e._f, e._locale).match(N) || [], _t4 = 0; _t4 < _s4.length; _t4++) {_i = _s4[_t4], (_n6 = (_l2.match(le(_i, e)) || [])[0]) && (0 < (_r2 = _l2.substr(0, _l2.indexOf(_n6))).length && g(e).unusedInput.push(_r2), _l2 = _l2.slice(_l2.indexOf(_n6) + _n6.length), _d += _n6.length), E[_i] ? (_n6 ? g(e).empty = !1 : g(e).unusedTokens.push(_i), _a = _i, _u2 = e, null != (_o2 = _n6) && m(de, _a) && de[_a](_o2, _u2._a, _u2, _a)) : e._strict && !_n6 && g(e).unusedTokens.push(_i);}g(e).charsLeftOver = _h - _d, 0 < _l2.length && g(e).unusedInput.push(_l2), e._a[ge] <= 12 && !0 === g(e).bigHour && 0 < e._a[ge] && (g(e).bigHour = void 0), g(e).parsedDateParts = e._a.slice(0), g(e).meridiem = e._meridiem, e._a[ge] = function (e, t, n) {var s;if (null == n) return t;return null != e.meridiemHour ? e.meridiemHour(t, n) : (null != e.isPM && ((s = e.isPM(n)) && t < 12 && (t += 12), s || 12 !== t || (t = 0)), t);}(e._locale, e._a[ge], e._meridiem), ft(e), dt(e);} else Dt(e);} else wt(e);}function Ot(e) {var t,n,s,i,r = e._i,a = e._f;return e._locale = e._locale || ht(e._l), null === r || void 0 === a && '' === r ? p({ nullInput: !0 }) : ('string' === typeof r && (e._i = r = e._locale.preparse(r)), k(r) ? new M(dt(r)) : (d(r) ? e._d = r : o(a) ? function (e) {var t, n, s, i, r;if (0 === e._f.length) return g(e).invalidFormat = !0, e._d = new Date(NaN);for (i = 0; i < e._f.length; i++) {r = 0, t = w({}, e), null != e._useUTC && (t._useUTC = e._useUTC), t._f = e._f[i], Yt(t), v(t) && (r += g(t).charsLeftOver, r += 10 * g(t).unusedTokens.length, g(t).score = r, (null == s || r < s) && (s = r, n = t));}_(e, n || t);}(e) : a ? Yt(e) : l(n = (t = e)._i) ? t._d = new Date(c.now()) : d(n) ? t._d = new Date(n.valueOf()) : 'string' === typeof n ? (s = t, null === (i = pt.exec(s._i)) ? (wt(s), !1 === s._isValid && (delete s._isValid, Dt(s), !1 === s._isValid && (delete s._isValid, c.createFromInputFallback(s)))) : s._d = new Date(+i[1])) : o(n) ? (t._a = f(n.slice(0), function (e) {return parseInt(e, 10);}), ft(t)) : u(n) ? function (e) {if (!e._d) {var _t5 = R(e._i);e._a = f([_t5.year, _t5.month, _t5.day || _t5.date, _t5.hour, _t5.minute, _t5.second, _t5.millisecond], function (e) {return e && parseInt(e, 10);}), ft(e);}}(t) : h(n) ? t._d = new Date(n) : c.createFromInputFallback(t), v(e) || (e._d = null), e));}function Tt(e, t, n, s, i) {var r,a = {};return !0 !== n && !1 !== n || (s = n, n = void 0), (u(e) && function (e) {if (Object.getOwnPropertyNames) return 0 === Object.getOwnPropertyNames(e).length;var t;for (t in e) {if (e.hasOwnProperty(t)) return !1;}return !0;}(e) || o(e) && 0 === e.length) && (e = void 0), a._isAMomentObject = !0, a._useUTC = a._isUTC = i, a._l = n, a._i = e, a._f = t, a._strict = s, (r = new M(dt(Ot(a))))._nextDay && (r.add(1, 'd'), r._nextDay = void 0), r;}function bt(e, t, n, s) {return Tt(e, t, n, s, !1);}c.createFromInputFallback = n('value provided is not in a recognized RFC2822 or ISO format. moment construction falls back to js Date(), which is not reliable across all browsers and versions. Non RFC2822/ISO date formats are discouraged and will be removed in an upcoming major release. Please refer to http://momentjs.com/guides/#/warnings/js-date/ for more info.', function (e) {e._d = new Date(e._i + (e._useUTC ? ' UTC' : ''));}), c.ISO_8601 = function () {}, c.RFC_2822 = function () {};var xt = n('moment().min is deprecated, use moment.max instead. http://momentjs.com/guides/#/warnings/min-max/', function () {var e = bt.apply(null, arguments);return this.isValid() && e.isValid() ? e < this ? this : e : p();}),Pt = n('moment().max is deprecated, use moment.min instead. http://momentjs.com/guides/#/warnings/min-max/', function () {var e = bt.apply(null, arguments);return this.isValid() && e.isValid() ? this < e ? this : e : p();});function Wt(e, t) {var n, s;if (1 === t.length && o(t[0]) && (t = t[0]), !t.length) return bt();for (n = t[0], s = 1; s < t.length; ++s) {t[s].isValid() && !t[s][e](n) || (n = t[s]);}return n;}var Ct = ['year', 'quarter', 'month', 'week', 'day', 'hour', 'minute', 'second', 'millisecond'];function Ht(e) {var t = R(e),n = t.year || 0,s = t.quarter || 0,i = t.month || 0,r = t.week || t.isoWeek || 0,a = t.day || 0,o = t.hour || 0,u = t.minute || 0,l = t.second || 0,h = t.millisecond || 0;this._isValid = function (e) {for (var _t6 in e) {if (-1 === Ye.call(Ct, _t6) || null != e[_t6] && isNaN(e[_t6])) return !1;}for (var _n7 = !1, _s5 = 0; _s5 < Ct.length; ++_s5) {if (e[Ct[_s5]]) {if (_n7) return !1;parseFloat(e[Ct[_s5]]) !== D(e[Ct[_s5]]) && (_n7 = !0);}}return !0;}(t), this._milliseconds = +h + 1e3 * l + 6e4 * u + 1e3 * o * 60 * 60, this._days = +a + 7 * r, this._months = +i + 3 * s + 12 * n, this._data = {}, this._locale = ht(), this._bubble();}function Rt(e) {return e instanceof Ht;}function Ut(e) {return e < 0 ? -1 * Math.round(-1 * e) : Math.round(e);}function Ft(e, n) {I(e, 0, 0, function () {var e = this.utcOffset(),t = '+';return e < 0 && (e = -e, t = '-'), t + L(~~(e / 60), 2) + n + L(~~e % 60, 2);});}Ft('Z', ':'), Ft('ZZ', ''), ue('Z', re), ue('ZZ', re), ce(['Z', 'ZZ'], function (e, t, n) {n._useUTC = !0, n._tzm = Nt(re, e);});var Lt = /([\+\-]|\d\d)/gi;function Nt(e, t) {var n = (t || '').match(e);if (null === n) return null;var s = ((n[n.length - 1] || []) + '').match(Lt) || ['-', 0, 0],i = 60 * s[1] + D(s[2]);return 0 === i ? 0 : '+' === s[0] ? i : -i;}function Gt(e, t) {var n, s;return t._isUTC ? (n = t.clone(), s = (k(e) || d(e) ? e.valueOf() : bt(e).valueOf()) - n.valueOf(), n._d.setTime(n._d.valueOf() + s), c.updateOffset(n, !1), n) : bt(e).local();}function Vt(e) {return 15 * -Math.round(e._d.getTimezoneOffset() / 15);}function Et() {return !!this.isValid() && this._isUTC && 0 === this._offset;}c.updateOffset = function () {};var It = /^(\-|\+)?(?:(\d*)[. ])?(\d+)\:(\d+)(?:\:(\d+)(\.\d*)?)?$/,At = /^(-|\+)?P(?:([-+]?[0-9,.]*)Y)?(?:([-+]?[0-9,.]*)M)?(?:([-+]?[0-9,.]*)W)?(?:([-+]?[0-9,.]*)D)?(?:T(?:([-+]?[0-9,.]*)H)?(?:([-+]?[0-9,.]*)M)?(?:([-+]?[0-9,.]*)S)?)?$/;function jt(e, t) {var n,s,i,r = e,a = null;return Rt(e) ? r = { ms: e._milliseconds, d: e._days, M: e._months } : h(e) ? (r = {}, t ? r[t] = e : r.milliseconds = e) : (a = It.exec(e)) ? (n = '-' === a[1] ? -1 : 1, r = { y: 0, d: D(a[ye]) * n, h: D(a[ge]) * n, m: D(a[ve]) * n, s: D(a[pe]) * n, ms: D(Ut(1e3 * a[we])) * n }) : (a = At.exec(e)) ? (n = '-' === a[1] ? -1 : 1, r = { y: Zt(a[2], n), M: Zt(a[3], n), w: Zt(a[4], n), d: Zt(a[5], n), h: Zt(a[6], n), m: Zt(a[7], n), s: Zt(a[8], n) }) : null == r ? r = {} : 'object' === typeof r && ('from' in r || 'to' in r) && (i = function (e, t) {var n;if (!e.isValid() || !t.isValid()) return { milliseconds: 0, months: 0 };t = Gt(t, e), e.isBefore(t) ? n = zt(e, t) : ((n = zt(t, e)).milliseconds = -n.milliseconds, n.months = -n.months);return n;}(bt(r.from), bt(r.to)), (r = {}).ms = i.milliseconds, r.M = i.months), s = new Ht(r), Rt(e) && m(e, '_locale') && (s._locale = e._locale), s;}function Zt(e, t) {var n = e && parseFloat(e.replace(',', '.'));return (isNaN(n) ? 0 : n) * t;}function zt(e, t) {var n = {};return n.months = t.month() - e.month() + 12 * (t.year() - e.year()), e.clone().add(n.months, 'M').isAfter(t) && --n.months, n.milliseconds = +t - +e.clone().add(n.months, 'M'), n;}function $t(s, i) {return function (e, t) {var n;return null === t || isNaN(+t) || (T(i, 'moment().' + i + '(period, number) is deprecated. Please use moment().' + i + '(number, period). See http://momentjs.com/guides/#/warnings/add-inverted-param/ for more info.'), n = e, e = t, t = n), qt(this, jt(e = 'string' === typeof e ? +e : e, t), s), this;};}function qt(e, t, n, s) {var i = t._milliseconds,r = Ut(t._days),a = Ut(t._months);e.isValid() && (s = null == s || s, a && Re(e, be(e, 'Month') + a * n), r && xe(e, 'Date', be(e, 'Date') + r * n), i && e._d.setTime(e._d.valueOf() + i * n), s && c.updateOffset(e, r || a));}jt.fn = Ht.prototype, jt.invalid = function () {return jt(NaN);};var Jt = $t(1, 'add'),Bt = $t(-1, 'subtract');function Qt(e, t) {var n = 12 * (t.year() - e.year()) + (t.month() - e.month()),s = e.clone().add(n, 'months');return -(n + (t - s < 0 ? (t - s) / (s - e.clone().add(n - 1, 'months')) : (t - s) / (e.clone().add(n + 1, 'months') - s))) || 0;}function Xt(e) {var t;return void 0 === e ? this._locale._abbr : (null != (t = ht(e)) && (this._locale = t), this);}c.defaultFormat = 'YYYY-MM-DDTHH:mm:ssZ', c.defaultFormatUtc = 'YYYY-MM-DDTHH:mm:ss[Z]';var Kt = n('moment().lang() is deprecated. Instead, use moment().localeData() to get the language configuration. Use moment().locale() to change languages.', function (e) {return void 0 === e ? this.localeData() : this.locale(e);});function en() {return this._locale;}var tn = 126227808e5;function nn(e, t) {return (e % t + t) % t;}function sn(e, t, n) {return e < 100 && 0 <= e ? new Date(e + 400, t, n) - tn : new Date(e, t, n).valueOf();}function rn(e, t, n) {return e < 100 && 0 <= e ? Date.UTC(e + 400, t, n) - tn : Date.UTC(e, t, n);}function an(e, t) {I(0, [e, e.length], 0, t);}function on(e, t, n, s, i) {var r;return null == e ? Ie(this, s, i).year : ((r = Ae(e, s, i)) < t && (t = r), function (e, t, n, s, i) {var r = Ee(e, t, n, s, i),a = Ge(r.year, 0, r.dayOfYear);return this.year(a.getUTCFullYear()), this.month(a.getUTCMonth()), this.date(a.getUTCDate()), this;}.call(this, e, t, n, s, i));}I(0, ['gg', 2], 0, function () {return this.weekYear() % 100;}), I(0, ['GG', 2], 0, function () {return this.isoWeekYear() % 100;}), an('gggg', 'weekYear'), an('ggggg', 'weekYear'), an('GGGG', 'isoWeekYear'), an('GGGGG', 'isoWeekYear'), C('weekYear', 'gg'), C('isoWeekYear', 'GG'), F('weekYear', 1), F('isoWeekYear', 1), ue('G', se), ue('g', se), ue('GG', B, z), ue('gg', B, z), ue('GGGG', ee, q), ue('gggg', ee, q), ue('GGGGG', te, J), ue('ggggg', te, J), fe(['gggg', 'ggggg', 'GGGG', 'GGGGG'], function (e, t, n, s) {t[s.substr(0, 2)] = D(e);}), fe(['gg', 'GG'], function (e, t, n, s) {t[s] = c.parseTwoDigitYear(e);}), I('Q', 0, 'Qo', 'quarter'), C('quarter', 'Q'), F('quarter', 7), ue('Q', Z), ce('Q', function (e, t) {t[_e] = 3 * (D(e) - 1);}), I('D', ['DD', 2], 'Do', 'date'), C('date', 'D'), F('date', 9), ue('D', B), ue('DD', B, z), ue('Do', function (e, t) {return e ? t._dayOfMonthOrdinalParse || t._ordinalParse : t._dayOfMonthOrdinalParseLenient;}), ce(['D', 'DD'], ye), ce('Do', function (e, t) {t[ye] = D(e.match(B)[0]);});var un = Te('Date', !0);I('DDD', ['DDDD', 3], 'DDDo', 'dayOfYear'), C('dayOfYear', 'DDD'), F('dayOfYear', 4), ue('DDD', K), ue('DDDD', $), ce(['DDD', 'DDDD'], function (e, t, n) {n._dayOfYear = D(e);}), I('m', ['mm', 2], 0, 'minute'), C('minute', 'm'), F('minute', 14), ue('m', B), ue('mm', B, z), ce(['m', 'mm'], ve);var ln = Te('Minutes', !1);I('s', ['ss', 2], 0, 'second'), C('second', 's'), F('second', 15), ue('s', B), ue('ss', B, z), ce(['s', 'ss'], pe);var hn,dn = Te('Seconds', !1);for (I('S', 0, 0, function () {return ~~(this.millisecond() / 100);}), I(0, ['SS', 2], 0, function () {return ~~(this.millisecond() / 10);}), I(0, ['SSS', 3], 0, 'millisecond'), I(0, ['SSSS', 4], 0, function () {return 10 * this.millisecond();}), I(0, ['SSSSS', 5], 0, function () {return 100 * this.millisecond();}), I(0, ['SSSSSS', 6], 0, function () {return 1e3 * this.millisecond();}), I(0, ['SSSSSSS', 7], 0, function () {return 1e4 * this.millisecond();}), I(0, ['SSSSSSSS', 8], 0, function () {return 1e5 * this.millisecond();}), I(0, ['SSSSSSSSS', 9], 0, function () {return 1e6 * this.millisecond();}), C('millisecond', 'ms'), F('millisecond', 16), ue('S', K, Z), ue('SS', K, z), ue('SSS', K, $), hn = 'SSSS'; hn.length <= 9; hn += 'S') {ue(hn, ne);}function cn(e, t) {t[we] = D(1e3 * ('0.' + e));}for (hn = 'S'; hn.length <= 9; hn += 'S') {ce(hn, cn);}var fn = Te('Milliseconds', !1);I('z', 0, 0, 'zoneAbbr'), I('zz', 0, 0, 'zoneName');var mn = M.prototype;function _n(e) {return e;}mn.add = Jt, mn.calendar = function (e, t) {var n = e || bt(),s = Gt(n, this).startOf('day'),i = c.calendarFormat(this, s) || 'sameElse',r = t && (b(t[i]) ? t[i].call(this, n) : t[i]);return this.format(r || this.localeData().calendar(i, this, bt(n)));}, mn.clone = function () {return new M(this);}, mn.diff = function (e, t, n) {var s, i, r;if (!this.isValid()) return NaN;if (!(s = Gt(e, this)).isValid()) return NaN;switch (i = 6e4 * (s.utcOffset() - this.utcOffset()), t = H(t)) {case 'year':r = Qt(this, s) / 12;break;case 'month':r = Qt(this, s);break;case 'quarter':r = Qt(this, s) / 3;break;case 'second':r = (this - s) / 1e3;break;case 'minute':r = (this - s) / 6e4;break;case 'hour':r = (this - s) / 36e5;break;case 'day':r = (this - s - i) / 864e5;break;case 'week':r = (this - s - i) / 6048e5;break;default:r = this - s;}return n ? r : S(r);}, mn.endOf = function (e) {var t;if (void 0 === (e = H(e)) || 'millisecond' === e || !this.isValid()) return this;var n = this._isUTC ? rn : sn;switch (e) {case 'year':t = n(this.year() + 1, 0, 1) - 1;break;case 'quarter':t = n(this.year(), this.month() - this.month() % 3 + 3, 1) - 1;break;case 'month':t = n(this.year(), this.month() + 1, 1) - 1;break;case 'week':t = n(this.year(), this.month(), this.date() - this.weekday() + 7) - 1;break;case 'isoWeek':t = n(this.year(), this.month(), this.date() - (this.isoWeekday() - 1) + 7) - 1;break;case 'day':case 'date':t = n(this.year(), this.month(), this.date() + 1) - 1;break;case 'hour':t = this._d.valueOf(), t += 36e5 - nn(t + (this._isUTC ? 0 : 6e4 * this.utcOffset()), 36e5) - 1;break;case 'minute':t = this._d.valueOf(), t += 6e4 - nn(t, 6e4) - 1;break;case 'second':t = this._d.valueOf(), t += 1e3 - nn(t, 1e3) - 1;break;}return this._d.setTime(t), c.updateOffset(this, !0), this;}, mn.format = function (e) {e || (e = this.isUtc() ? c.defaultFormatUtc : c.defaultFormat);var t = A(this, e);return this.localeData().postformat(t);}, mn.from = function (e, t) {return this.isValid() && (k(e) && e.isValid() || bt(e).isValid()) ? jt({ to: this, from: e }).locale(this.locale()).humanize(!t) : this.localeData().invalidDate();}, mn.fromNow = function (e) {return this.from(bt(), e);}, mn.to = function (e, t) {return this.isValid() && (k(e) && e.isValid() || bt(e).isValid()) ? jt({ from: this, to: e }).locale(this.locale()).humanize(!t) : this.localeData().invalidDate();}, mn.toNow = function (e) {return this.to(bt(), e);}, mn.get = function (e) {return b(this[e = H(e)]) ? this[e]() : this;}, mn.invalidAt = function () {return g(this).overflow;}, mn.isAfter = function (e, t) {var n = k(e) ? e : bt(e);return !(!this.isValid() || !n.isValid()) && ('millisecond' === (t = H(t) || 'millisecond') ? this.valueOf() > n.valueOf() : n.valueOf() < this.clone().startOf(t).valueOf());}, mn.isBefore = function (e, t) {var n = k(e) ? e : bt(e);return !(!this.isValid() || !n.isValid()) && ('millisecond' === (t = H(t) || 'millisecond') ? this.valueOf() < n.valueOf() : this.clone().endOf(t).valueOf() < n.valueOf());}, mn.isBetween = function (e, t, n, s) {var i = k(e) ? e : bt(e),r = k(t) ? t : bt(t);return !!(this.isValid() && i.isValid() && r.isValid()) && ('(' === (s = s || '()')[0] ? this.isAfter(i, n) : !this.isBefore(i, n)) && (')' === s[1] ? this.isBefore(r, n) : !this.isAfter(r, n));}, mn.isSame = function (e, t) {var n,s = k(e) ? e : bt(e);return !(!this.isValid() || !s.isValid()) && ('millisecond' === (t = H(t) || 'millisecond') ? this.valueOf() === s.valueOf() : (n = s.valueOf(), this.clone().startOf(t).valueOf() <= n && n <= this.clone().endOf(t).valueOf()));}, mn.isSameOrAfter = function (e, t) {return this.isSame(e, t) || this.isAfter(e, t);}, mn.isSameOrBefore = function (e, t) {return this.isSame(e, t) || this.isBefore(e, t);}, mn.isValid = function () {return v(this);}, mn.lang = Kt, mn.locale = Xt, mn.localeData = en, mn.max = Pt, mn.min = xt, mn.parsingFlags = function () {return _({}, g(this));}, mn.set = function (e, t) {if ('object' === typeof e) for (var _n8 = function (e) {var t = [];for (var _n9 in e) {t.push({ unit: _n9, priority: U[_n9] });}return t.sort(function (e, t) {return e.priority - t.priority;}), t;}(e = R(e)), _s6 = 0; _s6 < _n8.length; _s6++) {this[_n8[_s6].unit](e[_n8[_s6].unit]);} else if (b(this[e = H(e)])) return this[e](t);return this;}, mn.startOf = function (e) {var t;if (void 0 === (e = H(e)) || 'millisecond' === e || !this.isValid()) return this;var n = this._isUTC ? rn : sn;switch (e) {case 'year':t = n(this.year(), 0, 1);break;case 'quarter':t = n(this.year(), this.month() - this.month() % 3, 1);break;case 'month':t = n(this.year(), this.month(), 1);break;case 'week':t = n(this.year(), this.month(), this.date() - this.weekday());break;case 'isoWeek':t = n(this.year(), this.month(), this.date() - (this.isoWeekday() - 1));break;case 'day':case 'date':t = n(this.year(), this.month(), this.date());break;case 'hour':t = this._d.valueOf(), t -= nn(t + (this._isUTC ? 0 : 6e4 * this.utcOffset()), 36e5);break;case 'minute':t = this._d.valueOf(), t -= nn(t, 6e4);break;case 'second':t = this._d.valueOf(), t -= nn(t, 1e3);break;}return this._d.setTime(t), c.updateOffset(this, !0), this;}, mn.subtract = Bt, mn.toArray = function () {var e = this;return [e.year(), e.month(), e.date(), e.hour(), e.minute(), e.second(), e.millisecond()];}, mn.toObject = function () {var e = this;return { years: e.year(), months: e.month(), date: e.date(), hours: e.hours(), minutes: e.minutes(), seconds: e.seconds(), milliseconds: e.milliseconds() };}, mn.toDate = function () {return new Date(this.valueOf());}, mn.toISOString = function (e) {if (!this.isValid()) return null;var t = !0 !== e,n = t ? this.clone().utc() : this;return n.year() < 0 || 9999 < n.year() ? A(n, t ? 'YYYYYY-MM-DD[T]HH:mm:ss.SSS[Z]' : 'YYYYYY-MM-DD[T]HH:mm:ss.SSSZ') : b(Date.prototype.toISOString) ? t ? this.toDate().toISOString() : new Date(this.valueOf() + 60 * this.utcOffset() * 1e3).toISOString().replace('Z', A(n, 'Z')) : A(n, t ? 'YYYY-MM-DD[T]HH:mm:ss.SSS[Z]' : 'YYYY-MM-DD[T]HH:mm:ss.SSSZ');}, mn.inspect = function () {if (!this.isValid()) return 'moment.invalid(/* ' + this._i + ' */)';var e = 'moment',t = '';this.isLocal() || (e = 0 === this.utcOffset() ? 'moment.utc' : 'moment.parseZone', t = 'Z');var n = '[' + e + '("]',s = 0 <= this.year() && this.year() <= 9999 ? 'YYYY' : 'YYYYYY',i = t + '[")]';return this.format(n + s + '-MM-DD[T]HH:mm:ss.SSS' + i);}, mn.toJSON = function () {return this.isValid() ? this.toISOString() : null;}, mn.toString = function () {return this.clone().locale('en').format('ddd MMM DD YYYY HH:mm:ss [GMT]ZZ');}, mn.unix = function () {return Math.floor(this.valueOf() / 1e3);}, mn.valueOf = function () {return this._d.valueOf() - 6e4 * (this._offset || 0);}, mn.creationData = function () {return { input: this._i, format: this._f, locale: this._locale, isUTC: this._isUTC, strict: this._strict };}, mn.year = Oe, mn.isLeapYear = function () {return De(this.year());}, mn.weekYear = function (e) {return on.call(this, e, this.week(), this.weekday(), this.localeData()._week.dow, this.localeData()._week.doy);}, mn.isoWeekYear = function (e) {return on.call(this, e, this.isoWeek(), this.isoWeekday(), 1, 4);}, mn.quarter = mn.quarters = function (e) {return null == e ? Math.ceil((this.month() + 1) / 3) : this.month(3 * (e - 1) + this.month() % 3);}, mn.month = Ue, mn.daysInMonth = function () {return Pe(this.year(), this.month());}, mn.week = mn.weeks = function (e) {var t = this.localeData().week(this);return null == e ? t : this.add(7 * (e - t), 'd');}, mn.isoWeek = mn.isoWeeks = function (e) {var t = Ie(this, 1, 4).week;return null == e ? t : this.add(7 * (e - t), 'd');}, mn.weeksInYear = function () {var e = this.localeData()._week;return Ae(this.year(), e.dow, e.doy);}, mn.isoWeeksInYear = function () {return Ae(this.year(), 1, 4);}, mn.date = un, mn.day = mn.days = function (e) {if (!this.isValid()) return null != e ? this : NaN;var t,n,s = this._isUTC ? this._d.getUTCDay() : this._d.getDay();return null != e ? (t = e, n = this.localeData(), e = 'string' !== typeof t ? t : isNaN(t) ? 'number' === typeof (t = n.weekdaysParse(t)) ? t : null : parseInt(t, 10), this.add(e - s, 'd')) : s;}, mn.weekday = function (e) {if (!this.isValid()) return null != e ? this : NaN;var t = (this.day() + 7 - this.localeData()._week.dow) % 7;return null == e ? t : this.add(e - t, 'd');}, mn.isoWeekday = function (e) {if (!this.isValid()) return null != e ? this : NaN;if (null == e) return this.day() || 7;var t,n,s = (t = e, n = this.localeData(), 'string' === typeof t ? n.weekdaysParse(t) % 7 || 7 : isNaN(t) ? null : t);return this.day(this.day() % 7 ? s : s - 7);}, mn.dayOfYear = function (e) {var t = Math.round((this.clone().startOf('day') - this.clone().startOf('year')) / 864e5) + 1;return null == e ? t : this.add(e - t, 'd');}, mn.hour = mn.hours = nt, mn.minute = mn.minutes = ln, mn.second = mn.seconds = dn, mn.millisecond = mn.milliseconds = fn, mn.utcOffset = function (e, t, n) {var s,i = this._offset || 0;if (!this.isValid()) return null != e ? this : NaN;if (null == e) return this._isUTC ? i : Vt(this);if ('string' === typeof e) {if (null === (e = Nt(re, e))) return this;} else Math.abs(e) < 16 && !n && (e *= 60);return !this._isUTC && t && (s = Vt(this)), this._offset = e, this._isUTC = !0, null != s && this.add(s, 'm'), i !== e && (!t || this._changeInProgress ? qt(this, jt(e - i, 'm'), 1, !1) : this._changeInProgress || (this._changeInProgress = !0, c.updateOffset(this, !0), this._changeInProgress = null)), this;}, mn.utc = function (e) {return this.utcOffset(0, e);}, mn.local = function (e) {return this._isUTC && (this.utcOffset(0, e), this._isUTC = !1, e && this.subtract(Vt(this), 'm')), this;}, mn.parseZone = function () {if (null != this._tzm) this.utcOffset(this._tzm, !1, !0);else if ('string' === typeof this._i) {var _e2 = Nt(ie, this._i);null != _e2 ? this.utcOffset(_e2) : this.utcOffset(0, !0);}return this;}, mn.hasAlignedHourOffset = function (e) {return !!this.isValid() && (e = e ? bt(e).utcOffset() : 0, (this.utcOffset() - e) % 60 == 0);}, mn.isDST = function () {return this.utcOffset() > this.clone().month(0).utcOffset() || this.utcOffset() > this.clone().month(5).utcOffset();}, mn.isLocal = function () {return !!this.isValid() && !this._isUTC;}, mn.isUtcOffset = function () {return !!this.isValid() && this._isUTC;}, mn.isUtc = Et, mn.isUTC = Et, mn.zoneAbbr = function () {return this._isUTC ? 'UTC' : '';}, mn.zoneName = function () {return this._isUTC ? 'Coordinated Universal Time' : '';}, mn.dates = n('dates accessor is deprecated. Use date instead.', un), mn.months = n('months accessor is deprecated. Use month instead', Ue), mn.years = n('years accessor is deprecated. Use year instead', Oe), mn.zone = n('moment().zone is deprecated, use moment().utcOffset instead. http://momentjs.com/guides/#/warnings/zone/', function (e, t) {return null != e ? ('string' !== typeof e && (e = -e), this.utcOffset(e, t), this) : -this.utcOffset();}), mn.isDSTShifted = n('isDSTShifted is deprecated. See http://momentjs.com/guides/#/warnings/dst-shifted/ for more information', function () {if (!l(this._isDSTShifted)) return this._isDSTShifted;var e = {};if (w(e, this), (e = Ot(e))._a) {var _t7 = e._isUTC ? y(e._a) : bt(e._a);this._isDSTShifted = this.isValid() && 0 < a(e._a, _t7.toArray());} else this._isDSTShifted = !1;return this._isDSTShifted;});var yn = P.prototype;function gn(e, t, n, s) {var i = ht(),r = y().set(s, t);return i[n](r, e);}function vn(e, t, n) {if (h(e) && (t = e, e = void 0), e = e || '', null != t) return gn(e, t, n, 'month');var s,i = [];for (s = 0; s < 12; s++) {i[s] = gn(e, s, n, 'month');}return i;}function pn(e, t, n, s) {t = ('boolean' === typeof e ? h(t) && (n = t, t = void 0) : (t = e, e = !1, h(n = t) && (n = t, t = void 0)), t || '');var i,r = ht(),a = e ? r._week.dow : 0;if (null != n) return gn(t, (n + a) % 7, s, 'day');var o = [];for (i = 0; i < 7; i++) {o[i] = gn(t, (i + a) % 7, s, 'day');}return o;}yn.calendar = function (e, t, n) {var s = this._calendar[e] || this._calendar.sameElse;return b(s) ? s.call(t, n) : s;}, yn.longDateFormat = function (e) {var t = this._longDateFormat[e],n = this._longDateFormat[e.toUpperCase()];return t || !n ? t : (this._longDateFormat[e] = n.replace(/MMMM|MM|DD|dddd/g, function (e) {return e.slice(1);}), this._longDateFormat[e]);}, yn.invalidDate = function () {return this._invalidDate;}, yn.ordinal = function (e) {return this._ordinal.replace('%d', e);}, yn.preparse = _n, yn.postformat = _n, yn.relativeTime = function (e, t, n, s) {var i = this._relativeTime[n];return b(i) ? i(e, t, n, s) : i.replace(/%d/i, e);}, yn.pastFuture = function (e, t) {var n = this._relativeTime[0 < e ? 'future' : 'past'];return b(n) ? n(t) : n.replace(/%s/i, t);}, yn.set = function (e) {var t, n;for (n in e) {b(t = e[n]) ? this[n] = t : this['_' + n] = t;}this._config = e, this._dayOfMonthOrdinalParseLenient = new RegExp((this._dayOfMonthOrdinalParse.source || this._ordinalParse.source) + '|' + /\d{1,2}/.source);}, yn.months = function (e, t) {return e ? o(this._months) ? this._months[e.month()] : this._months[(this._months.isFormat || We).test(t) ? 'format' : 'standalone'][e.month()] : o(this._months) ? this._months : this._months.standalone;}, yn.monthsShort = function (e, t) {return e ? o(this._monthsShort) ? this._monthsShort[e.month()] : this._monthsShort[We.test(t) ? 'format' : 'standalone'][e.month()] : o(this._monthsShort) ? this._monthsShort : this._monthsShort.standalone;}, yn.monthsParse = function (e, t, n) {var s, i, r;if (this._monthsParseExact) return function (e, t, n) {var s,i,r,a = e.toLocaleLowerCase();if (!this._monthsParse) for (this._monthsParse = [], this._longMonthsParse = [], this._shortMonthsParse = [], s = 0; s < 12; ++s) {r = y([2e3, s]), this._shortMonthsParse[s] = this.monthsShort(r, '').toLocaleLowerCase(), this._longMonthsParse[s] = this.months(r, '').toLocaleLowerCase();}return n ? 'MMM' === t ? -1 !== (i = Ye.call(this._shortMonthsParse, a)) ? i : null : -1 !== (i = Ye.call(this._longMonthsParse, a)) ? i : null : 'MMM' === t ? -1 !== (i = Ye.call(this._shortMonthsParse, a)) ? i : -1 !== (i = Ye.call(this._longMonthsParse, a)) ? i : null : -1 !== (i = Ye.call(this._longMonthsParse, a)) ? i : -1 !== (i = Ye.call(this._shortMonthsParse, a)) ? i : null;}.call(this, e, t, n);for (this._monthsParse || (this._monthsParse = [], this._longMonthsParse = [], this._shortMonthsParse = []), s = 0; s < 12; s++) {if (i = y([2e3, s]), n && !this._longMonthsParse[s] && (this._longMonthsParse[s] = new RegExp('^' + this.months(i, '').replace('.', '') + '$', 'i'), this._shortMonthsParse[s] = new RegExp('^' + this.monthsShort(i, '').replace('.', '') + '$', 'i')), n || this._monthsParse[s] || (r = '^' + this.months(i, '') + '|^' + this.monthsShort(i, ''), this._monthsParse[s] = new RegExp(r.replace('.', ''), 'i')), n && 'MMMM' === t && this._longMonthsParse[s].test(e)) return s;if (n && 'MMM' === t && this._shortMonthsParse[s].test(e)) return s;if (!n && this._monthsParse[s].test(e)) return s;}}, yn.monthsRegex = function (e) {return this._monthsParseExact ? (m(this, '_monthsRegex') || Ne.call(this), e ? this._monthsStrictRegex : this._monthsRegex) : (m(this, '_monthsRegex') || (this._monthsRegex = Le), this._monthsStrictRegex && e ? this._monthsStrictRegex : this._monthsRegex);}, yn.monthsShortRegex = function (e) {return this._monthsParseExact ? (m(this, '_monthsRegex') || Ne.call(this), e ? this._monthsShortStrictRegex : this._monthsShortRegex) : (m(this, '_monthsShortRegex') || (this._monthsShortRegex = Fe), this._monthsShortStrictRegex && e ? this._monthsShortStrictRegex : this._monthsShortRegex);}, yn.week = function (e) {return Ie(e, this._week.dow, this._week.doy).week;}, yn.firstDayOfYear = function () {return this._week.doy;}, yn.firstDayOfWeek = function () {return this._week.dow;}, yn.weekdays = function (e, t) {var n = o(this._weekdays) ? this._weekdays : this._weekdays[e && !0 !== e && this._weekdays.isFormat.test(t) ? 'format' : 'standalone'];return !0 === e ? je(n, this._week.dow) : e ? n[e.day()] : n;}, yn.weekdaysMin = function (e) {return !0 === e ? je(this._weekdaysMin, this._week.dow) : e ? this._weekdaysMin[e.day()] : this._weekdaysMin;}, yn.weekdaysShort = function (e) {return !0 === e ? je(this._weekdaysShort, this._week.dow) : e ? this._weekdaysShort[e.day()] : this._weekdaysShort;}, yn.weekdaysParse = function (e, t, n) {var s, i, r;if (this._weekdaysParseExact) return function (e, t, n) {var s,i,r,a = e.toLocaleLowerCase();if (!this._weekdaysParse) for (this._weekdaysParse = [], this._shortWeekdaysParse = [], this._minWeekdaysParse = [], s = 0; s < 7; ++s) {r = y([2e3, 1]).day(s), this._minWeekdaysParse[s] = this.weekdaysMin(r, '').toLocaleLowerCase(), this._shortWeekdaysParse[s] = this.weekdaysShort(r, '').toLocaleLowerCase(), this._weekdaysParse[s] = this.weekdays(r, '').toLocaleLowerCase();}return n ? 'dddd' === t ? -1 !== (i = Ye.call(this._weekdaysParse, a)) ? i : null : 'ddd' === t ? -1 !== (i = Ye.call(this._shortWeekdaysParse, a)) ? i : null : -1 !== (i = Ye.call(this._minWeekdaysParse, a)) ? i : null : 'dddd' === t ? -1 !== (i = Ye.call(this._weekdaysParse, a)) ? i : -1 !== (i = Ye.call(this._shortWeekdaysParse, a)) ? i : -1 !== (i = Ye.call(this._minWeekdaysParse, a)) ? i : null : 'ddd' === t ? -1 !== (i = Ye.call(this._shortWeekdaysParse, a)) ? i : -1 !== (i = Ye.call(this._weekdaysParse, a)) ? i : -1 !== (i = Ye.call(this._minWeekdaysParse, a)) ? i : null : -1 !== (i = Ye.call(this._minWeekdaysParse, a)) ? i : -1 !== (i = Ye.call(this._weekdaysParse, a)) ? i : -1 !== (i = Ye.call(this._shortWeekdaysParse, a)) ? i : null;}.call(this, e, t, n);for (this._weekdaysParse || (this._weekdaysParse = [], this._minWeekdaysParse = [], this._shortWeekdaysParse = [], this._fullWeekdaysParse = []), s = 0; s < 7; s++) {if (i = y([2e3, 1]).day(s), n && !this._fullWeekdaysParse[s] && (this._fullWeekdaysParse[s] = new RegExp('^' + this.weekdays(i, '').replace('.', '\\.?') + '$', 'i'), this._shortWeekdaysParse[s] = new RegExp('^' + this.weekdaysShort(i, '').replace('.', '\\.?') + '$', 'i'), this._minWeekdaysParse[s] = new RegExp('^' + this.weekdaysMin(i, '').replace('.', '\\.?') + '$', 'i')), this._weekdaysParse[s] || (r = '^' + this.weekdays(i, '') + '|^' + this.weekdaysShort(i, '') + '|^' + this.weekdaysMin(i, ''), this._weekdaysParse[s] = new RegExp(r.replace('.', ''), 'i')), n && 'dddd' === t && this._fullWeekdaysParse[s].test(e)) return s;if (n && 'ddd' === t && this._shortWeekdaysParse[s].test(e)) return s;if (n && 'dd' === t && this._minWeekdaysParse[s].test(e)) return s;if (!n && this._weekdaysParse[s].test(e)) return s;}}, yn.weekdaysRegex = function (e) {return this._weekdaysParseExact ? (m(this, '_weekdaysRegex') || Qe.call(this), e ? this._weekdaysStrictRegex : this._weekdaysRegex) : (m(this, '_weekdaysRegex') || (this._weekdaysRegex = qe), this._weekdaysStrictRegex && e ? this._weekdaysStrictRegex : this._weekdaysRegex);}, yn.weekdaysShortRegex = function (e) {return this._weekdaysParseExact ? (m(this, '_weekdaysRegex') || Qe.call(this), e ? this._weekdaysShortStrictRegex : this._weekdaysShortRegex) : (m(this, '_weekdaysShortRegex') || (this._weekdaysShortRegex = Je), this._weekdaysShortStrictRegex && e ? this._weekdaysShortStrictRegex : this._weekdaysShortRegex);}, yn.weekdaysMinRegex = function (e) {return this._weekdaysParseExact ? (m(this, '_weekdaysRegex') || Qe.call(this), e ? this._weekdaysMinStrictRegex : this._weekdaysMinRegex) : (m(this, '_weekdaysMinRegex') || (this._weekdaysMinRegex = Be), this._weekdaysMinStrictRegex && e ? this._weekdaysMinStrictRegex : this._weekdaysMinRegex);}, yn.isPM = function (e) {return 'p' === (e + '').toLowerCase().charAt(0);}, yn.meridiem = function (e, t, n) {return 11 < e ? n ? 'pm' : 'PM' : n ? 'am' : 'AM';}, ut('en', { dayOfMonthOrdinalParse: /\d{1,2}(th|st|nd|rd)/, ordinal: function ordinal(e) {var t = e % 10;return e + (1 === D(e % 100 / 10) ? 'th' : 1 === t ? 'st' : 2 === t ? 'nd' : 3 === t ? 'rd' : 'th');} }), c.lang = n('moment.lang is deprecated. Use moment.locale instead.', ut), c.langData = n('moment.langData is deprecated. Use moment.localeData instead.', ht);var wn = Math.abs;function Mn(e, t, n, s) {var i = jt(t, n);return e._milliseconds += s * i._milliseconds, e._days += s * i._days, e._months += s * i._months, e._bubble();}function kn(e) {return e < 0 ? Math.floor(e) : Math.ceil(e);}function Sn(e) {return 4800 * e / 146097;}function Dn(e) {return 146097 * e / 4800;}function Yn(e) {return function () {return this.as(e);};}var On = Yn('ms'),Tn = Yn('s'),bn = Yn('m'),xn = Yn('h'),Pn = Yn('d'),Wn = Yn('w'),Cn = Yn('M'),Hn = Yn('Q'),Rn = Yn('y');function Un(e) {return function () {return this.isValid() ? this._data[e] : NaN;};}var Fn = Un('milliseconds'),Ln = Un('seconds'),Nn = Un('minutes'),Gn = Un('hours'),Vn = Un('days'),En = Un('months'),In = Un('years');var An = Math.round,jn = { ss: 44, s: 45, m: 45, h: 22, d: 26, M: 11 };var Zn = Math.abs;function zn(e) {return (0 < e) - (e < 0) || +e;}function $n() {if (!this.isValid()) return this.localeData().invalidDate();var e,t,n = Zn(this._milliseconds) / 1e3,s = Zn(this._days),i = Zn(this._months);t = S((e = S(n / 60)) / 60), n %= 60, e %= 60;var r = S(i / 12),a = i %= 12,o = s,u = t,l = e,h = n ? n.toFixed(3).replace(/\.?0+$/, '') : '',d = this.asSeconds();if (!d) return 'P0D';var c = d < 0 ? '-' : '',f = zn(this._months) !== zn(d) ? '-' : '',m = zn(this._days) !== zn(d) ? '-' : '',_ = zn(this._milliseconds) !== zn(d) ? '-' : '';return c + 'P' + (r ? f + r + 'Y' : '') + (a ? f + a + 'M' : '') + (o ? m + o + 'D' : '') + (u || l || h ? 'T' : '') + (u ? _ + u + 'H' : '') + (l ? _ + l + 'M' : '') + (h ? _ + h + 'S' : '');}var qn = Ht.prototype;return qn.isValid = function () {return this._isValid;}, qn.abs = function () {var e = this._data;return this._milliseconds = wn(this._milliseconds), this._days = wn(this._days), this._months = wn(this._months), e.milliseconds = wn(e.milliseconds), e.seconds = wn(e.seconds), e.minutes = wn(e.minutes), e.hours = wn(e.hours), e.months = wn(e.months), e.years = wn(e.years), this;}, qn.add = function (e, t) {return Mn(this, e, t, 1);}, qn.subtract = function (e, t) {return Mn(this, e, t, -1);}, qn.as = function (e) {if (!this.isValid()) return NaN;var t,n,s = this._milliseconds;if ('month' === (e = H(e)) || 'quarter' === e || 'year' === e) switch (t = this._days + s / 864e5, n = this._months + Sn(t), e) {case 'month':return n;case 'quarter':return n / 3;case 'year':return n / 12;} else switch (t = this._days + Math.round(Dn(this._months)), e) {case 'week':return t / 7 + s / 6048e5;case 'day':return t + s / 864e5;case 'hour':return 24 * t + s / 36e5;case 'minute':return 1440 * t + s / 6e4;case 'second':return 86400 * t + s / 1e3;case 'millisecond':return Math.floor(864e5 * t) + s;default:throw new Error('Unknown unit ' + e);}}, qn.asMilliseconds = On, qn.asSeconds = Tn, qn.asMinutes = bn, qn.asHours = xn, qn.asDays = Pn, qn.asWeeks = Wn, qn.asMonths = Cn, qn.asQuarters = Hn, qn.asYears = Rn, qn.valueOf = function () {return this.isValid() ? this._milliseconds + 864e5 * this._days + this._months % 12 * 2592e6 + 31536e6 * D(this._months / 12) : NaN;}, qn._bubble = function () {var e,t,n,s,i,r = this._milliseconds,a = this._days,o = this._months,u = this._data;return 0 <= r && 0 <= a && 0 <= o || r <= 0 && a <= 0 && o <= 0 || (r += 864e5 * kn(Dn(o) + a), o = a = 0), u.milliseconds = r % 1e3, e = S(r / 1e3), u.seconds = e % 60, t = S(e / 60), u.minutes = t % 60, n = S(t / 60), u.hours = n % 24, o += i = S(Sn(a += S(n / 24))), a -= kn(Dn(i)), s = S(o / 12), o %= 12, u.days = a, u.months = o, u.years = s, this;}, qn.clone = function () {return jt(this);}, qn.get = function (e) {return e = H(e), this.isValid() ? this[e + 's']() : NaN;}, qn.milliseconds = Fn, qn.seconds = Ln, qn.minutes = Nn, qn.hours = Gn, qn.days = Vn, qn.weeks = function () {return S(this.days() / 7);}, qn.months = En, qn.years = In, qn.humanize = function (e) {if (!this.isValid()) return this.localeData().invalidDate();var t,n,s,i,r,a,o,u,l,h,d,c = this.localeData(),f = (n = !e, s = c, i = jt(t = this).abs(), r = An(i.as('s')), a = An(i.as('m')), o = An(i.as('h')), u = An(i.as('d')), l = An(i.as('M')), h = An(i.as('y')), (d = r <= jn.ss && ['s', r] || r < jn.s && ['ss', r] || a <= 1 && ['m'] || a < jn.m && ['mm', a] || o <= 1 && ['h'] || o < jn.h && ['hh', o] || u <= 1 && ['d'] || u < jn.d && ['dd', u] || l <= 1 && ['M'] || l < jn.M && ['MM', l] || h <= 1 && ['y'] || ['yy', h])[2] = n, d[3] = 0 < +t, d[4] = s, function (e, t, n, s, i) {return i.relativeTime(t || 1, !!n, e, s);}.apply(null, d));return e && (f = c.pastFuture(+this, f)), c.postformat(f);}, qn.toISOString = $n, qn.toString = $n, qn.toJSON = $n, qn.locale = Xt, qn.localeData = en, qn.toIsoString = n('toIsoString() is deprecated. Please use toISOString() instead (notice the capitals)', $n), qn.lang = Kt, I('X', 0, 0, 'unix'), I('x', 0, 0, 'valueOf'), ue('x', se), ue('X', /[+-]?\d+(\.\d{1,3})?/), ce('X', function (e, t, n) {n._d = new Date(1e3 * parseFloat(e, 10));}), ce('x', function (e, t, n) {n._d = new Date(D(e));}), c.version = '2.24.0', e = bt, c.fn = mn, c.min = function () {return Wt('isBefore', [].slice.call(arguments, 0));}, c.max = function () {return Wt('isAfter', [].slice.call(arguments, 0));}, c.now = function () {return Date.now ? Date.now() : +new Date();}, c.utc = y, c.unix = function (e) {return bt(1e3 * e);}, c.months = function (e, t) {return vn(e, t, 'months');}, c.isDate = d, c.locale = ut, c.invalid = p, c.duration = jt, c.isMoment = k, c.weekdays = function (e, t, n) {return pn(e, t, n, 'weekdays');}, c.parseZone = function () {return bt.apply(null, arguments).parseZone();}, c.localeData = ht, c.isDuration = Rt, c.monthsShort = function (e, t) {return vn(e, t, 'monthsShort');}, c.weekdaysMin = function (e, t, n) {return pn(e, t, n, 'weekdaysMin');}, c.defineLocale = lt, c.updateLocale = function (e, t) {if (null != t) {var _n10,_s7,_i2 = st;null != (_s7 = ot(e)) && (_i2 = _s7._config), (_n10 = new P(t = x(_i2, t))).parentLocale = it[e], it[e] = _n10, ut(e);} else null != it[e] && (null != it[e].parentLocale ? it[e] = it[e].parentLocale : null != it[e] && delete it[e]);return it[e];}, c.locales = function () {return s(it);}, c.weekdaysShort = function (e, t, n) {return pn(e, t, n, 'weekdaysShort');}, c.normalizeUnits = H, c.relativeTimeRounding = function (e) {return void 0 === e ? An : 'function' === typeof e && (An = e, !0);}, c.relativeTimeThreshold = function (e, t) {return void 0 !== jn[e] && (void 0 === t ? jn[e] : (jn[e] = t, 's' === e && (jn.ss = t - 1), !0));}, c.calendarFormat = function (e, t) {var n = e.diff(t, 'days', !0);return n < -6 ? 'sameElse' : n < -1 ? 'lastWeek' : n < 0 ? 'lastDay' : n < 1 ? 'sameDay' : n < 2 ? 'nextDay' : n < 7 ? 'nextWeek' : 'sameElse';}, c.prototype = mn, c.HTML5_FMT = { DATETIME_LOCAL: 'YYYY-MM-DDTHH:mm', DATETIME_LOCAL_SECONDS: 'YYYY-MM-DDTHH:mm:ss', DATETIME_LOCAL_MS: 'YYYY-MM-DDTHH:mm:ss.SSS', DATE: 'YYYY-MM-DD', TIME: 'HH:mm', TIME_SECONDS: 'HH:mm:ss', TIME_MS: 'HH:mm:ss.SSS', WEEK: 'GGGG-[W]WW', MONTH: 'YYYY-MM' }, c;});
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../home/Tools/HBuilderX/plugins/uniapp-cli/node_modules/webpack/buildin/module.js */ 42)(module)))
+
+/***/ }),
+
+/***/ 42:
+/*!***********************************!*\
+  !*** (webpack)/buildin/module.js ***!
+  \***********************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = function(module) {
+	if (!module.webpackPolyfill) {
+		module.deprecate = function() {};
+		module.paths = [];
+		// module.parent = undefined by default
+		if (!module.children) module.children = [];
+		Object.defineProperty(module, "loaded", {
+			enumerable: true,
+			get: function() {
+				return module.l;
+			}
+		});
+		Object.defineProperty(module, "id", {
+			enumerable: true,
+			get: function() {
+				return module.i;
+			}
+		});
+		module.webpackPolyfill = 1;
+	}
+	return module;
+};
+
 
 /***/ }),
 
@@ -19832,7 +19287,7 @@ module.exports = __webpack_require__(/*! regenerator-runtime */ 9);
 
 /***/ }),
 
-/***/ 832:
+/***/ 807:
 /*!***********************************************************************************!*\
   !*** D:/code/HBuilderProjects/通用办公系统示例/components/oa-parser/libs/MpHtmlParser.js ***!
   \***********************************************************************************/
@@ -19847,9 +19302,9 @@ module.exports = __webpack_require__(/*! regenerator-runtime */ 9);
                       * @author JinYufeng
                       * @listens MIT
                       */
-var cfg = __webpack_require__(/*! ./config.js */ 833),
+var cfg = __webpack_require__(/*! ./config.js */ 808),
 blankChar = cfg.blankChar,
-CssHandler = __webpack_require__(/*! ./CssHandler.js */ 834),
+CssHandler = __webpack_require__(/*! ./CssHandler.js */ 809),
 windowWidth = uni.getSystemInfoSync().windowWidth;
 var emoji;
 
@@ -20379,7 +19834,7 @@ module.exports = MpHtmlParser;
 
 /***/ }),
 
-/***/ 833:
+/***/ 808:
 /*!*****************************************************************************!*\
   !*** D:/code/HBuilderProjects/通用办公系统示例/components/oa-parser/libs/config.js ***!
   \*****************************************************************************/
@@ -20483,7 +19938,7 @@ function makeMap(str) {
 
 /***/ }),
 
-/***/ 834:
+/***/ 809:
 /*!*********************************************************************************!*\
   !*** D:/code/HBuilderProjects/通用办公系统示例/components/oa-parser/libs/CssHandler.js ***!
   \*********************************************************************************/
@@ -20491,7 +19946,7 @@ function makeMap(str) {
 /***/ (function(module, exports, __webpack_require__) {
 
 // eslint-disable
-var cfg = __webpack_require__(/*! ./config.js */ 833),
+var cfg = __webpack_require__(/*! ./config.js */ 808),
 isLetter = function isLetter(c) {return c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z';};
 
 function CssHandler(tagStyle) {
@@ -20593,55 +20048,7 @@ parser.prototype.Content = function () {
 
 /***/ }),
 
-/***/ 9:
-/*!************************************************************!*\
-  !*** ./node_modules/regenerator-runtime/runtime-module.js ***!
-  \************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-/**
- * Copyright (c) 2014-present, Facebook, Inc.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
-
-// This method of obtaining a reference to the global object needs to be
-// kept identical to the way it is obtained in runtime.js
-var g = (function() {
-  return this || (typeof self === "object" && self);
-})() || Function("return this")();
-
-// Use `getOwnPropertyNames` because not all browsers support calling
-// `hasOwnProperty` on the global `self` object in a worker. See #183.
-var hadRuntime = g.regeneratorRuntime &&
-  Object.getOwnPropertyNames(g).indexOf("regeneratorRuntime") >= 0;
-
-// Save the old regeneratorRuntime in case it needs to be restored later.
-var oldRuntime = hadRuntime && g.regeneratorRuntime;
-
-// Force reevalutation of runtime.js.
-g.regeneratorRuntime = undefined;
-
-module.exports = __webpack_require__(/*! ./runtime */ 10);
-
-if (hadRuntime) {
-  // Restore the original runtime.
-  g.regeneratorRuntime = oldRuntime;
-} else {
-  // Remove the global property added by runtime.js.
-  try {
-    delete g.regeneratorRuntime;
-  } catch(e) {
-    g.regeneratorRuntime = undefined;
-  }
-}
-
-
-/***/ }),
-
-/***/ 910:
+/***/ 897:
 /*!************************************************************************!*\
   !*** D:/code/HBuilderProjects/通用办公系统示例/components/oa-calendar/util.js ***!
   \************************************************************************/
@@ -20649,7 +20056,7 @@ if (hadRuntime) {
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });exports.default = void 0;var _calendar = _interopRequireDefault(__webpack_require__(/*! ./calendar.js */ 911));function _interopRequireDefault(obj) {return obj && obj.__esModule ? obj : { default: obj };}function _classCallCheck(instance, Constructor) {if (!(instance instanceof Constructor)) {throw new TypeError("Cannot call a class as a function");}}function _defineProperties(target, props) {for (var i = 0; i < props.length; i++) {var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);}}function _createClass(Constructor, protoProps, staticProps) {if (protoProps) _defineProperties(Constructor.prototype, protoProps);if (staticProps) _defineProperties(Constructor, staticProps);return Constructor;}var
+Object.defineProperty(exports, "__esModule", { value: true });exports.default = void 0;var _calendar = _interopRequireDefault(__webpack_require__(/*! ./calendar.js */ 898));function _interopRequireDefault(obj) {return obj && obj.__esModule ? obj : { default: obj };}function _classCallCheck(instance, Constructor) {if (!(instance instanceof Constructor)) {throw new TypeError("Cannot call a class as a function");}}function _defineProperties(target, props) {for (var i = 0; i < props.length; i++) {var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);}}function _createClass(Constructor, protoProps, staticProps) {if (protoProps) _defineProperties(Constructor.prototype, protoProps);if (staticProps) _defineProperties(Constructor, staticProps);return Constructor;}var
 
 Calendar = /*#__PURE__*/function () {
   function Calendar()
@@ -20979,7 +20386,7 @@ Calendar;exports.default = _default;
 
 /***/ }),
 
-/***/ 911:
+/***/ 898:
 /*!****************************************************************************!*\
   !*** D:/code/HBuilderProjects/通用办公系统示例/components/oa-calendar/calendar.js ***!
   \****************************************************************************/
@@ -21536,133 +20943,55 @@ calendar;exports.default = _default;
 
 /***/ }),
 
-/***/ 924:
-/*!***********************************************************************************!*\
-  !*** D:/code/HBuilderProjects/通用办公系统示例/components/uni-swipe-action-item/mpwxs.js ***!
-  \***********************************************************************************/
+/***/ 9:
+/*!************************************************************!*\
+  !*** ./node_modules/regenerator-runtime/runtime-module.js ***!
+  \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-"use strict";
-/* WEBPACK VAR INJECTION */(function(uni) {Object.defineProperty(exports, "__esModule", { value: true });exports.default = void 0;var _default = {
-  data: function data() {
-    return {
-      position: [],
-      button: {},
-      btn: "[]" };
+/**
+ * Copyright (c) 2014-present, Facebook, Inc.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
 
-  },
-  // computed: {
-  // 	pos() {
-  // 		return JSON.stringify(this.position)
-  // 	},
-  // 	btn() {
-  // 		return JSON.stringify(this.button)
-  // 	}
-  // },
-  watch: {
-    button: {
-      handler: function handler(newVal) {
-        this.btn = JSON.stringify(newVal);
-      },
-      deep: true },
+// This method of obtaining a reference to the global object needs to be
+// kept identical to the way it is obtained in runtime.js
+var g = (function() {
+  return this || (typeof self === "object" && self);
+})() || Function("return this")();
 
-    show: function show(newVal) {
-      if (this.autoClose) return;
-      if (!this.button) {
-        this.init();
-        return;
-      }
-      this.button.show = newVal;
-    },
-    leftOptions: function leftOptions() {
-      this.init();
-    },
-    rightOptions: function rightOptions() {
-      this.init();
-    } },
+// Use `getOwnPropertyNames` because not all browsers support calling
+// `hasOwnProperty` on the global `self` object in a worker. See #183.
+var hadRuntime = g.regeneratorRuntime &&
+  Object.getOwnPropertyNames(g).indexOf("regeneratorRuntime") >= 0;
 
-  created: function created() {
-    if (this.swipeaction.children !== undefined) {
-      this.swipeaction.children.push(this);
-    }
-  },
-  mounted: function mounted() {
-    this.init();
-  },
-  beforeDestroy: function beforeDestroy() {var _this = this;
-    this.swipeaction.children.forEach(function (item, index) {
-      if (item === _this) {
-        _this.swipeaction.children.splice(index, 1);
-      }
-    });
-  },
-  methods: {
-    init: function init() {var _this2 = this;
-      clearTimeout(this.swipetimer);
-      this.swipetimer = setTimeout(function () {
-        _this2.getButtonSize();
-      }, 50);
-    },
-    closeSwipe: function closeSwipe(e) {
-      if (!this.autoClose) return;
-      this.swipeaction.closeOther(this);
-    },
+// Save the old regeneratorRuntime in case it needs to be restored later.
+var oldRuntime = hadRuntime && g.regeneratorRuntime;
 
-    change: function change(e) {
-      this.$emit('change', e.open);
-      var show = this.button.show;
-      if (show !== e.open) {
-        this.button.show = e.open;
-      }
+// Force reevalutation of runtime.js.
+g.regeneratorRuntime = undefined;
 
-    },
+module.exports = __webpack_require__(/*! ./runtime */ 10);
 
-    appTouchStart: function appTouchStart(e) {var
+if (hadRuntime) {
+  // Restore the original runtime.
+  g.regeneratorRuntime = oldRuntime;
+} else {
+  // Remove the global property added by runtime.js.
+  try {
+    delete g.regeneratorRuntime;
+  } catch(e) {
+    g.regeneratorRuntime = undefined;
+  }
+}
 
-      clientX =
-      e.changedTouches[0].clientX;
-      this.clientX = clientX;
-      this.timestamp = new Date().getTime();
-    },
-    appTouchEnd: function appTouchEnd(e, index, item, position) {var
-
-      clientX =
-      e.changedTouches[0].clientX;
-      // fixed by xxxx 模拟点击事件，解决 ios 13 点击区域错位的问题
-      var diff = Math.abs(this.clientX - clientX);
-      var time = new Date().getTime() - this.timestamp;
-      if (diff < 40 && time < 300) {
-        this.$emit('click', {
-          content: item,
-          index: index,
-          position: position });
-
-      }
-    },
-    getButtonSize: function getButtonSize() {var _this3 = this;
-      var views = uni.createSelectorQuery().in(this);
-      views.
-      selectAll('.uni-swipe_button-group').
-      boundingClientRect(function (data) {
-        var show = 'none';
-        if (_this3.autoClose) {
-          show = 'none';
-        } else {
-          show = _this3.show;
-        }
-        _this3.button = {
-          data: data,
-          show: show };
-
-      }).
-      exec();
-    } } };exports.default = _default;
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./node_modules/@dcloudio/uni-mp-weixin/dist/index.js */ 1)["default"]))
 
 /***/ }),
 
-/***/ 946:
+/***/ 906:
 /*!**********************************************************!*\
   !*** D:/code/HBuilderProjects/通用办公系统示例/utils/uqrcode.js ***!
   \**********************************************************/
@@ -23027,6 +22356,132 @@ var uQRCode = {};
 })();var _default =
 
 uQRCode;exports.default = _default;
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./node_modules/@dcloudio/uni-mp-weixin/dist/index.js */ 1)["default"]))
+
+/***/ }),
+
+/***/ 938:
+/*!***********************************************************************************!*\
+  !*** D:/code/HBuilderProjects/通用办公系统示例/components/uni-swipe-action-item/mpwxs.js ***!
+  \***********************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+/* WEBPACK VAR INJECTION */(function(uni) {Object.defineProperty(exports, "__esModule", { value: true });exports.default = void 0;var _default = {
+  data: function data() {
+    return {
+      position: [],
+      button: {},
+      btn: "[]" };
+
+  },
+  // computed: {
+  // 	pos() {
+  // 		return JSON.stringify(this.position)
+  // 	},
+  // 	btn() {
+  // 		return JSON.stringify(this.button)
+  // 	}
+  // },
+  watch: {
+    button: {
+      handler: function handler(newVal) {
+        this.btn = JSON.stringify(newVal);
+      },
+      deep: true },
+
+    show: function show(newVal) {
+      if (this.autoClose) return;
+      if (!this.button) {
+        this.init();
+        return;
+      }
+      this.button.show = newVal;
+    },
+    leftOptions: function leftOptions() {
+      this.init();
+    },
+    rightOptions: function rightOptions() {
+      this.init();
+    } },
+
+  created: function created() {
+    if (this.swipeaction.children !== undefined) {
+      this.swipeaction.children.push(this);
+    }
+  },
+  mounted: function mounted() {
+    this.init();
+  },
+  beforeDestroy: function beforeDestroy() {var _this = this;
+    this.swipeaction.children.forEach(function (item, index) {
+      if (item === _this) {
+        _this.swipeaction.children.splice(index, 1);
+      }
+    });
+  },
+  methods: {
+    init: function init() {var _this2 = this;
+      clearTimeout(this.swipetimer);
+      this.swipetimer = setTimeout(function () {
+        _this2.getButtonSize();
+      }, 50);
+    },
+    closeSwipe: function closeSwipe(e) {
+      if (!this.autoClose) return;
+      this.swipeaction.closeOther(this);
+    },
+
+    change: function change(e) {
+      this.$emit('change', e.open);
+      var show = this.button.show;
+      if (show !== e.open) {
+        this.button.show = e.open;
+      }
+
+    },
+
+    appTouchStart: function appTouchStart(e) {var
+
+      clientX =
+      e.changedTouches[0].clientX;
+      this.clientX = clientX;
+      this.timestamp = new Date().getTime();
+    },
+    appTouchEnd: function appTouchEnd(e, index, item, position) {var
+
+      clientX =
+      e.changedTouches[0].clientX;
+      // fixed by xxxx 模拟点击事件，解决 ios 13 点击区域错位的问题
+      var diff = Math.abs(this.clientX - clientX);
+      var time = new Date().getTime() - this.timestamp;
+      if (diff < 40 && time < 300) {
+        this.$emit('click', {
+          content: item,
+          index: index,
+          position: position });
+
+      }
+    },
+    getButtonSize: function getButtonSize() {var _this3 = this;
+      var views = uni.createSelectorQuery().in(this);
+      views.
+      selectAll('.uni-swipe_button-group').
+      boundingClientRect(function (data) {
+        var show = 'none';
+        if (_this3.autoClose) {
+          show = 'none';
+        } else {
+          show = _this3.show;
+        }
+        _this3.button = {
+          data: data,
+          show: show };
+
+      }).
+      exec();
+    } } };exports.default = _default;
 /* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./node_modules/@dcloudio/uni-mp-weixin/dist/index.js */ 1)["default"]))
 
 /***/ })

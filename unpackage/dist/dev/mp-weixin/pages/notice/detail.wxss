@@ -52,7 +52,7 @@
 }
 .oa-notice-detail .article-meta .article-author,
 .oa-notice-detail .article-meta .article-time {
-  font-size: 30rpx;
+  font-size: 32rpx;
 }
 .oa-notice-detail .article-content {
   padding: 0 30rpx;

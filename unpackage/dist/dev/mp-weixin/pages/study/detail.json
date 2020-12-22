@@ -1,6 +1,6 @@
 {
   "enablePullDownRefresh": true,
-  "navigationBarTitleText": "新闻详情",
+  "navigationBarTitleText": "活动详情",
   "usingComponents": {
     "oa-parser": "/components/oa-parser/index"
   }

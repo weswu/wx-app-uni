@@ -14,12 +14,12 @@
 		<view class="uni-list">
 			<view class="uni-list-cell" hover-class="uni-list-cell-hover" v-for="(item, index) in studyList" :key="index" @tap="navTo(`/pages/study/detail?id=${item.id}`)">
 				<view class="uni-media-list">
-					<image class="uni-media-list-logo" :src="item.cover"></image>
+					<image class="uni-media-list-logo" :src="hostUrl + (item.thumb || item.photo)"></image>
 					<view class="uni-media-list-body">
-						<view class="uni-media-list-text-top">{{item.description}}</view>
+						<view class="uni-media-list-text-top">{{item.title}}</view>
 						<view class="uni-media-list-text-bottom">
-							<text>{{item.author}}</text>
-							<text>{{item.created_at | time}}</text>
+							<text>{{item.partyName}}</text>
+							<text>{{item.newsTime}}</text>
 						</view>
 					</view>
 				</view>
@@ -35,9 +35,7 @@
 </template>
 
 <script>
-	import {
-		studyList,articleCate
-	} from '@/api/basic';
+	import { fetchList } from '@/api/newsbase';
 	import rfLoadMore from '@/components/oa-load-more/oa-load-more';
 	import moment from '@/common/moment';
 	import $mAssetsPath from '@/config/assets.config';
@@ -57,7 +55,8 @@
 				moneySymbol: this.moneySymbol,
 				// 控制滑动效果
 				theIndex: null,
-				oldIndex: null
+				oldIndex: null,
+				hostUrl: this.$mConfig.hostUrl,
 			};
 		},
 		filters: {
@@ -65,10 +64,9 @@
 				return moment(val * 1000).format('YY/MM/DD');
 			},
 		},
-
 		async onLoad(options) {
-		this.cate_id = options.cate_id;
-		await this.initData();
+			this.cate_id = options.cate_id;
+			await this.initData();
 		},
 		// 下拉刷新
 		onPullDownRefresh() {
@@ -83,17 +81,13 @@
 			this.page++;
 			this.getstudyList();
 		},
-		// async onLoad(options) {
-		// 	this.title = options.title;
-		// },
 		methods: {
-
 			// 数据初始化
 			initData() {
 				this.hasLogin = this.$mStore.getters.hasLogin;
 				this.page = 1;
 				this.studyList.length = 0;
-				this.getCateTitle();
+				//this.getCateTitle();
 				this.getstudyList();
 				uni.setNavigationBarColor({
 					frontColor: '#ffffff',
@@ -108,36 +102,25 @@
 			// 获取资料列表
 			async getstudyList(type) {
 				await this.$http
-					.get(`${studyList}`, {
-						page: this.page,
-						cate_id:this.cate_id
+					.get(`${fetchList}`, {
+						current: this.page,
+						size: 10,
+						descs: 'id',
+						status: ''
 					})
 					.then(r => {
 						this.loading = false;
 						if (type === 'refresh') {
 							uni.stopPullDownRefresh();
 						}
-						this.loadingType = r.data.length === 10 ? 'more' : 'nomore';
-						this.studyList = [...this.studyList, ...r.data];
+						this.loadingType = r.data.records.length === 10 ? 'more' : 'nomore';
+						this.studyList = [...this.studyList, ...r.data.records];
 					})
 					.catch(() => {
 						this.loading = false;
 						if (type === 'refresh') {
 							uni.stopPullDownRefresh();
 						}
-					});
-			},
-			// 获取分类标题
-			async getCateTitle() {
-				await this.$http
-					.get(`${articleCate}`, {
-						cate_id:this.cate_id
-					})
-					.then(r => {
-							this.cateTitle = r.data.title;
-					});
-					uni.setNavigationBarTitle({
-						title: this.cateTitle
 					});
 			},
 			navToLogin(route) {

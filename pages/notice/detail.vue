@@ -1,10 +1,10 @@
 <template>
 	<view class="oa-notice-detail">
 
-		<view class="article-meta" v-if="announceDetail.created_at">
-			<text class="article-author">{{ companyName || appName }}</text>
+		<view class="article-meta">
+			<text class="article-author">{{ announceDetail.author }}</text>
 			<text class="article-text">发布于</text>
-			<text class="article-time">{{ announceDetail.created_at | time }}</text>
+			<text class="article-time">{{ announceDetail.dateline }}</text>
 		</view>
 		<view class="article-content">
 			<oa-parser lazy-load :html="announceDetail.content"></oa-parser>
@@ -19,7 +19,6 @@
 </template>
 
 <script>
-import { notifyAnnounce } from '@/api/basic';
 import moment from '@/common/moment';
 import oaParser from '@/components/oa-parser';
 export default {
@@ -30,7 +29,6 @@ export default {
 		return {
 			announceDetail: {},
 			appName: this.$mSettingConfig.appName,
-			companyName:uni.getStorageSync('userInfo').merchant.title,
 			id: undefined,
 			loading: true
 		};
@@ -52,9 +50,7 @@ export default {
 		})
 	},
 	onLoad(event) {
-		// console.log(uni.getStorageSync('userInfo').merchant.company_name);
-		this.id = event.id;
-		this.getNotifyAnnounceView(event.id);
+		this.get();
 	},
 	onShareAppMessage() {
 		return {
@@ -64,19 +60,12 @@ export default {
 	},
 	methods: {
 		// 获取通知列表
-		async getNotifyAnnounceView(id) {
-			await this.$http
-				.get(`${notifyAnnounce}`+'/view?id='+`${id}`)
-				.then(r => {
-					this.loading = false;
-					this.announceDetail = r.data;
-					uni.setNavigationBarTitle({
-						title: r.data.title
-					});
-				})
-				.catch(() => {
-					this.loading = false;
-				});
+		async get() {
+			this.announceDetail = uni.getStorageSync('noticeDetail');
+			uni.setNavigationBarTitle({
+				title: this.announceDetail.subject
+			});		
+			this.loading = false
 		}
 	}
 };
@@ -125,7 +114,7 @@ export default {
 
 		.article-author,
 		.article-time {
-			font-size: 30upx;
+			font-size: 32upx;
 		}
 	}
 

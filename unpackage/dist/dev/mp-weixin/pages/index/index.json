@@ -1,6 +1,6 @@
 {
   "enablePullDownRefresh": true,
-  "navigationBarTitleText": "通用办公",
+  "navigationBarTitleText": "主页",
   "usingComponents": {
     "uni-tag": "/components/uni-tag/uni-tag",
     "oa-load-more": "/components/oa-load-more/oa-load-more",

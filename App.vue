@@ -22,7 +22,6 @@ export default {
 			uni.login({
 				provider: 'weixin',
 			  success(res){
-					console.log('code:'+res.code)
 					_this.initUser(res.code)
 			  }
 			})
@@ -50,12 +49,12 @@ export default {
 			await this.initSystemInfo();
 			if (this.$mStore.getters.hasLogin) {
 				// 初始化Websocket
-				await this.$mWebsocket.initWebsocket();
+				//await this.$mWebsocket.initWebsocket();
 				// 初始化购物车数量
-				this.setNotifyNum(uni.getStorageSync('notifyNum') || 0);
+				//this.setNotifyNum(uni.getStorageSync('notifyNum') || 0);
 				// #ifdef APP-PLUS
-				const info = plus.push.getClientInfo();
-				await this.handleBindingEquipment(info.clientid, token);
+				//const info = plus.push.getClientInfo();
+				//await this.handleBindingEquipment(info.clientid, token);
 				// #endif
 			}
 			// #ifdef H5
@@ -63,9 +62,16 @@ export default {
 			// #endif
 		},
 		initUser(code) {
-			this.$http.post('/auth/mobile/token/social?grant_type=mobil&mobile=MINI@'+code)
+			console.log('code:'+code)
+			this.$http.post('/auth/mobile/token/social?grant_type=mobile&mobile=MINI@'+code, {},
+				{
+					header: {
+						'Authorization': 'Basic cGlnOnBpZw=='
+					}
+				}
+			)
 			.then(r => {
-				this.$mStore.commit('login', r.data)
+				this.$mStore.commit('login', r)
 			})
 			.catch(err => {
 				if (err.statusCode === 401){

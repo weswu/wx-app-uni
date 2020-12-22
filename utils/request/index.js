@@ -31,7 +31,8 @@ let requests = [];
 http.interceptor.request(
 	config => {
 		/* 请求之前拦截器 */
-		config.header['Authorization'] = 'Bearer ' + uni.getStorageSync('accessToken') || 'cGlnOnBpZw==';
+		let token = uni.getStorageSync('accessToken')
+		if(token && !config.header['Authorization']) config.header['Authorization'] = 'Bearer ' + token;
 		// 单商户
 		// config.header['merchant-id'] = uni.getStorageSync('merchantId') || 1;
 		return config;
@@ -74,7 +75,7 @@ http.interceptor.response(
 						success: confirmRes => {
 							if (confirmRes.confirm) {
 								mHelper.backToLogin();
-								throw response.data.message;
+								throw response.data.msg;
 							}
 						}
 					});
@@ -90,11 +91,11 @@ http.interceptor.response(
 						// 	success: confirmRes => {
 						// 		if (confirmRes.confirm) {
 						// 			mHelper.backToLogin();
-						// 			throw response.data.message;
+						// 			throw response.data.msg;
 						// 		}
 						// 	}
 						// });
-						throw response.data.message;
+						throw response.data.msg;
 					} else {
 						// isRefreshing同一个页面只执行一次
 						if (!isRefreshing) {
@@ -118,19 +119,18 @@ http.interceptor.response(
 				break;
 			case 405:
 				mHelper.toast('当前操作不被允许');
-				return Promise.reject(response.data.message);
+				return Promise.reject(response.data.msg);
 			case 404:
-				mHelper.toast(response.data.message);
-				return Promise.reject(response.data.message);
+				mHelper.toast(response.data.msg);
+				return Promise.reject(response.data.msg);
 			case 429:
 				mHelper.toast('请求过多，先休息一下吧');
-				return Promise.reject(response.data.message);
+				return Promise.reject(response.data.msg);
 			case 500:
 				mHelper.toast('服务器打瞌睡了');
-				return Promise.reject(response.data.message);
+				return Promise.reject(response.data.msg);
 			default:
-				mHelper.toast(response.data.message);
-				return Promise.reject(response.data.message);
+				return response.data;
 		}
 	},
 	error => {

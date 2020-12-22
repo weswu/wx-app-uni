@@ -9,17 +9,16 @@
 							:info="advList"
 							mode="nav"
 							:current="current"
-							field="adv_title"
+							field="title"
 						>
 							<swiper @change="handleDotChange" autoplay="true">
 								<swiper-item
 									v-for="(item, index) in advList"
-									@tap="navToNews(`/pages/study/detail?id=${item.jump_link}`)"
+									@tap="navToNews(`/pages/study/detail?id=${item.id}`)"
 									:key="index"
-
 								>
 									<view class="swiper-item">
-										<image :src="item.cover" mode="aspectFill" />
+										<image :src="hostUrl + (item.thumb || item.photo)" mode="aspectFill" />
 									</view>
 								</swiper-item>
 							</swiper>
@@ -28,7 +27,11 @@
 				</view>
 			</view>
 		</view>
+		
 		<view class="promotion-center">
+			<!-- <list-cell icon="iconquanbudingdan" :iconColor="themeColor.color" @eventClick="navToLogin('/pages/study/index')" title="组织生活管理"></list-cell>
+			 -->
+			<list-cell icon="icontubiao2" :iconColor="themeColor.color" @eventClick="navToLogin('/pages/study/sign')" title="签到"></list-cell>
 			<list-cell icon="icongonggao" :iconColor="themeColor.color" @eventClick="navToLogin('/pages/notice/notice')" title="通知公告"></list-cell>
 		</view>
 		<view class="notify-list" v-if="notifyList.length > 0">
@@ -49,7 +52,7 @@
 		<view v-if="!hasLogin" class="notify-empty">
 			<view class="empty-tips">
 				暂未登录
-				<view class="navigator" :class="'text-'+themeColor.name" @tap="navToLogin('/pages/public/login')">登录/注册 ></view>
+				<view class="navigator" :class="'text-'+themeColor.name" @tap="navToLogin('/pages/public/login')">登录 ></view>
 			</view>
 		</view>
 		<!--页面加载动画-->
@@ -106,7 +109,13 @@
 				theIndex: null,
 				oldIndex: null,
 				menuList: this.$mConstDataConfig.menuList,
+				hostUrl: this.$mConfig.hostUrl,
 			};
+		},
+		watch:{
+			'$store.state.userInfo': function () {
+			   this.getAdvList()
+			},
 		},
 		filters: {
 			time(val) {
@@ -161,7 +170,8 @@
 				this.loading = true;
 				this.notifyList = [];
 				//this.getNotifyList();
-				//this.getAdvList();
+				let userInfo = this.$store.state.userInfo
+				userInfo && this.getAdvList();
 				uni.setNavigationBarColor({
 				    frontColor: '#ffffff',
 				    backgroundColor: this.themeColor.color,
@@ -170,6 +180,7 @@
 				        timingFunc: 'easeIn'
 				    }
 				})
+				this.loading = false;
 			},
 			// 跳至广告图指定页面
 			indexTopToDetailPage(item) {
@@ -177,16 +188,22 @@
 			},
 			//获取广告信息
 			async getAdvList(type) {
+				let params = {
+					current: 1,
+					size: 4,
+					status: '2', // 已审核、通过
+					descs: 'id'
+				}
 				await this.$http
-					.get(`${advList}`, {cate_id:1})
+					.get(`${advList}`, params)
 					.then(async r => {
 						// uni.setNavigationBarTitle({ title: this.appName });
 						if (type === 'refresh') {
 							uni.stopPullDownRefresh();
 						}
 						// 首页Adv赋值
-						// console.log(r.data);
-						this.advList = r.data;
+						console.log(r.data.records);
+						this.advList = r.data.records;
 						this.loading = false;
 					})
 					.catch(() => {

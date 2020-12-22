@@ -16,7 +16,7 @@ const collectDel = '/we-office/v1/common/collect/delete';
 const transmitCreate = '/we-office/v1/common/transmit/create';
 
 // 广告
-const advList = '/we-office/v1/article/adv/index';
+const advList = '/nfnet/newsbase/page';
 const advView = '/we-office/v1/common/adv/view';
 
 // 配置
@@ -30,10 +30,7 @@ const wechatConfig = '/we-office/v1/third-party/wechat-js-sdk';
 
 // 公告
 // 公告列表
-const notifyAnnounceIndex = '/we-office/v1/common/notify-announce/index';
-// 公告详情
-// const notifyAnnounceView = '/we-office/v1/notify/announce/view';
-const notifyAnnounce = '/we-office/v1/notify/announce';
+const notifyAnnounceIndex = '/nfnet/dzznews/page';
 
 // 版本检测
 const versionsIndex = '/app-versions/versions/index';
@@ -54,8 +51,6 @@ const authIsBinding = '/auth/mobile/token/social';
 const authCreate = '/we-office/v1/member/auth/create';
 
 //学习中心
-const studyList = '/we-office/v1/article/article/index';
-const studyDetail = '/we-office/v1/article/article';
 const articleCate = '/we-office/v1/article/article/cate';
 //工作流状态
 const workState = '/we-office/v1/cate/work-state';
@@ -185,9 +180,7 @@ export {
 	payCreate,
 	configList,
 	wechatConfig,
-	notifyAnnounce,
 	notifyAnnounceIndex,
-	// notifyAnnounceView,
 	versionsIndex,
 	pickupPointIndex,
 	helperIndex,
@@ -196,8 +189,6 @@ export {
 	authIsBinding,
 	authCreate,
 
-	studyList,
-	studyDetail,
 	articleCate,
 	workState,
 	repair,

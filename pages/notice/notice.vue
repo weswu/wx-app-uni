@@ -5,10 +5,10 @@
 				<!--  -->
 				<view class="carrier">
 					<view class="notify-wrapper">
-						<view class="title in3line">{{item.notifySenderForMember.title}}</view>
+						<view class="title in3line">{{item.subject}}</view>
 						<!-- <view class="content in2line"><oa-parser lazy-load :html="item.notifySenderForMember.content"></oa-parser></view> -->
-						<view class="time">{{item.created_at | time}}</view>
-						<view class="un-read" :class="'bg-'+themeColor.name" v-if="item.is_read.toString() === '0'"></view>
+						<view class="time">{{item.dateline}}</view>
+						<view class="un-read" :class="'bg-'+themeColor.name"></view>
 					</view>
 				</view>
 			</view>
@@ -91,14 +91,15 @@ export default {
 		async getNotifyList(type) {
 			await this.$http
 				.get(`${notifyIndex}`, {
-					page: this.page,
+					size: 10,
+					current: this.page,
 				}).then(r => {
 					this.loading = false;
 					if (type === 'refresh') {
 						uni.stopPullDownRefresh();
 					}
-					this.loadingType = r.data.length === 10 ? 'more' : 'nomore';
-					this.noticeList = [...this.noticeList, ...r.data];
+					this.loadingType = r.data.records.length === 10 ? 'more' : 'nomore';
+					this.noticeList = [...this.noticeList, ...r.data.records];
 				})
 				.catch(() => {
 					this.loading = false;
@@ -111,21 +112,11 @@ export default {
 		// 通用跳转
 		async navTo(item) {
 			let route;
-			const id = item.notifySenderForMember.target_id;
-			const notifyId = item.notifySenderForMember.id;
-			if (item.is_read.toString() === '0') {
-				await this.$http.get(notifyRead, {
-					notify_id: notifyId
-				}).then(() => {
-					this.page = 1;
-					this.loading = true;
-					this.notifyList = [];
-					this.getNotifyList();
-				});
-			}
+			let itemJson = JSON.stringify(item)
 			// console.log('ok');
+			uni.setStorageSync('noticeDetail', item);
 			this.$mRouter.push({
-				route: `/pages/notice/detail?id=${item.id}`
+				route: `/pages/notice/detail`
 			});
 		},
 	}
@@ -246,7 +237,7 @@ page {
 					font-size: $font-lg;
 					color: $font-color-dark;
 					font-weight: 500;
-					margin: 0 0 $spacing-sm;
+					margin: 0 20rpx $spacing-sm 0;
 				}
 
 				.content {

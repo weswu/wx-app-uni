@@ -150,7 +150,7 @@ page {
   font-size: 32rpx;
   color: #303133;
   font-weight: 500;
-  margin: 0 0 10rpx;
+  margin: 0 20rpx 10rpx 0;
 }
 .secret .notify-list .notify-wrapper .content {
   font-size: 24rpx;

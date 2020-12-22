@@ -40,7 +40,7 @@ const loginBySmsCode = '/auth/mobile/token/sms';
 const smsCode = '/admin/mobile/';
 
 // code 调用pigx 后台接口绑定
-const accountBind = 'admin/social/bind'
+const accountBind = '/admin/social/bind'
 
 // 退出登录
 const logout = '/we-office/v1/site/logout';

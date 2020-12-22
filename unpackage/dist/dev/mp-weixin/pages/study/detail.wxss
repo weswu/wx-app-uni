@@ -44,6 +44,8 @@
   -webkit-box-pack: start;
   -webkit-justify-content: flex-start;
           justify-content: flex-start;
+  -webkit-flex-flow: wrap;
+          flex-flow: wrap;
   color: gray;
 }
 .oa-notice-detail .article-meta .article-text {
@@ -52,7 +54,7 @@
 }
 .oa-notice-detail .article-meta .article-author,
 .oa-notice-detail .article-meta .article-time {
-  font-size: 30rpx;
+  font-size: 32rpx;
 }
 .oa-notice-detail .article-content {
   padding: 0 30rpx;

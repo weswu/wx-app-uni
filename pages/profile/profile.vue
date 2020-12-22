@@ -6,15 +6,15 @@
 			<!--用户信息-->
 			<view class="user-info-box">
 				<view class="portrait-box" @tap="navTo(userInfo ? '/pages/user/userinfo/userinfo' : 'login')">
-					<image class="portrait" :src="userInfo.head_portrait || headImg"></image>
+					<image class="portrait" :src="userInfo.avatar || headImg"></image>
 					<text class="username">
-						{{ userInfo.realname ||'登录/注册'}} {{ userInfo.department&&userInfo.department.title || ''}}
-					{{ userInfo.mobile || '没有填写手机号'}}
+						{{ userInfo.username ||'登录/注册'}} {{ userInfo.department&&userInfo.department.title || ''}}
+					{{ userInfo.phone || '没有填写手机号'}}
 					</text>
 				</view>
 			</view>
 			<!--vip信息-->
-			<view class="vip-card-box">
+			<view class="vip-card-box" style="display: none;">
 				<view class="b-btn">
 					{{userInfo.role&&userInfo.role.title || '系统管理员'}}
 				</view>
@@ -132,16 +132,11 @@
 	/**
 	 * @des 个人中心
 	 *
-	 * @author hjp1011 21931118@qq.com
-	 * @date 2020-01-10 11:41
+	 * @author wes 836790625@qq.com
+	 * @date 2020-11-10 11:41
 	 * @copyright 2019
 	 */
-	import {
-		memberInfo
-	} from '@/api/userInfo';
-	import {
-		mapMutations
-	} from 'vuex';
+	import { mapMutations } from 'vuex';
 	import $mAssetsPath from '@/config/assets.config';
 	import listCell from '@/components/oa-list-cell';
 	import { logout } from '@/api/login';
@@ -171,13 +166,7 @@
 				coverTransition: '0s',
 				moving: false,
 				user_integral: 0,
-				userInfo: {
-					realname:'',
-					mobile:'',
-					merchant:null,
-					department:null,
-					role:null,
-				},
+				userInfo: {},
 				user: {},
 				loading: true,
 				appName: this.$mSettingConfig.appName,
@@ -218,7 +207,8 @@
 			// 数据初始化
 			async initData() {
 				this.user = uni.getStorageSync('user');
-				// console.log(this.user);
+				this.userInfo = uni.getStorageSync('userInfo');
+				console.log(this.userInfo);
 				// 缓存大小
 				this.setList[2].content = `${uni.getStorageInfoSync().currentSize} kb`;
 				// #ifdef APP-PLUS
@@ -247,11 +237,11 @@
 				});
 				if (this.hasLogin) {
 					// console.log(this.hasLogin);
-					await this.getMemberInfo();
+					//await this.getMemberInfo();
 				} else {
-					this.loading = false;
 					// this.resetSectionData();
 				}
+				this.loading = false;
 			},
 			// 退出登录
 			toLogout() {
