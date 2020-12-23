@@ -5,14 +5,14 @@
 			<image class="bg" :src="userBg"></image>
 			<!--#ifdef H5-->
 			<!--h5直接上传头像-->
-			<view class="portrait-box" @tap="uploadImage">
-				<image class="portrait" :src="profileInfo.head_portrait || headImg"></image>
+			<view class="portrait-box">
+				<image class="portrait" :src="profileInfo.avatar || headImg"></image>
 			</view>
 			<!-- #endif -->
 			<!--#ifndef H5-->
 			<!--非h5裁剪头像上传-->
 			<view class="portrait-box">
-				<avatar canRotate="false" selWidth="200px" selHeight="400upx" @upload="handleUploadFile" :avatarSrc="profileInfo.head_portrait || headImg"
+				<avatar canRotate="false" selWidth="200px" selHeight="400upx" :avatarSrc="profileInfo.avatar || headImg"
 				 avatarStyle="width: 200upx; height: 200upx; border-radius: 100%; border: 6upx solid #fff;">
 				</avatar>
 			</view>
@@ -21,14 +21,26 @@
 		<view class="input-content">
 
 			<view class="input-item">
+				<text class="tit">用户名</text>
+				<input type="text" v-model="profileInfo.username" placeholder="请输入您的用户名" disabled/>
+			</view>
+			<view class="input-item">
 				<text class="tit">手机号</text>
-				<input type="number" v-model="profileInfo.mobile" disabled placeholder="请输入手机号码" />
+				<input type="number" v-model="profileInfo.phone" placeholder="请输入手机号码" disabled/>
+			</view>
+			<!-- <view class="input-item">
+				<text class="tit">原密码</text>
+				<input type="number" v-model="profileInfo.password" placeholder="请输入密码" />
 			</view>
 			<view class="input-item">
-				<text class="tit">姓　名</text>
-				<input type="text" v-model="profileInfo.realname" placeholder="请输入您的姓名" />
+				<text class="tit">新密码</text>
+				<input type="number" v-model="profileInfo.newpassword1" placeholder="请输入密码" />
 			</view>
 			<view class="input-item">
+				<text class="tit">确认密码</text>
+				<input type="number" v-model="profileInfo.newpassword2" placeholder="请输入密码" />
+			</view> -->
+			<!-- <view class="input-item">
 				<text class="tit">性　别</text>
 				<radio-group @change="handleGenderChange">
 					<label class="gender-item" v-for="(item, index) in genders" :key="index">
@@ -47,16 +59,12 @@
 				</picker>
 			</view>
 			<view class="input-item">
-				<text class="tit">Q　Q</text>
-				<input type="number" v-model="profileInfo.qq" placeholder="请输入您的QQ" />
-			</view>
-			<view class="input-item">
 				<text class="tit">邮　箱</text>
 				<input v-model="profileInfo.email" placeholder="请输入您的邮箱" />
-			</view>
-			<button class="confirm-btn" :class="'bg-' + themeColor.name" :disabled="btnLoading" :loading="btnLoading" @tap="toUpdateInfo">
+			</view> -->
+		<!-- 	<button class="confirm-btn" :class="'bg-' + themeColor.name" :disabled="btnLoading" :loading="btnLoading" @tap="toUpdateInfo">
 				修改资料
-			</button>
+			</button> -->
 		</view>
 
 		<!--加载动画-->
@@ -75,12 +83,8 @@
 	 * @date 2020-01-10 14:28
 	 * @copyright 2019
 	 */
-	import {
-		memberInfo,
-		memberUpdate,
-		uploadImage,
-		addressDetail
-	} from '@/api/userInfo';
+	import { uploadImage } from '@/api/userInfo';
+	import {getObj, editInfo} from '@/api/admin/user';
 	import avatar from '@/components/oa-avatar/oa-avatar';
 	import moment from '@/common/moment';
 	import rfPickRegions from '@/components/oa-pick-regions';
@@ -91,7 +95,6 @@
 		},
 		data() {
 			return {
-
 				loadProgress: 0,
 				CustomBar: this.CustomBar,
 				profileInfo: {},
@@ -130,13 +133,6 @@
 			this.initData();
 		},
 		methods: {
-			// 获取选择的地区
-			handleGetRegions(e) {
-				this.addressData.province_id = e.province_id;
-				this.addressData.city_id = e.city_id;
-				this.addressData.area_id = e.area_id;
-			},
-
 			// 上传头像
 			uploadImage() {
 				// 从相册选择图片
@@ -160,7 +156,7 @@
 						name: 'file'
 					})
 					.then(r => {
-						_this.profileInfo.head_portrait = r.data.url;
+						_this.profileInfo.avatar = r.data.url;
 						_this.handleUpdateInfo(_this.profileInfo);
 					});
 			},
@@ -175,33 +171,13 @@
 			// 数据初始化
 			async initData() {
 				this.token = uni.getStorageSync('accessToken') || undefined;
-				this.getMemberInfo();
-				// this.getAddressDetail();
-				// this.getAddressDetail(profileInfo.id);
-				// 获取收货地址
-				// this.addressData.address_name = '请选择机构';
-				// this.addressData.province_id = this.profileInfo.province_id;
-				// this.addressData.city_id= this.profileInfo.city_id;
-				// this.addressData.area_id= this.profileInfo.area_id;
-			},
-			// 获取收货地址
-			// async getAddressDetail() {
-
-			// },
-			// 获取用户信息
-			async getMemberInfo() {
-				await this.$http
-					.get(memberInfo)
-					.then(r => {
-						this.loading = false;
-						this.profileInfo = r.data;
-						this.date = this.profileInfo.birthday;
-						// console.log(this.profileInfo);
-
-					})
-					.catch(() => {
-						this.loading = false;
-					});
+				let userInfo = uni.getStorageSync('userInfo');
+				this.profileInfo = {
+					username: userInfo.username,
+					avatar: userInfo.avatar,
+					phone: userInfo.phone,
+				}
+				this.loading = false;
 			},
 
 			// 更新用户信息
@@ -216,18 +192,24 @@
 					this.loadProgress = this.loadProgress + 6;
 				}, 50);
 				await this.$http
-					.put(`${memberUpdate}?id=${this.profileInfo.id}`, {
-						...this.profileInfo,
-						birthday: this.date,
-						role: 10,
-					})
-					.then(() => {
+					.put(`${editInfo}`, {
+				    username: this.profileInfo.username,
+				    avatar: this.profileInfo.avatar,
+				    phone: this.profileInfo.phone,
+				    password: this.profileInfo.password || '',
+				    newpassword1: this.profileInfo.newpassword1 || '',
+				    newpassword2: this.profileInfo.newpassword2 || '',
+				  })
+					.then(res => {
 						clearInterval(timer);
 						this.loadProgress = 0;
+						if (res.code === 1) {
+							return this.$mHelper.toast(res.msg);
+						}
 						this.$mHelper.toast('恭喜您, 资料修改成功!');
-						setTimeout(() => {
-							this.$mRouter.back();
-						}, 1 * 1000);
+						// setTimeout(() => {
+						// 	this.$mRouter.back();
+						// }, 1 * 1000);
 					})
 					.catch(() => {
 						this.btnLoading = false;

@@ -31,7 +31,7 @@
 		<view class="promotion-center">
 			<!-- <list-cell icon="iconquanbudingdan" :iconColor="themeColor.color" @eventClick="navToLogin('/pages/study/index')" title="组织生活管理"></list-cell>
 			 -->
-			<list-cell icon="icontubiao2" :iconColor="themeColor.color" @eventClick="navToLogin('/pages/study/sign')" title="签到"></list-cell>
+			<list-cell icon="iconrizhi" :iconColor="themeColor.color" @eventClick="navToLogin('/pages/study/sign')" title="签到"></list-cell>
 			<list-cell icon="icongonggao" :iconColor="themeColor.color" @eventClick="navToLogin('/pages/notice/notice')" title="通知公告"></list-cell>
 		</view>
 		<view class="notify-list" v-if="notifyList.length > 0">
@@ -208,6 +208,7 @@
 					})
 					.catch(() => {
 						this.loading = false;
+						this.$mHelper.toast('3!')
 						if (type === 'refresh') {
 							uni.stopPullDownRefresh();
 						}

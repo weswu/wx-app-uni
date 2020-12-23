@@ -94,7 +94,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "components", function() { return components; });
 var components = {
   oaImage: function() {
-    return Promise.all(/*! import() | components/oa-image/oa-image */[__webpack_require__.e("common/vendor"), __webpack_require__.e("components/oa-image/oa-image")]).then(__webpack_require__.bind(null, /*! @/components/oa-image/oa-image.vue */ 776))
+    return Promise.all(/*! import() | components/oa-image/oa-image */[__webpack_require__.e("common/vendor"), __webpack_require__.e("components/oa-image/oa-image")]).then(__webpack_require__.bind(null, /*! @/components/oa-image/oa-image.vue */ 801))
   }
 }
 var render = function() {

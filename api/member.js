@@ -1,6 +1,6 @@
 
-const fetchList = '/nfnet/memeber/page';
-const getObj = '/nfnet/memeber/';
+const fetchList = '/nfnet/member/page';
+const getObj = '/nfnet/member/';
 
 export {
 	fetchList,

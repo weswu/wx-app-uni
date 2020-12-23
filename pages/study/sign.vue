@@ -1,15 +1,14 @@
 <template>
 	<view class="visit">
 		<view class="uni-list">
-			<view class="uni-list-cell" hover-class="uni-list-cell-hover" v-for="(item, index) in studyList" :key="index" @tap="navTo(`/pages/study/signDetail?id=${item.id}`)">
+			<view class="uni-list-cell" hover-class="uni-list-cell-hover" v-for="(item, index) in studyList" :key="index" @tap="navTo(`/pages/study/signDetail`, item)">
 				<view class="uni-media-list">
 					<image class="uni-media-list-logo" :src="hostUrl + (item.thumb || item.photo)"></image>
 					<view class="uni-media-list-body">
 						<view class="uni-media-list-text-top">{{item.title}}</view>
 						<view class="uni-media-list-text-bottom">
 							<text>{{item.meetStartTime || ''}}</text>
-							<text v-if="item.meetStartTime">-</text>
-							<text>{{item.meetEndTime || ''}}</text>
+							<text>{{item.meetStatus | array}}</text>
 						</view>
 					</view>
 				</view>
@@ -53,6 +52,20 @@
 			time(val) {
 				return moment(val * 1000).format('YY/MM/DD');
 			},
+			array(val) {
+				let text = '';
+				let array = [
+					{value: '0', label: '未开始'},
+					{value: '1', label: '进行中'},
+					{value: '2', label: '活动结束'}
+				]
+				array.forEach(item => {
+					if(item.value === val) {
+						text = item.label
+					}
+				})
+				return text;
+			},
 		},
 		async onLoad(options) {
 			this.cate_id = options.cate_id;
@@ -95,7 +108,7 @@
 						current: this.page,
 						size: 10,
 						descs: 'id',
-						status: ''
+						status: '2'
 					})
 					.then(r => {
 						this.loading = false;
@@ -117,7 +130,8 @@
 					route
 				});
 			},
-			navTo(route) {
+			navTo(route, item) {
+				uni.setStorageSync('detail', item);
 				this.$mRouter.push({
 					route
 				});

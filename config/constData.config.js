@@ -66,29 +66,29 @@ export default {
 			url: 'clearCache',
 			content: ''
 		},
-		{
-			title: '关于我们',
-			url: '/pages/set/about/about',
-			content: '',
-			class: 'mT'
-		},
-		{
-			title: '站点帮助',
-			url: '/pages/set/helper/index',
-			content: ''
-		},
-		/*  #ifdef APP-PLUS  */
-		{
-			title: '检查更新',
-			url: 'versionUpgrade',
-			content: ''
-		},
-		/*  #endif  */
-		{
-			title: '意见反馈',
-			url: '/pages/set/feedback/list',
-			content: ''
-		},
+		// {
+		// 	title: '关于我们',
+		// 	url: '/pages/set/about/about',
+		// 	content: '',
+		// 	class: 'mT'
+		// },
+		// {
+		// 	title: '站点帮助',
+		// 	url: '/pages/set/helper/index',
+		// 	content: ''
+		// },
+		// /*  #ifdef APP-PLUS  */
+		// {
+		// 	title: '检查更新',
+		// 	url: 'versionUpgrade',
+		// 	content: ''
+		// },
+		// /*  #endif  */
+		// {
+		// 	title: '意见反馈',
+		// 	url: '/pages/set/feedback/list',
+		// 	content: ''
+		// },
 	],
 
 	//应用中心-工作流

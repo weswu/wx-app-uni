@@ -94,7 +94,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "components", function() { return components; });
 var components = {
   oaLoadProgress: function() {
-    return __webpack_require__.e(/*! import() | components/oa-load-progress/oa-load-progress */ "components/oa-load-progress/oa-load-progress").then(__webpack_require__.bind(null, /*! @/components/oa-load-progress/oa-load-progress.vue */ 797))
+    return __webpack_require__.e(/*! import() | components/oa-load-progress/oa-load-progress */ "components/oa-load-progress/oa-load-progress").then(__webpack_require__.bind(null, /*! @/components/oa-load-progress/oa-load-progress.vue */ 822))
   }
 }
 var render = function() {
@@ -211,14 +211,18 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
+
+
+
+
+
+
+
 var _userInfo = __webpack_require__(/*! @/api/userInfo */ 40);
+var _user = __webpack_require__(/*! @/api/admin/user */ 1165);
 
-
-
-
-
-
-var _moment = _interopRequireDefault(__webpack_require__(/*! @/common/moment */ 41));function _interopRequireDefault(obj) {return obj && obj.__esModule ? obj : { default: obj };}function ownKeys(object, enumerableOnly) {var keys = Object.keys(object);if (Object.getOwnPropertySymbols) {var symbols = Object.getOwnPropertySymbols(object);if (enumerableOnly) symbols = symbols.filter(function (sym) {return Object.getOwnPropertyDescriptor(object, sym).enumerable;});keys.push.apply(keys, symbols);}return keys;}function _objectSpread(target) {for (var i = 1; i < arguments.length; i++) {var source = arguments[i] != null ? arguments[i] : {};if (i % 2) {ownKeys(Object(source), true).forEach(function (key) {_defineProperty(target, key, source[key]);});} else if (Object.getOwnPropertyDescriptors) {Object.defineProperties(target, Object.getOwnPropertyDescriptors(source));} else {ownKeys(Object(source)).forEach(function (key) {Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key));});}}return target;}function _defineProperty(obj, key, value) {if (key in obj) {Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true });} else {obj[key] = value;}return obj;}function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {try {var info = gen[key](arg);var value = info.value;} catch (error) {reject(error);return;}if (info.done) {resolve(value);} else {Promise.resolve(value).then(_next, _throw);}}function _asyncToGenerator(fn) {return function () {var self = this,args = arguments;return new Promise(function (resolve, reject) {var gen = fn.apply(self, args);function _next(value) {asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value);}function _throw(err) {asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err);}_next(undefined);});};}var avatar = function avatar() {__webpack_require__.e(/*! require.ensure | components/oa-avatar/oa-avatar */ "components/oa-avatar/oa-avatar").then((function () {return resolve(__webpack_require__(/*! @/components/oa-avatar/oa-avatar */ 880));}).bind(null, __webpack_require__)).catch(__webpack_require__.oe);};var rfPickRegions = function rfPickRegions() {Promise.all(/*! require.ensure | components/oa-pick-regions/index */[__webpack_require__.e("common/vendor"), __webpack_require__.e("components/oa-pick-regions/index")]).then((function () {return resolve(__webpack_require__(/*! @/components/oa-pick-regions */ 887));}).bind(null, __webpack_require__)).catch(__webpack_require__.oe);};var _default =
+var _moment = _interopRequireDefault(__webpack_require__(/*! @/common/moment */ 41));function _interopRequireDefault(obj) {return obj && obj.__esModule ? obj : { default: obj };}function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {try {var info = gen[key](arg);var value = info.value;} catch (error) {reject(error);return;}if (info.done) {resolve(value);} else {Promise.resolve(value).then(_next, _throw);}}function _asyncToGenerator(fn) {return function () {var self = this,args = arguments;return new Promise(function (resolve, reject) {var gen = fn.apply(self, args);function _next(value) {asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value);}function _throw(err) {asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err);}_next(undefined);});};}var avatar = function avatar() {__webpack_require__.e(/*! require.ensure | components/oa-avatar/oa-avatar */ "components/oa-avatar/oa-avatar").then((function () {return resolve(__webpack_require__(/*! @/components/oa-avatar/oa-avatar */ 898));}).bind(null, __webpack_require__)).catch(__webpack_require__.oe);};var rfPickRegions = function rfPickRegions() {Promise.all(/*! require.ensure | components/oa-pick-regions/index */[__webpack_require__.e("common/vendor"), __webpack_require__.e("components/oa-pick-regions/index")]).then((function () {return resolve(__webpack_require__(/*! @/components/oa-pick-regions */ 905));}).bind(null, __webpack_require__)).catch(__webpack_require__.oe);};var _default =
 
 {
   components: {
@@ -227,7 +231,6 @@ var _moment = _interopRequireDefault(__webpack_require__(/*! @/common/moment */ 
 
   data: function data() {
     return {
-
       loadProgress: 0,
       CustomBar: this.CustomBar,
       profileInfo: {},
@@ -266,13 +269,6 @@ var _moment = _interopRequireDefault(__webpack_require__(/*! @/common/moment */ 
     this.initData();
   },
   methods: {
-    // 获取选择的地区
-    handleGetRegions: function handleGetRegions(e) {
-      this.addressData.province_id = e.province_id;
-      this.addressData.city_id = e.city_id;
-      this.addressData.area_id = e.area_id;
-    },
-
     // 上传头像
     uploadImage: function uploadImage() {
       // 从相册选择图片
@@ -296,7 +292,7 @@ var _moment = _interopRequireDefault(__webpack_require__(/*! @/common/moment */ 
         name: 'file' }).
 
       then(function (r) {
-        _this.profileInfo.head_portrait = r.data.url;
+        _this.profileInfo.avatar = r.data.url;
         _this.handleUpdateInfo(_this.profileInfo);
       });
     },
@@ -309,65 +305,51 @@ var _moment = _interopRequireDefault(__webpack_require__(/*! @/common/moment */ 
       this.profileInfo.gender = e.detail.value;
     },
     // 数据初始化
-    initData: function initData() {var _this2 = this;return _asyncToGenerator( /*#__PURE__*/_regenerator.default.mark(function _callee() {return _regenerator.default.wrap(function _callee$(_context) {while (1) {switch (_context.prev = _context.next) {case 0:
+    initData: function initData() {var _this2 = this;return _asyncToGenerator( /*#__PURE__*/_regenerator.default.mark(function _callee() {var userInfo;return _regenerator.default.wrap(function _callee$(_context) {while (1) {switch (_context.prev = _context.next) {case 0:
                 _this2.token = uni.getStorageSync('accessToken') || undefined;
-                _this2.getMemberInfo();
-                // this.getAddressDetail();
-                // this.getAddressDetail(profileInfo.id);
-                // 获取收货地址
-                // this.addressData.address_name = '请选择机构';
-                // this.addressData.province_id = this.profileInfo.province_id;
-                // this.addressData.city_id= this.profileInfo.city_id;
-                // this.addressData.area_id= this.profileInfo.area_id;
-              case 2:case "end":return _context.stop();}}}, _callee);}))();},
-    // 获取收货地址
-    // async getAddressDetail() {
+                userInfo = uni.getStorageSync('userInfo');
+                _this2.profileInfo = {
+                  username: userInfo.username,
+                  avatar: userInfo.avatar,
+                  phone: userInfo.phone };
 
-    // },
-    // 获取用户信息
-    getMemberInfo: function getMemberInfo() {var _this3 = this;return _asyncToGenerator( /*#__PURE__*/_regenerator.default.mark(function _callee2() {return _regenerator.default.wrap(function _callee2$(_context2) {while (1) {switch (_context2.prev = _context2.next) {case 0:_context2.next = 2;return (
-                  _this3.$http.
-                  get(_userInfo.memberInfo).
-                  then(function (r) {
-                    _this3.loading = false;
-                    _this3.profileInfo = r.data;
-                    _this3.date = _this3.profileInfo.birthday;
-                    // console.log(this.profileInfo);
-
-                  }).
-                  catch(function () {
-                    _this3.loading = false;
-                  }));case 2:case "end":return _context2.stop();}}}, _callee2);}))();
+                _this2.loading = false;case 4:case "end":return _context.stop();}}}, _callee);}))();
     },
 
     // 更新用户信息
-    toUpdateInfo: function toUpdateInfo() {var _this4 = this;return _asyncToGenerator( /*#__PURE__*/_regenerator.default.mark(function _callee3() {return _regenerator.default.wrap(function _callee3$(_context3) {while (1) {switch (_context3.prev = _context3.next) {case 0:
-                _this4.handleUpdateInfo();case 1:case "end":return _context3.stop();}}}, _callee3);}))();
+    toUpdateInfo: function toUpdateInfo() {var _this3 = this;return _asyncToGenerator( /*#__PURE__*/_regenerator.default.mark(function _callee2() {return _regenerator.default.wrap(function _callee2$(_context2) {while (1) {switch (_context2.prev = _context2.next) {case 0:
+                _this3.handleUpdateInfo();case 1:case "end":return _context2.stop();}}}, _callee2);}))();
     },
     // 更新用户信息
-    handleUpdateInfo: function handleUpdateInfo() {var _this5 = this;return _asyncToGenerator( /*#__PURE__*/_regenerator.default.mark(function _callee4() {var timer;return _regenerator.default.wrap(function _callee4$(_context4) {while (1) {switch (_context4.prev = _context4.next) {case 0:
-                _this5.btnLoading = true;
-                _this5.loadProgress = _this5.loadProgress + 6;
+    handleUpdateInfo: function handleUpdateInfo() {var _this4 = this;return _asyncToGenerator( /*#__PURE__*/_regenerator.default.mark(function _callee3() {var timer;return _regenerator.default.wrap(function _callee3$(_context3) {while (1) {switch (_context3.prev = _context3.next) {case 0:
+                _this4.btnLoading = true;
+                _this4.loadProgress = _this4.loadProgress + 6;
                 timer = setInterval(function () {
-                  _this5.loadProgress = _this5.loadProgress + 6;
-                }, 50);_context4.next = 5;return (
-                  _this5.$http.
-                  put("".concat(_userInfo.memberUpdate, "?id=").concat(_this5.profileInfo.id), _objectSpread(_objectSpread({},
-                  _this5.profileInfo), {}, {
-                    birthday: _this5.date,
-                    role: 10 })).
+                  _this4.loadProgress = _this4.loadProgress + 6;
+                }, 50);_context3.next = 5;return (
+                  _this4.$http.
+                  put("".concat(_user.editInfo), {
+                    username: _this4.profileInfo.username,
+                    avatar: _this4.profileInfo.avatar,
+                    phone: _this4.profileInfo.phone,
+                    password: _this4.profileInfo.password || '',
+                    newpassword1: _this4.profileInfo.newpassword1 || '',
+                    newpassword2: _this4.profileInfo.newpassword2 || '' }).
 
-                  then(function () {
+                  then(function (res) {
                     clearInterval(timer);
-                    _this5.loadProgress = 0;
-                    _this5.$mHelper.toast('恭喜您, 资料修改成功!');
-                    setTimeout(function () {
-                      _this5.$mRouter.back();
-                    }, 1 * 1000);
+                    _this4.loadProgress = 0;
+                    if (res.code === 1) {
+                      return _this4.$mHelper.toast(res.msg);
+                    }
+                    _this4.$mHelper.toast('恭喜您, 资料修改成功!');
+                    // setTimeout(() => {
+                    // 	this.$mRouter.back();
+                    // }, 1 * 1000);
                   }).
                   catch(function () {
-                    _this5.btnLoading = false;
-                  }));case 5:case "end":return _context4.stop();}}}, _callee4);}))();
+                    _this4.btnLoading = false;
+                  }));case 5:case "end":return _context3.stop();}}}, _callee3);}))();
     } } };exports.default = _default;
 /* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./node_modules/@dcloudio/uni-mp-weixin/dist/index.js */ 1)["default"]))
 

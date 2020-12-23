@@ -904,7 +904,7 @@ function initData(vueOptions, context) {
     try {
       data = data.call(context); // 支持 Vue.prototype 上挂的数据
     } catch (e) {
-      if (Object({"NODE_ENV":"development","VUE_APP_NAME":"智慧党建","VUE_APP_PLATFORM":"mp-weixin","BASE_URL":"/"}).VUE_APP_DEBUG) {
+      if (Object({"VUE_APP_NAME":"智慧党建","VUE_APP_PLATFORM":"mp-weixin","NODE_ENV":"development","BASE_URL":"/"}).VUE_APP_DEBUG) {
         console.warn('根据 Vue 的 data 函数初始化小程序 data 失败，请尽量确保 data 函数中不访问 vm 对象，否则可能影响首次数据渲染速度。', data);
       }
     }
@@ -2845,31 +2845,18 @@ var getContractType = '/we-office/v1/cate/get-contract-type';exports.getContract
 
 /***/ }),
 
-/***/ 1163:
-/*!*********************************************************!*\
-  !*** D:/code/HBuilderProjects/通用办公系统示例/api/newsbase.js ***!
-  \*********************************************************/
+/***/ 1165:
+/*!***********************************************************!*\
+  !*** D:/code/HBuilderProjects/通用办公系统示例/api/admin/user.js ***!
+  \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });exports.getObj = exports.fetchList = void 0;
-var fetchList = '/nfnet/newsbase/page';exports.fetchList = fetchList;
-var getObj = '/nfnet/newsbase/';exports.getObj = getObj;
-
-/***/ }),
-
-/***/ 1164:
-/*!*******************************************************!*\
-  !*** D:/code/HBuilderProjects/通用办公系统示例/api/member.js ***!
-  \*******************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });exports.getObj = exports.fetchList = void 0;
-var fetchList = '/nfnet/memeber/page';exports.fetchList = fetchList;
-var getObj = '/nfnet/memeber/';exports.getObj = getObj;
+Object.defineProperty(exports, "__esModule", { value: true });exports.editInfo = exports.getObj = exports.fetchList = void 0;
+var fetchList = '/admin/user/page';exports.fetchList = fetchList;
+var getObj = '/admin/user/';exports.getObj = getObj;
+var editInfo = '/admin/user/edit';exports.editInfo = editInfo;
 
 /***/ }),
 
@@ -4393,32 +4380,32 @@ Object.defineProperty(exports, "__esModule", { value: true });exports.default = 
   {
     title: '清除缓存',
     url: 'clearCache',
-    content: '' },
+    content: '' }
 
-  {
-    title: '关于我们',
-    url: '/pages/set/about/about',
-    content: '',
-    class: 'mT' },
-
-  {
-    title: '站点帮助',
-    url: '/pages/set/helper/index',
-    content: '' },
-
-
-
-
+  // {
+  // 	title: '关于我们',
+  // 	url: '/pages/set/about/about',
+  // 	content: '',
+  // 	class: 'mT'
+  // },
+  // {
+  // 	title: '站点帮助',
+  // 	url: '/pages/set/helper/index',
+  // 	content: ''
+  // },
+  //
 
 
 
 
-  {
-    title: '意见反馈',
-    url: '/pages/set/feedback/list',
-    content: '' }],
 
 
+  // {
+  // 	title: '意见反馈',
+  // 	url: '/pages/set/feedback/list',
+  // 	content: ''
+  // },
+  ],
 
   //应用中心-工作流
   worksList: [{
@@ -4925,8 +4912,8 @@ Object.defineProperty(exports, "__esModule", { value: true });exports.default = 
   // 生产环境配置
   production: {
     assetsPath: '/static', // 静态资源路径
-    baseUrl: 'https://192.168.1.234', // 后台接口请求地址
-    hostUrl: 'http://192.168.1.234', // H5地址(前端运行地址)
+    baseUrl: 'https://pt.taohao88.com', // 后台接口请求地址
+    hostUrl: 'https://pt.taohao88.com', // H5地址(前端运行地址)
     websocketUrl: 'wss://localhost:9504', // websocket服务端地址
     weixinAppId: 'wx54722a5e85ac26a5' // 微信公众号appid
   } };var _default =
@@ -10463,7 +10450,7 @@ function type(obj) {
 
 function flushCallbacks$1(vm) {
     if (vm.__next_tick_callbacks && vm.__next_tick_callbacks.length) {
-        if (Object({"NODE_ENV":"development","VUE_APP_NAME":"智慧党建","VUE_APP_PLATFORM":"mp-weixin","BASE_URL":"/"}).VUE_APP_DEBUG) {
+        if (Object({"VUE_APP_NAME":"智慧党建","VUE_APP_PLATFORM":"mp-weixin","NODE_ENV":"development","BASE_URL":"/"}).VUE_APP_DEBUG) {
             var mpInstance = vm.$scope;
             console.log('[' + (+new Date) + '][' + (mpInstance.is || mpInstance.route) + '][' + vm._uid +
                 ']:flushCallbacks[' + vm.__next_tick_callbacks.length + ']');
@@ -10484,14 +10471,14 @@ function nextTick$1(vm, cb) {
     //1.nextTick 之前 已 setData 且 setData 还未回调完成
     //2.nextTick 之前存在 render watcher
     if (!vm.__next_tick_pending && !hasRenderWatcher(vm)) {
-        if(Object({"NODE_ENV":"development","VUE_APP_NAME":"智慧党建","VUE_APP_PLATFORM":"mp-weixin","BASE_URL":"/"}).VUE_APP_DEBUG){
+        if(Object({"VUE_APP_NAME":"智慧党建","VUE_APP_PLATFORM":"mp-weixin","NODE_ENV":"development","BASE_URL":"/"}).VUE_APP_DEBUG){
             var mpInstance = vm.$scope;
             console.log('[' + (+new Date) + '][' + (mpInstance.is || mpInstance.route) + '][' + vm._uid +
                 ']:nextVueTick');
         }
         return nextTick(cb, vm)
     }else{
-        if(Object({"NODE_ENV":"development","VUE_APP_NAME":"智慧党建","VUE_APP_PLATFORM":"mp-weixin","BASE_URL":"/"}).VUE_APP_DEBUG){
+        if(Object({"VUE_APP_NAME":"智慧党建","VUE_APP_PLATFORM":"mp-weixin","NODE_ENV":"development","BASE_URL":"/"}).VUE_APP_DEBUG){
             var mpInstance$1 = vm.$scope;
             console.log('[' + (+new Date) + '][' + (mpInstance$1.is || mpInstance$1.route) + '][' + vm._uid +
                 ']:nextMPTick');
@@ -10577,7 +10564,7 @@ var patch = function(oldVnode, vnode) {
     });
     var diffData = this.$shouldDiffData === false ? data : diff(data, mpData);
     if (Object.keys(diffData).length) {
-      if (Object({"NODE_ENV":"development","VUE_APP_NAME":"智慧党建","VUE_APP_PLATFORM":"mp-weixin","BASE_URL":"/"}).VUE_APP_DEBUG) {
+      if (Object({"VUE_APP_NAME":"智慧党建","VUE_APP_PLATFORM":"mp-weixin","NODE_ENV":"development","BASE_URL":"/"}).VUE_APP_DEBUG) {
         console.log('[' + (+new Date) + '][' + (mpInstance.is || mpInstance.route) + '][' + this._uid +
           ']差量更新',
           JSON.stringify(diffData));
@@ -19199,7 +19186,7 @@ exports.opinionDetail = opinionDetail;var thirdPartyAuthList = '/we-office/v1/me
 exports.thirdPartyAuthList = thirdPartyAuthList;var thirdPartyAuthDelete = '/we-office/v1/member/auth/delete';
 
 // 上传图片
-exports.thirdPartyAuthDelete = thirdPartyAuthDelete;var uploadImage = '/we-office/v1/common/file/images';
+exports.thirdPartyAuthDelete = thirdPartyAuthDelete;var uploadImage = '/admin/sys-file/upload';
 
 // 待办工作
 exports.uploadImage = uploadImage;var worksList = '/we-office/v1/member/works/index';exports.worksList = worksList;
@@ -19276,6 +19263,35 @@ module.exports = function(module) {
 
 /***/ }),
 
+/***/ 478:
+/*!*********************************************************!*\
+  !*** D:/code/HBuilderProjects/通用办公系统示例/api/newsbase.js ***!
+  \*********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });exports.putObj = exports.getObj = exports.fetchList = void 0;
+var fetchList = '/nfnet/newsbase/page';exports.fetchList = fetchList;
+var getObj = '/nfnet/newsbase/';exports.getObj = getObj;
+var putObj = '/nfnet/newsbase';exports.putObj = putObj;
+
+/***/ }),
+
+/***/ 503:
+/*!*******************************************************!*\
+  !*** D:/code/HBuilderProjects/通用办公系统示例/api/member.js ***!
+  \*******************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });exports.getObj = exports.fetchList = void 0;
+var fetchList = '/nfnet/member/page';exports.fetchList = fetchList;
+var getObj = '/nfnet/member/';exports.getObj = getObj;
+
+/***/ }),
+
 /***/ 8:
 /*!**********************************************************!*\
   !*** ./node_modules/@babel/runtime/regenerator/index.js ***!
@@ -19287,7 +19303,7 @@ module.exports = __webpack_require__(/*! regenerator-runtime */ 9);
 
 /***/ }),
 
-/***/ 807:
+/***/ 832:
 /*!***********************************************************************************!*\
   !*** D:/code/HBuilderProjects/通用办公系统示例/components/oa-parser/libs/MpHtmlParser.js ***!
   \***********************************************************************************/
@@ -19302,9 +19318,9 @@ module.exports = __webpack_require__(/*! regenerator-runtime */ 9);
                       * @author JinYufeng
                       * @listens MIT
                       */
-var cfg = __webpack_require__(/*! ./config.js */ 808),
+var cfg = __webpack_require__(/*! ./config.js */ 833),
 blankChar = cfg.blankChar,
-CssHandler = __webpack_require__(/*! ./CssHandler.js */ 809),
+CssHandler = __webpack_require__(/*! ./CssHandler.js */ 834),
 windowWidth = uni.getSystemInfoSync().windowWidth;
 var emoji;
 
@@ -19834,7 +19850,7 @@ module.exports = MpHtmlParser;
 
 /***/ }),
 
-/***/ 808:
+/***/ 833:
 /*!*****************************************************************************!*\
   !*** D:/code/HBuilderProjects/通用办公系统示例/components/oa-parser/libs/config.js ***!
   \*****************************************************************************/
@@ -19938,7 +19954,7 @@ function makeMap(str) {
 
 /***/ }),
 
-/***/ 809:
+/***/ 834:
 /*!*********************************************************************************!*\
   !*** D:/code/HBuilderProjects/通用办公系统示例/components/oa-parser/libs/CssHandler.js ***!
   \*********************************************************************************/
@@ -19946,7 +19962,7 @@ function makeMap(str) {
 /***/ (function(module, exports, __webpack_require__) {
 
 // eslint-disable
-var cfg = __webpack_require__(/*! ./config.js */ 808),
+var cfg = __webpack_require__(/*! ./config.js */ 833),
 isLetter = function isLetter(c) {return c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z';};
 
 function CssHandler(tagStyle) {
@@ -20048,7 +20064,55 @@ parser.prototype.Content = function () {
 
 /***/ }),
 
-/***/ 897:
+/***/ 9:
+/*!************************************************************!*\
+  !*** ./node_modules/regenerator-runtime/runtime-module.js ***!
+  \************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+/**
+ * Copyright (c) 2014-present, Facebook, Inc.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+// This method of obtaining a reference to the global object needs to be
+// kept identical to the way it is obtained in runtime.js
+var g = (function() {
+  return this || (typeof self === "object" && self);
+})() || Function("return this")();
+
+// Use `getOwnPropertyNames` because not all browsers support calling
+// `hasOwnProperty` on the global `self` object in a worker. See #183.
+var hadRuntime = g.regeneratorRuntime &&
+  Object.getOwnPropertyNames(g).indexOf("regeneratorRuntime") >= 0;
+
+// Save the old regeneratorRuntime in case it needs to be restored later.
+var oldRuntime = hadRuntime && g.regeneratorRuntime;
+
+// Force reevalutation of runtime.js.
+g.regeneratorRuntime = undefined;
+
+module.exports = __webpack_require__(/*! ./runtime */ 10);
+
+if (hadRuntime) {
+  // Restore the original runtime.
+  g.regeneratorRuntime = oldRuntime;
+} else {
+  // Remove the global property added by runtime.js.
+  try {
+    delete g.regeneratorRuntime;
+  } catch(e) {
+    g.regeneratorRuntime = undefined;
+  }
+}
+
+
+/***/ }),
+
+/***/ 915:
 /*!************************************************************************!*\
   !*** D:/code/HBuilderProjects/通用办公系统示例/components/oa-calendar/util.js ***!
   \************************************************************************/
@@ -20056,7 +20120,7 @@ parser.prototype.Content = function () {
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });exports.default = void 0;var _calendar = _interopRequireDefault(__webpack_require__(/*! ./calendar.js */ 898));function _interopRequireDefault(obj) {return obj && obj.__esModule ? obj : { default: obj };}function _classCallCheck(instance, Constructor) {if (!(instance instanceof Constructor)) {throw new TypeError("Cannot call a class as a function");}}function _defineProperties(target, props) {for (var i = 0; i < props.length; i++) {var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);}}function _createClass(Constructor, protoProps, staticProps) {if (protoProps) _defineProperties(Constructor.prototype, protoProps);if (staticProps) _defineProperties(Constructor, staticProps);return Constructor;}var
+Object.defineProperty(exports, "__esModule", { value: true });exports.default = void 0;var _calendar = _interopRequireDefault(__webpack_require__(/*! ./calendar.js */ 916));function _interopRequireDefault(obj) {return obj && obj.__esModule ? obj : { default: obj };}function _classCallCheck(instance, Constructor) {if (!(instance instanceof Constructor)) {throw new TypeError("Cannot call a class as a function");}}function _defineProperties(target, props) {for (var i = 0; i < props.length; i++) {var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);}}function _createClass(Constructor, protoProps, staticProps) {if (protoProps) _defineProperties(Constructor.prototype, protoProps);if (staticProps) _defineProperties(Constructor, staticProps);return Constructor;}var
 
 Calendar = /*#__PURE__*/function () {
   function Calendar()
@@ -20386,7 +20450,7 @@ Calendar;exports.default = _default;
 
 /***/ }),
 
-/***/ 898:
+/***/ 916:
 /*!****************************************************************************!*\
   !*** D:/code/HBuilderProjects/通用办公系统示例/components/oa-calendar/calendar.js ***!
   \****************************************************************************/
@@ -20943,55 +21007,7 @@ calendar;exports.default = _default;
 
 /***/ }),
 
-/***/ 9:
-/*!************************************************************!*\
-  !*** ./node_modules/regenerator-runtime/runtime-module.js ***!
-  \************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-/**
- * Copyright (c) 2014-present, Facebook, Inc.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
-
-// This method of obtaining a reference to the global object needs to be
-// kept identical to the way it is obtained in runtime.js
-var g = (function() {
-  return this || (typeof self === "object" && self);
-})() || Function("return this")();
-
-// Use `getOwnPropertyNames` because not all browsers support calling
-// `hasOwnProperty` on the global `self` object in a worker. See #183.
-var hadRuntime = g.regeneratorRuntime &&
-  Object.getOwnPropertyNames(g).indexOf("regeneratorRuntime") >= 0;
-
-// Save the old regeneratorRuntime in case it needs to be restored later.
-var oldRuntime = hadRuntime && g.regeneratorRuntime;
-
-// Force reevalutation of runtime.js.
-g.regeneratorRuntime = undefined;
-
-module.exports = __webpack_require__(/*! ./runtime */ 10);
-
-if (hadRuntime) {
-  // Restore the original runtime.
-  g.regeneratorRuntime = oldRuntime;
-} else {
-  // Remove the global property added by runtime.js.
-  try {
-    delete g.regeneratorRuntime;
-  } catch(e) {
-    g.regeneratorRuntime = undefined;
-  }
-}
-
-
-/***/ }),
-
-/***/ 906:
+/***/ 924:
 /*!**********************************************************!*\
   !*** D:/code/HBuilderProjects/通用办公系统示例/utils/uqrcode.js ***!
   \**********************************************************/
@@ -22360,7 +22376,7 @@ uQRCode;exports.default = _default;
 
 /***/ }),
 
-/***/ 938:
+/***/ 956:
 /*!***********************************************************************************!*\
   !*** D:/code/HBuilderProjects/通用办公系统示例/components/uni-swipe-action-item/mpwxs.js ***!
   \***********************************************************************************/

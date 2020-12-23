@@ -24,7 +24,7 @@ const thirdPartyAuthList = '/we-office/v1/member/auth/index';
 const thirdPartyAuthDelete = '/we-office/v1/member/auth/delete';
 
 // 上传图片
-const uploadImage = '/we-office/v1/common/file/images';
+const uploadImage = '/admin/sys-file/upload';
 
 // 待办工作
 const worksList = '/we-office/v1/member/works/index';

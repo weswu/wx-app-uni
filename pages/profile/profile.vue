@@ -36,7 +36,7 @@
 		 @touchstart="coverTouchstart" @touchmove="coverTouchmove" @touchend="coverTouchend">
 			<image class="arc" :src="arc"></image>
 			<!--个人中心-->
-			<view class="promotion-center">
+			<!-- <view class="promotion-center">
 				<list-cell
 					icon="iconicon1"
 					:iconColor="themeColor.color"
@@ -57,7 +57,7 @@
 
 					</view>
 				</view>
-			</view>
+			</view> -->
 			<!-- 个人资料 -->
 			<view  class="set">
 				<view class="list-cell b-b" :class="{ 'm-t': item.class === 'mT' }" v-for="item in setList" :key="item.title" @tap="navTo(item.url)"
@@ -66,7 +66,6 @@
 					<text class="cell-tip">{{ item.content }}</text>
 					<text class="cell-more iconfont iconyou"></text>
 				</view>
-
 			</view>
 
 			<view class="cu-list menu sm-border card-menu" v-if="styleUserIsOpen">
@@ -85,9 +84,9 @@
 					</view>
 				</view>
 			</view>
-			<view v-if="hasLogin" class="list-cell log-out-btn" :class="'text-' + themeColor.name" @tap="toLogout">
+		<!-- 	<view v-if="hasLogin" class="list-cell log-out-btn" :class="'text-' + themeColor.name" @tap="toLogout">
 				<text class="cell-tit">退出登录</text>
-			</view>
+			</view> -->
 		<!--版本更新-->
 		<!-- #ifdef APP-PLUS -->
 		<oa-version-upgrade
@@ -210,10 +209,10 @@
 				this.userInfo = uni.getStorageSync('userInfo');
 				console.log(this.userInfo);
 				// 缓存大小
-				this.setList[2].content = `${uni.getStorageInfoSync().currentSize} kb`;
+				this.setList[1].content = `${uni.getStorageInfoSync().currentSize} kb`;
 				// #ifdef APP-PLUS
 				// eslint-disable-next-line
-				this.setList[5].content = `当前版本 ${plus.runtime.version}`;
+				// this.setList[5].content = `当前版本 ${plus.runtime.version}`;
 				// this.getNotifySubscriptionConfigIndex();
 				// #endif
 				this.hasLogin = this.$mStore.getters.hasLogin;
@@ -333,7 +332,7 @@
 							success: e => {
 								if (e.confirm) {
 									uni.clearStorageSync();
-									this.setList[2].content = '0 kb';
+									this.setList[1].content = '0 kb';
 									this.$mStore.commit('login', this.user);
 									this.$mHelper.toast('清除缓存成功');
 								}
