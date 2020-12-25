@@ -7,7 +7,6 @@ export default {
 	async onLaunch() {
 		console.log('开始启动')
 		await this.initData();
-		console.log('初始化完成')
 	},
 	onHide() {},
 	methods: {
@@ -72,9 +71,11 @@ export default {
 			)
 			.then(r => {
 				this.$mStore.commit('login', r)
+				console.log('初始化完成')
 			})
 			.catch(err => {
 				if (err.statusCode === 401){
+					console.log('跳转登录')
 					uni.navigateTo({
 						url: '/pages/public/login'
 					});

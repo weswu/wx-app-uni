@@ -2,8 +2,8 @@
 	<view class="oa-notice-detail">
 		
 		<view class="article-meta">
-			<view class="article-text">活动名称：{{ studyDetail.ngroupType | ngroupType }}</view>
-			<text class="article-text">发布于</text>
+			<view class="article-text">活动名称：{{ studyDetail.ngroupType}}</view>
+			<view class="article-text">发布于</view>
 			<text class="article-time">{{ studyDetail.newsTime }}</text>
 			<view class="article-text" v-if="studyDetail.meetStartTime">开始时间：{{ studyDetail.meetStartTime }}</view>
 			<view class="article-text" v-if="studyDetail.meetStartTime">结束时间：{{ studyDetail.meetEndTime }}</view>
@@ -20,8 +20,9 @@
 	</view>
 </template>
 
-<script>
+<script>  
 import { getObj } from '@/api/newsbase';
+import { remote } from '@/api/admin/dict'
 import moment from '@/common/moment';
 import oaParser from '@/components/oa-parser';
 export default {
@@ -41,24 +42,6 @@ export default {
 		time(val) {
 			return moment(val * 1000).format('YYYY-MM-DD HH:mm');
 		},
-		ngroupType(val) {
-			let text = '';
-			let ngroupType = [
-        {value: '1', label: '支部委员会'},
-        {value: '2', label: '支部党员大会'},
-        {value: '3', label: '党小组会'},
-        {value: '4', label: '党课'},
-        {value: '5', label: '支部主题党日'},
-        {value: '6', label: '组织生活会'},
-        {value: '7', label: '志愿服务'}
-      ]
-			ngroupType.forEach(item => {
-				if(item.value === val) {
-					text = item.label
-				}
-			})
-			return text;
-		}
 	},
 	onShow() {
 		uni.setNavigationBarColor({
@@ -85,10 +68,37 @@ export default {
 					uni.setNavigationBarTitle({
 						title: r.data.title
 					});
+					this.getDict('ngroup_type')
 				})
 				.catch(() => {
 					this.loading = false;
 				});
+		},
+		getDict(type) {
+			this.$http
+				.get(`${remote}`+type)
+				.then(r => {
+					var list = r.data
+					this.studyDetail.ngroupType = this.init(this.studyDetail.ngroupType, list)
+				})
+		},
+		init(val, list, def){
+			let text = def || ''
+			if(val && val !== '') {
+			  let vals = val.split(',')
+			  vals.forEach((row, i) => {
+			    list.forEach(item => {
+			      if (item.value === row) {
+			        if(text === '') {
+			          text = item.label
+			        } else {
+			          text += ',' + item.label
+			        }
+			      }
+			    })
+			  })
+			}
+			return text    
 		}
 	}
 };

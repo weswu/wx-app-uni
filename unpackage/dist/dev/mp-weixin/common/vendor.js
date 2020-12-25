@@ -904,7 +904,7 @@ function initData(vueOptions, context) {
     try {
       data = data.call(context); // 支持 Vue.prototype 上挂的数据
     } catch (e) {
-      if (Object({"VUE_APP_NAME":"智慧党建","VUE_APP_PLATFORM":"mp-weixin","NODE_ENV":"development","BASE_URL":"/"}).VUE_APP_DEBUG) {
+      if (Object({"NODE_ENV":"development","VUE_APP_NAME":"智慧党建","VUE_APP_PLATFORM":"mp-weixin","BASE_URL":"/"}).VUE_APP_DEBUG) {
         console.warn('根据 Vue 的 data 函数初始化小程序 data 失败，请尽量确保 data 函数中不访问 vm 对象，否则可能影响首次数据渲染速度。', data);
       }
     }
@@ -2538,7 +2538,7 @@ uni$1;exports.default = _default;
 
 /***/ }),
 
-/***/ 107:
+/***/ 108:
 /*!******************************************************************!*\
   !*** D:/code/HBuilderProjects/通用办公系统示例/utils/native-nfc-util.js ***!
   \******************************************************************/
@@ -2842,21 +2842,6 @@ exports.getCalendarType = getCalendarType;var politicalType = '/we-office/v1/cat
 //合同类型
 exports.politicalType = politicalType;var contractType = '/we-office/v1/cate/contract-type';exports.contractType = contractType;
 var getContractType = '/we-office/v1/cate/get-contract-type';exports.getContractType = getContractType;
-
-/***/ }),
-
-/***/ 1165:
-/*!***********************************************************!*\
-  !*** D:/code/HBuilderProjects/通用办公系统示例/api/admin/user.js ***!
-  \***********************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });exports.editInfo = exports.getObj = exports.fetchList = void 0;
-var fetchList = '/admin/user/page';exports.fetchList = fetchList;
-var getObj = '/admin/user/';exports.getObj = getObj;
-var editInfo = '/admin/user/edit';exports.editInfo = editInfo;
 
 /***/ }),
 
@@ -4154,7 +4139,9 @@ var store = new _vuex.default.Store({
     isImPanel: false,
     // 当前是否人工客服服务
     isStuffService: false,
-    themeColor: THEMECOLOR },
+    themeColor: THEMECOLOR,
+    // 常数
+    ngroupType: [] },
 
   getters: {
     // 全局配置
@@ -4280,22 +4267,20 @@ var store = new _vuex.default.Store({
     setThemeColor: function setThemeColor(state, val) {
       state.themeColor = val;
       uni.setStorageSync('themeColor', val);
+    },
+    // wes
+    set_ngroup_type: function set_ngroup_type(state, params) {
+      state.ngroupType = params;
     } },
 
   actions: {
-    globalConfigChange: function globalConfigChange(_ref,
-
-    info) {var commit = _ref.commit;
+    globalConfigChange: function globalConfigChange(_ref, info) {var commit = _ref.commit;
       commit('setGlobalConfig', info);
     },
-    networkStateChange: function networkStateChange(_ref2,
-
-    info) {var commit = _ref2.commit;
+    networkStateChange: function networkStateChange(_ref2, info) {var commit = _ref2.commit;
       commit('setNetworkState', info);
     },
-    logout: function logout(_ref3)
-
-    {var commit = _ref3.commit;
+    logout: function logout(_ref3) {var commit = _ref3.commit;
       commit('logout');
     } } });var _default =
 
@@ -4772,7 +4757,7 @@ Object.defineProperty(exports, "__esModule", { value: true });exports.default = 
 
 /***/ }),
 
-/***/ 172:
+/***/ 173:
 /*!*********************************************************!*\
   !*** D:/code/HBuilderProjects/通用办公系统示例/api/merchant.js ***!
   \*********************************************************/
@@ -4903,8 +4888,8 @@ Object.defineProperty(exports, "__esModule", { value: true });exports.default = 
   // 开发环境配置
   development: {
     assetsPath: '/static', // 静态资源路径
-    baseUrl: 'http://192.168.1.234', // 后台接口请求地址
-    hostUrl: 'http://192.168.1.234', // H5地址(前端运行地址)
+    baseUrl: 'https://pt.zjrcfw.com', // 后台接口请求地址
+    hostUrl: 'https://pt.zjrcfw.com', // H5地址(前端运行地址) http://192.168.1.234
     websocketUrl: 'wss://localhost:9504', // websocket服务端地址
     weixinAppId: 'wx54722a5e85ac26a5' // 微信公众号appid
   },
@@ -4912,8 +4897,8 @@ Object.defineProperty(exports, "__esModule", { value: true });exports.default = 
   // 生产环境配置
   production: {
     assetsPath: '/static', // 静态资源路径
-    baseUrl: 'https://pt.taohao88.com', // 后台接口请求地址
-    hostUrl: 'https://pt.taohao88.com', // H5地址(前端运行地址)
+    baseUrl: 'https://pt.zjrcfw.com', // 后台接口请求地址
+    hostUrl: 'https://pt.zjrcfw.com', // H5地址(前端运行地址)
     websocketUrl: 'wss://localhost:9504', // websocket服务端地址
     weixinAppId: 'wx54722a5e85ac26a5' // 微信公众号appid
   } };var _default =
@@ -10450,7 +10435,7 @@ function type(obj) {
 
 function flushCallbacks$1(vm) {
     if (vm.__next_tick_callbacks && vm.__next_tick_callbacks.length) {
-        if (Object({"VUE_APP_NAME":"智慧党建","VUE_APP_PLATFORM":"mp-weixin","NODE_ENV":"development","BASE_URL":"/"}).VUE_APP_DEBUG) {
+        if (Object({"NODE_ENV":"development","VUE_APP_NAME":"智慧党建","VUE_APP_PLATFORM":"mp-weixin","BASE_URL":"/"}).VUE_APP_DEBUG) {
             var mpInstance = vm.$scope;
             console.log('[' + (+new Date) + '][' + (mpInstance.is || mpInstance.route) + '][' + vm._uid +
                 ']:flushCallbacks[' + vm.__next_tick_callbacks.length + ']');
@@ -10471,14 +10456,14 @@ function nextTick$1(vm, cb) {
     //1.nextTick 之前 已 setData 且 setData 还未回调完成
     //2.nextTick 之前存在 render watcher
     if (!vm.__next_tick_pending && !hasRenderWatcher(vm)) {
-        if(Object({"VUE_APP_NAME":"智慧党建","VUE_APP_PLATFORM":"mp-weixin","NODE_ENV":"development","BASE_URL":"/"}).VUE_APP_DEBUG){
+        if(Object({"NODE_ENV":"development","VUE_APP_NAME":"智慧党建","VUE_APP_PLATFORM":"mp-weixin","BASE_URL":"/"}).VUE_APP_DEBUG){
             var mpInstance = vm.$scope;
             console.log('[' + (+new Date) + '][' + (mpInstance.is || mpInstance.route) + '][' + vm._uid +
                 ']:nextVueTick');
         }
         return nextTick(cb, vm)
     }else{
-        if(Object({"VUE_APP_NAME":"智慧党建","VUE_APP_PLATFORM":"mp-weixin","NODE_ENV":"development","BASE_URL":"/"}).VUE_APP_DEBUG){
+        if(Object({"NODE_ENV":"development","VUE_APP_NAME":"智慧党建","VUE_APP_PLATFORM":"mp-weixin","BASE_URL":"/"}).VUE_APP_DEBUG){
             var mpInstance$1 = vm.$scope;
             console.log('[' + (+new Date) + '][' + (mpInstance$1.is || mpInstance$1.route) + '][' + vm._uid +
                 ']:nextMPTick');
@@ -10564,7 +10549,7 @@ var patch = function(oldVnode, vnode) {
     });
     var diffData = this.$shouldDiffData === false ? data : diff(data, mpData);
     if (Object.keys(diffData).length) {
-      if (Object({"VUE_APP_NAME":"智慧党建","VUE_APP_PLATFORM":"mp-weixin","NODE_ENV":"development","BASE_URL":"/"}).VUE_APP_DEBUG) {
+      if (Object({"NODE_ENV":"development","VUE_APP_NAME":"智慧党建","VUE_APP_PLATFORM":"mp-weixin","BASE_URL":"/"}).VUE_APP_DEBUG) {
         console.log('[' + (+new Date) + '][' + (mpInstance.is || mpInstance.route) + '][' + this._uid +
           ']差量更新',
           JSON.stringify(diffData));
@@ -11024,7 +11009,7 @@ Object.defineProperty(exports, "__esModule", { value: true });exports.default = 
 
 /***/ }),
 
-/***/ 205:
+/***/ 206:
 /*!*************************************************************************!*\
   !*** D:/code/HBuilderProjects/通用办公系统示例/components/u-charts/u-charts.js ***!
   \*************************************************************************/
@@ -19263,7 +19248,7 @@ module.exports = function(module) {
 
 /***/ }),
 
-/***/ 478:
+/***/ 479:
 /*!*********************************************************!*\
   !*** D:/code/HBuilderProjects/通用办公系统示例/api/newsbase.js ***!
   \*********************************************************/
@@ -19278,7 +19263,19 @@ var putObj = '/nfnet/newsbase';exports.putObj = putObj;
 
 /***/ }),
 
-/***/ 503:
+/***/ 488:
+/*!***********************************************************!*\
+  !*** D:/code/HBuilderProjects/通用办公系统示例/api/admin/dict.js ***!
+  \***********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });exports.remote = void 0;var remote = '/admin/dict/type/';exports.remote = remote;
+
+/***/ }),
+
+/***/ 505:
 /*!*******************************************************!*\
   !*** D:/code/HBuilderProjects/通用办公系统示例/api/member.js ***!
   \*******************************************************/
@@ -19289,6 +19286,20 @@ var putObj = '/nfnet/newsbase';exports.putObj = putObj;
 Object.defineProperty(exports, "__esModule", { value: true });exports.getObj = exports.fetchList = void 0;
 var fetchList = '/nfnet/member/page';exports.fetchList = fetchList;
 var getObj = '/nfnet/member/';exports.getObj = getObj;
+
+/***/ }),
+
+/***/ 75:
+/*!***********************************************************!*\
+  !*** D:/code/HBuilderProjects/通用办公系统示例/api/admin/user.js ***!
+  \***********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });exports.editInfo = exports.getObj = exports.fetchList = void 0;var fetchList = '/admin/user/page';exports.fetchList = fetchList;
+var getObj = '/admin/user/';exports.getObj = getObj;
+var editInfo = '/admin/user/edit';exports.editInfo = editInfo;
 
 /***/ }),
 
@@ -19303,7 +19314,7 @@ module.exports = __webpack_require__(/*! regenerator-runtime */ 9);
 
 /***/ }),
 
-/***/ 832:
+/***/ 834:
 /*!***********************************************************************************!*\
   !*** D:/code/HBuilderProjects/通用办公系统示例/components/oa-parser/libs/MpHtmlParser.js ***!
   \***********************************************************************************/
@@ -19318,9 +19329,9 @@ module.exports = __webpack_require__(/*! regenerator-runtime */ 9);
                       * @author JinYufeng
                       * @listens MIT
                       */
-var cfg = __webpack_require__(/*! ./config.js */ 833),
+var cfg = __webpack_require__(/*! ./config.js */ 835),
 blankChar = cfg.blankChar,
-CssHandler = __webpack_require__(/*! ./CssHandler.js */ 834),
+CssHandler = __webpack_require__(/*! ./CssHandler.js */ 836),
 windowWidth = uni.getSystemInfoSync().windowWidth;
 var emoji;
 
@@ -19850,7 +19861,7 @@ module.exports = MpHtmlParser;
 
 /***/ }),
 
-/***/ 833:
+/***/ 835:
 /*!*****************************************************************************!*\
   !*** D:/code/HBuilderProjects/通用办公系统示例/components/oa-parser/libs/config.js ***!
   \*****************************************************************************/
@@ -19954,7 +19965,7 @@ function makeMap(str) {
 
 /***/ }),
 
-/***/ 834:
+/***/ 836:
 /*!*********************************************************************************!*\
   !*** D:/code/HBuilderProjects/通用办公系统示例/components/oa-parser/libs/CssHandler.js ***!
   \*********************************************************************************/
@@ -19962,7 +19973,7 @@ function makeMap(str) {
 /***/ (function(module, exports, __webpack_require__) {
 
 // eslint-disable
-var cfg = __webpack_require__(/*! ./config.js */ 833),
+var cfg = __webpack_require__(/*! ./config.js */ 835),
 isLetter = function isLetter(c) {return c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z';};
 
 function CssHandler(tagStyle) {
@@ -20112,7 +20123,7 @@ if (hadRuntime) {
 
 /***/ }),
 
-/***/ 915:
+/***/ 917:
 /*!************************************************************************!*\
   !*** D:/code/HBuilderProjects/通用办公系统示例/components/oa-calendar/util.js ***!
   \************************************************************************/
@@ -20120,7 +20131,7 @@ if (hadRuntime) {
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });exports.default = void 0;var _calendar = _interopRequireDefault(__webpack_require__(/*! ./calendar.js */ 916));function _interopRequireDefault(obj) {return obj && obj.__esModule ? obj : { default: obj };}function _classCallCheck(instance, Constructor) {if (!(instance instanceof Constructor)) {throw new TypeError("Cannot call a class as a function");}}function _defineProperties(target, props) {for (var i = 0; i < props.length; i++) {var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);}}function _createClass(Constructor, protoProps, staticProps) {if (protoProps) _defineProperties(Constructor.prototype, protoProps);if (staticProps) _defineProperties(Constructor, staticProps);return Constructor;}var
+Object.defineProperty(exports, "__esModule", { value: true });exports.default = void 0;var _calendar = _interopRequireDefault(__webpack_require__(/*! ./calendar.js */ 918));function _interopRequireDefault(obj) {return obj && obj.__esModule ? obj : { default: obj };}function _classCallCheck(instance, Constructor) {if (!(instance instanceof Constructor)) {throw new TypeError("Cannot call a class as a function");}}function _defineProperties(target, props) {for (var i = 0; i < props.length; i++) {var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);}}function _createClass(Constructor, protoProps, staticProps) {if (protoProps) _defineProperties(Constructor.prototype, protoProps);if (staticProps) _defineProperties(Constructor, staticProps);return Constructor;}var
 
 Calendar = /*#__PURE__*/function () {
   function Calendar()
@@ -20450,7 +20461,7 @@ Calendar;exports.default = _default;
 
 /***/ }),
 
-/***/ 916:
+/***/ 918:
 /*!****************************************************************************!*\
   !*** D:/code/HBuilderProjects/通用办公系统示例/components/oa-calendar/calendar.js ***!
   \****************************************************************************/
@@ -21007,7 +21018,7 @@ calendar;exports.default = _default;
 
 /***/ }),
 
-/***/ 924:
+/***/ 926:
 /*!**********************************************************!*\
   !*** D:/code/HBuilderProjects/通用办公系统示例/utils/uqrcode.js ***!
   \**********************************************************/
@@ -22376,7 +22387,7 @@ uQRCode;exports.default = _default;
 
 /***/ }),
 
-/***/ 956:
+/***/ 958:
 /*!***********************************************************************************!*\
   !*** D:/code/HBuilderProjects/通用办公系统示例/components/uni-swipe-action-item/mpwxs.js ***!
   \***********************************************************************************/

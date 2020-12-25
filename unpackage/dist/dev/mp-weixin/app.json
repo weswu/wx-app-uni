@@ -1,208 +1,209 @@
 {
-  "pages": [
-    "pages/index/index",
-    "pages/profile/profile"
-  ],
-  "subPackages": [
-    {
-      "root": "pages/application",
-      "pages": [
-        "index"
-      ]
+    "pages": [
+        "pages/index/index",
+        "pages/profile/profile"
+    ],
+    "subPackages": [
+        {
+            "root": "pages/application",
+            "pages": [
+                "index"
+            ]
+        },
+        {
+            "root": "pages/contact",
+            "pages": [
+                "index"
+            ]
+        },
+        {
+            "root": "pages/user",
+            "pages": [
+                "userinfo/userinfo"
+            ]
+        },
+        {
+            "root": "pages/notice",
+            "pages": [
+                "notice",
+                "detail"
+            ]
+        },
+        {
+            "root": "pages/attend",
+            "pages": [
+                "plan",
+                "add"
+            ]
+        },
+        {
+            "root": "pages/patrol",
+            "pages": [
+                "plan",
+                "add"
+            ]
+        },
+        {
+            "root": "pages/set",
+            "pages": [
+                "set",
+                "authorization/list",
+                "feedback/detail",
+                "feedback/list",
+                "feedback/feedback",
+                "about/about",
+                "about/detail",
+                "helper/index",
+                "helper/detail",
+                "unit/index"
+            ]
+        },
+        {
+            "root": "pages/public",
+            "pages": [
+                "register",
+                "login",
+                "logintype",
+                "password"
+            ]
+        },
+        {
+            "root": "pages/works",
+            "pages": [
+                "index",
+                "detail",
+                "repair/index",
+                "repair/detail",
+                "repair/add",
+                "get/index",
+                "get/detail",
+                "get/add",
+                "get/asset",
+                "shop/index",
+                "shop/detail",
+                "shop/add",
+                "shop/asset",
+                "car/index",
+                "car/car",
+                "car/detail",
+                "car/add",
+                "overtime/index",
+                "overtime/detail",
+                "overtime/add",
+                "trip/index",
+                "trip/detail",
+                "trip/add",
+                "holiday/index",
+                "holiday/detail",
+                "holiday/add",
+                "expense/index",
+                "expense/detail",
+                "expense/add"
+            ]
+        },
+        {
+            "root": "pages/study",
+            "pages": [
+                "index",
+                "detail",
+                "sign",
+                "signDetail"
+            ]
+        },
+        {
+            "root": "pages/purchase",
+            "pages": [
+                "index",
+                "add",
+                "detail"
+            ]
+        },
+        {
+            "root": "pages/dining",
+            "pages": [
+                "index",
+                "add",
+                "detail"
+            ]
+        },
+        {
+            "root": "pages/personnel",
+            "pages": [
+                "asset/index",
+                "asset/add",
+                "asset/detail",
+                "car/index",
+                "car/add",
+                "car/detail",
+                "archives/index",
+                "archives/add",
+                "archives/detail",
+                "employees/index",
+                "employees/add",
+                "employees/detail",
+                "contract/index",
+                "contract/add",
+                "contract/detail",
+                "rewards/index",
+                "rewards/add",
+                "rewards/detail",
+                "insurance/index",
+                "insurance/add",
+                "insurance/detail"
+            ]
+        },
+        {
+            "root": "pages/mycenter",
+            "pages": [
+                "log/index",
+                "log/detail",
+                "log/add",
+                "summary/index",
+                "summary/detail",
+                "summary/add",
+                "calendar/index",
+                "calendar/detail",
+                "calendar/add"
+            ]
+        }
+    ],
+    "window": {
+        "navigationBarTextStyle": "black",
+        "navigationBarTitleText": "景区办公",
+        "navigationBarBackgroundColor": "#fff",
+        "backgroundColor": "#f8f8f8"
     },
-    {
-      "root": "pages/contact",
-      "pages": [
-        "index"
-      ]
+    "tabBar": {
+        "color": "#C0C4CC",
+        "selectedColor": "#fa436a",
+        "borderStyle": "black",
+        "backgroundColor": "#ffffff",
+        "list": [
+            {
+                "pagePath": "pages/index/index",
+                "iconPath": "static/tab-home.png",
+                "selectedIconPath": "static/tab-home-rf.png",
+                "text": "首页"
+            },
+            {
+                "pagePath": "pages/profile/profile",
+                "iconPath": "static/tab-my.png",
+                "selectedIconPath": "static/tab-my-rf.png",
+                "text": "我的"
+            }
+        ]
     },
-    {
-      "root": "pages/user",
-      "pages": [
-        "userinfo/userinfo"
-      ]
+    "permission": {},
+    "usingComponents": {
+        "rf-image": "/components/oa-image/oa-image",
+        "rf-empty": "/components/oa-empty/index",
+        "rf-loading": "/components/oa-loading/index",
+        "rf-load-progress": "/components/oa-load-progress/oa-load-progress",
+        "rf-parser": "/components/oa-parser/index",
+        "rf-back-top": "/components/oa-back-top/index",
+        "rf-tag": "/components/oa-tag/index",
+        "rf-nav-detail": "/components/oa-nav-detail/index",
+        "cu-custom": "/components/cu-custom/index"
     },
-    {
-      "root": "pages/notice",
-      "pages": [
-        "notice",
-        "detail"
-      ]
-    },
-    {
-      "root": "pages/attend",
-      "pages": [
-        "plan",
-        "add"
-      ]
-    },
-    {
-      "root": "pages/patrol",
-      "pages": [
-        "plan",
-        "add"
-      ]
-    },
-    {
-      "root": "pages/set",
-      "pages": [
-        "set",
-        "authorization/list",
-        "feedback/detail",
-        "feedback/list",
-        "feedback/feedback",
-        "about/about",
-        "about/detail",
-        "helper/index",
-        "helper/detail",
-        "unit/index"
-      ]
-    },
-    {
-      "root": "pages/public",
-      "pages": [
-        "register",
-        "login",
-        "logintype",
-        "password"
-      ]
-    },
-    {
-      "root": "pages/works",
-      "pages": [
-        "index",
-        "detail",
-        "repair/index",
-        "repair/detail",
-        "repair/add",
-        "get/index",
-        "get/detail",
-        "get/add",
-        "get/asset",
-        "shop/index",
-        "shop/detail",
-        "shop/add",
-        "shop/asset",
-        "car/index",
-        "car/car",
-        "car/detail",
-        "car/add",
-        "overtime/index",
-        "overtime/detail",
-        "overtime/add",
-        "trip/index",
-        "trip/detail",
-        "trip/add",
-        "holiday/index",
-        "holiday/detail",
-        "holiday/add",
-        "expense/index",
-        "expense/detail",
-        "expense/add"
-      ]
-    },
-    {
-      "root": "pages/study",
-      "pages": [
-        "index",
-        "detail",
-        "sign",
-        "signDetail"
-      ]
-    },
-    {
-      "root": "pages/purchase",
-      "pages": [
-        "index",
-        "add",
-        "detail"
-      ]
-    },
-    {
-      "root": "pages/dining",
-      "pages": [
-        "index",
-        "add",
-        "detail"
-      ]
-    },
-    {
-      "root": "pages/personnel",
-      "pages": [
-        "asset/index",
-        "asset/add",
-        "asset/detail",
-        "car/index",
-        "car/add",
-        "car/detail",
-        "archives/index",
-        "archives/add",
-        "archives/detail",
-        "employees/index",
-        "employees/add",
-        "employees/detail",
-        "contract/index",
-        "contract/add",
-        "contract/detail",
-        "rewards/index",
-        "rewards/add",
-        "rewards/detail",
-        "insurance/index",
-        "insurance/add",
-        "insurance/detail"
-      ]
-    },
-    {
-      "root": "pages/mycenter",
-      "pages": [
-        "log/index",
-        "log/detail",
-        "log/add",
-        "summary/index",
-        "summary/detail",
-        "summary/add",
-        "calendar/index",
-        "calendar/detail",
-        "calendar/add"
-      ]
-    }
-  ],
-  "window": {
-    "navigationBarTextStyle": "black",
-    "navigationBarTitleText": "景区办公",
-    "navigationBarBackgroundColor": "#fff",
-    "backgroundColor": "#f8f8f8"
-  },
-  "tabBar": {
-    "color": "#C0C4CC",
-    "selectedColor": "#fa436a",
-    "borderStyle": "black",
-    "backgroundColor": "#ffffff",
-    "list": [
-      {
-        "pagePath": "pages/index/index",
-        "iconPath": "static/tab-home.png",
-        "selectedIconPath": "static/tab-home-rf.png",
-        "text": "首页"
-      },
-      {
-        "pagePath": "pages/profile/profile",
-        "iconPath": "static/tab-my.png",
-        "selectedIconPath": "static/tab-my-rf.png",
-        "text": "我的"
-      }
-    ]
-  },
-  "permission": {},
-  "usingComponents": {
-    "rf-image": "/components/oa-image/oa-image",
-    "rf-empty": "/components/oa-empty/index",
-    "rf-loading": "/components/oa-loading/index",
-    "rf-load-progress": "/components/oa-load-progress/oa-load-progress",
-    "rf-parser": "/components/oa-parser/index",
-    "rf-back-top": "/components/oa-back-top/index",
-    "rf-tag": "/components/oa-tag/index",
-    "rf-nav-detail": "/components/oa-nav-detail/index",
-    "cu-custom": "/components/cu-custom/index"
-  }
+    "sitemapLocation": "sitemap60.json"
 }

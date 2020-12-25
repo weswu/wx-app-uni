@@ -364,7 +364,7 @@ export default {
 				})
 				.then(r => {
 					if (r.data) {
-						this.$mHelper.toast(`验证码发送成功, 验证码是${r.msg}`);
+						this.$mHelper.toast(`验证码发送成功`); //, 验证码是${r.msg}
 						this.smsCodeBtnDisabled = true;
 						uni.setStorageSync('loginSmsCodeTime', moment().valueOf() / 1000);
 						this.handleSmsCodeTime(59);

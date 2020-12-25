@@ -31,7 +31,7 @@
 		<view class="promotion-center">
 			<!-- <list-cell icon="iconquanbudingdan" :iconColor="themeColor.color" @eventClick="navToLogin('/pages/study/index')" title="组织生活管理"></list-cell>
 			 -->
-			<list-cell icon="iconrizhi" :iconColor="themeColor.color" @eventClick="navToLogin('/pages/study/sign')" title="签到"></list-cell>
+			<list-cell icon="iconrizhi" :iconColor="themeColor.color" @eventClick="navToLogin('/pages/study/sign')" title="活动签到"></list-cell>
 			<list-cell icon="icongonggao" :iconColor="themeColor.color" @eventClick="navToLogin('/pages/notice/notice')" title="通知公告"></list-cell>
 		</view>
 		<view class="notify-list" v-if="notifyList.length > 0">
@@ -114,6 +114,7 @@
 		},
 		watch:{
 			'$store.state.userInfo': function () {
+				this.hasLogin = this.$mStore.getters.hasLogin;
 			   this.getAdvList()
 			},
 		},

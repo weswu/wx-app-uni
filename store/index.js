@@ -42,7 +42,9 @@ const store = new Vuex.Store({
 		isImPanel: false,
 		// 当前是否人工客服服务
 		isStuffService: false,
-		themeColor: THEMECOLOR
+		themeColor: THEMECOLOR,
+		// 常数
+		ngroupType: []
 	},
 	getters: {
 		// 全局配置
@@ -168,24 +170,22 @@ const store = new Vuex.Store({
 		setThemeColor(state, val) {
 			state.themeColor = val;
 			uni.setStorageSync('themeColor', val);
-		}
+		},
+		// wes
+    set_ngroup_type: (state, params) => {
+      state.ngroupType = params
+    }
 	},
 	actions: {
-		globalConfigChange({
-			commit
-		}, info) {
+		globalConfigChange({ commit }, info) {
 			commit('setGlobalConfig', info);
 		},
-		networkStateChange({
-			commit
-		}, info) {
+		networkStateChange({ commit }, info) {
 			commit('setNetworkState', info);
 		},
-		logout({
-			commit
-		}) {
+		logout({ commit }) {
 			commit('logout');
-		}
+		} 
 	}
 });
 

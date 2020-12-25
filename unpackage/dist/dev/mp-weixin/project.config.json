@@ -42,6 +42,8 @@
     "libVersion": "",
     "appid": "wx54722a5e85ac26a5",
     "projectname": "智慧党建",
+    "simulatorType": "wechat",
+    "simulatorPluginLibVersion": {},
     "condition": {
         "search": {
             "list": []
